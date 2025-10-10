@@ -1,0 +1,111 @@
+
+const express = require("express");
+const router = express.Router();
+const db = require("../db");
+const { authenticateToken, authorizeRoles } = require("../middleware/auth");
+
+// Bulk insert citizens (admin only)
+router.post("/bulk", authenticateToken, authorizeRoles("admin"), async (req, res) => {
+  const citizens = req.body.citizens;
+  if (!Array.isArray(citizens) || citizens.length === 0) {
+    return res.status(400).json({ error: "citizens array required" });
+  }
+  const values = citizens.map(c => [
+    c.first_name, c.last_name, c.street, c.area, c.city, c.pincode, c.gender, c.dob, c.house_id
+  ]);
+  try {
+    await db.query(
+      `INSERT INTO Citizen (first_name, last_name, street, area, city, pincode, gender, dob, house_id)
+      VALUES ?`,
+      [values]
+    );
+    res.json({ message: "Bulk citizens added", count: citizens.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// Search citizens by name or ID (admin only)
+router.get("/search", authenticateToken, authorizeRoles("admin"), async (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.status(400).json({ error: "Missing search query" });
+  const sql = `SELECT * FROM Citizen WHERE first_name LIKE ? OR last_name LIKE ? OR citizen_id = ?`;
+  const likeQ = `%${q}%`;
+  try {
+    const [rows] = await db.query(sql, [likeQ, likeQ, q]);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get all citizens (admin only)
+// Pagination, filtering, and sorting for citizens
+router.get("/", authenticateToken, authorizeRoles("admin"), async (req, res) => {
+  const { city, area, page = 1, limit = 10, sort_by = "citizen_id", order = "asc" } = req.query;
+  let sql = "SELECT * FROM Citizen";
+  const params = [];
+  const conditions = [];
+  if (city) {
+    conditions.push("city = ?");
+    params.push(city);
+  }
+  if (area) {
+    conditions.push("area = ?");
+    params.push(area);
+  }
+  if (conditions.length > 0) {
+    sql += " WHERE " + conditions.join(" AND ");
+  }
+  // Sorting
+  sql += ` ORDER BY ${sort_by} ${order.toUpperCase() === "DESC" ? "DESC" : "ASC"}`;
+  // Pagination
+  sql += " LIMIT ? OFFSET ?";
+  params.push(Number(limit), (Number(page) - 1) * Number(limit));
+  try {
+    const [rows] = await db.query(sql, params);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Hard delete citizen (admin only)
+router.delete("/:citizen_id", authenticateToken, authorizeRoles("admin"), async (req, res) => {
+  try {
+    await db.query("DELETE FROM Citizen WHERE citizen_id = ?", [req.params.citizen_id]);
+    res.json({ message: "Citizen deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Add a new citizen
+router.post("/", async (req, res) => {
+  const {
+    first_name,
+    last_name,
+    street,
+    area,
+    city,
+    pincode,
+    gender,
+    dob,
+    house_id
+  } = req.body;
+  try {
+    await db.query(
+      `INSERT INTO Citizen (first_name, last_name, street, area, city, pincode, gender, dob, house_id)
+      VALUES ( ?, ?, ?, ?, ?, ?, ?, ?,?)`,
+      [first_name, last_name, street, area, city, pincode, gender, dob, house_id]
+    );
+    if (req.user) {
+      const { logAuditAction } = require("../db");
+      logAuditAction(req.user.id, "create", "Citizen", JSON.stringify({ first_name, last_name }));
+    }
+    res.json({ message: "Citizen added" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+module.exports = router;
