@@ -1,0 +1,453 @@
+
+USE Smartcity_management_system;
+
+CREATE TABLE Zone (
+  zone_id INT AUTO_INCREMENT PRIMARY KEY,
+  zone_name VARCHAR(255),
+  type VARCHAR(100)
+);
+
+CREATE TABLE House (
+  house_id INT AUTO_INCREMENT PRIMARY KEY,
+  type VARCHAR(100),
+  area VARCHAR(100),
+  zone_id INT,
+  FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
+);
+
+CREATE TABLE Citizen (
+  citizen_id INT AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  street VARCHAR(255),
+  area VARCHAR(100),
+  city VARCHAR(100),
+  pincode VARCHAR(10),
+  gender VARCHAR(10),
+  dob DATE,
+  house_id INT,
+  FOREIGN KEY (house_id) REFERENCES House(house_id)
+);
+
+CREATE TABLE Citizen_Phone_Number (
+  citizen_id INT,
+  phone_number VARCHAR(20),
+  PRIMARY KEY (citizen_id, phone_number),
+  FOREIGN KEY (citizen_id) REFERENCES Citizen(citizen_id)
+);
+
+CREATE TABLE Service_Provider (
+  provider_id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  contact_no VARCHAR(20),
+  service_type VARCHAR(100)
+);
+
+CREATE TABLE Doctors (
+  doctor_id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  specialisation VARCHAR(100)
+);
+
+CREATE TABLE Route (
+    route_id INT AUTO_INCREMENT PRIMARY KEY,
+    start_point VARCHAR(255) NOT NULL,
+    end_point VARCHAR(255) NOT NULL,
+    distance DECIMAL(10, 2),
+    mode VARCHAR(100)
+);
+
+CREATE TABLE Service (
+    service_id INT AUTO_INCREMENT PRIMARY KEY,
+    service_name VARCHAR(255),
+    cost DECIMAL(10, 2),
+    availability_status VARCHAR(50),
+    operating_hours VARCHAR(100)
+);
+
+CREATE TABLE Service_Phone_Number (
+    service_id INT,
+    phone_number VARCHAR(20),
+    PRIMARY KEY (service_id, phone_number),
+    FOREIGN KEY (service_id) REFERENCES Service(service_id)
+);
+
+CREATE TABLE Service_Emails (
+    service_id INT,
+    email VARCHAR(255),
+    PRIMARY KEY (service_id, email),
+    FOREIGN KEY (service_id) REFERENCES Service(service_id)
+);
+
+CREATE TABLE Utility (
+    utility_id INT PRIMARY KEY, -- FK to Service
+    price_per_unit DECIMAL(10, 4),
+    unit VARCHAR(50),
+    issue_date DATE,
+    consumption_amount DECIMAL(10, 2),
+    FOREIGN KEY (utility_id) REFERENCES Service(service_id)
+);
+
+CREATE TABLE Healthcare (
+    hospital_id INT PRIMARY KEY, -- FK to Service
+    name VARCHAR(255),
+    capacity INT,
+    type VARCHAR(100),
+    FOREIGN KEY (hospital_id) REFERENCES Service(service_id)
+);
+
+CREATE TABLE Transport (
+    transport_id INT PRIMARY KEY, -- FK to Service
+    route_no VARCHAR(50),
+    mode VARCHAR(100),
+    FOREIGN KEY (transport_id) REFERENCES Service(service_id)
+);
+
+CREATE TABLE Transport_Schedule (
+    schedule_id INT AUTO_INCREMENT PRIMARY KEY,
+    transport_id INT,
+    route_id INT,
+    start_time TIME,
+    end_time TIME,
+    frequency VARCHAR(100),
+    days_of_operation VARCHAR(255),
+    status VARCHAR(50),
+    FOREIGN KEY (transport_id) REFERENCES Transport(transport_id),
+    FOREIGN KEY (route_id) REFERENCES Route(route_id)
+);
+
+CREATE TABLE Traffic_Sensor_Reading (
+    sensor_id INT,
+    time_stamp DATETIME,
+    avg_speed DECIMAL(5,2),
+    congestion_level VARCHAR(50),
+    vehicle_count INT,
+    PRIMARY KEY (sensor_id, time_stamp),
+    FOREIGN KEY (sensor_id) REFERENCES Traffic_Sensors(sensor_id)
+);
+
+CREATE TABLE AQ_Reading (
+    sensor_id INT,
+    timestamp DATETIME,
+    PM2_5 DECIMAL(10,4),
+    PM10 DECIMAL(10,4),
+    CO2_level DECIMAL(10,4),
+    aqindex INT,
+    NO2_level DECIMAL(10,4),
+    PRIMARY KEY (sensor_id, timestamp),
+    FOREIGN KEY (sensor_id) REFERENCES Air_Quality_Sensors(sensor_id)
+);
+
+CREATE TABLE Weather_Reading (
+    sensor_id INT,
+    time_stamp DATETIME,
+    wind_speed DECIMAL(5,2),
+    pressure DECIMAL(10,2),
+    temperature DECIMAL(5,2),
+    rainfall DECIMAL(10,2),
+    humidity DECIMAL(5,2),
+    PRIMARY KEY (sensor_id, time_stamp),
+    FOREIGN KEY (sensor_id) REFERENCES Weather_Sensors(sensor_id)
+);
+
+CREATE TABLE Infrastructure (
+    asset_id INT AUTO_INCREMENT PRIMARY KEY,
+    zone_id INT,
+    FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
+);
+
+CREATE TABLE Sensors (
+    sensor_id INT AUTO_INCREMENT PRIMARY KEY,
+    status VARCHAR(50),
+    location VARCHAR(255),
+    provider_id INT,
+    data_frequency VARCHAR(100),
+    last_calibrated DATE,
+    installation_date DATE,
+    FOREIGN KEY (sensor_id) REFERENCES Infrastructure(asset_id)
+);
+
+CREATE TABLE Traffic_Sensors (
+    sensor_id INT PRIMARY KEY,
+    FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id)
+);
+
+CREATE TABLE Air_Quality_Sensors (
+    sensor_id INT PRIMARY KEY,
+    FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id)
+);
+
+CREATE TABLE Weather_Sensors (
+    sensor_id INT PRIMARY KEY,
+    FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id)
+);
+
+CREATE TABLE Fuel (
+    fuel_id INT AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(100),
+    price_per_unit DECIMAL(10,4),
+    provider_id VARCHAR(100),
+    cost_per_month DECIMAL(10,2),
+    FOREIGN KEY (fuel_id) REFERENCES Utility(utility_id)
+);
+
+CREATE TABLE Vehicle (
+    vehicle_no VARCHAR(20) PRIMARY KEY,
+    type VARCHAR(100),
+    model VARCHAR(100),
+    owner_citizen_id INT,
+    consumes_fuel_id INT,
+    FOREIGN KEY (owner_citizen_id) REFERENCES Citizen(citizen_id),
+    FOREIGN KEY (consumes_fuel_id) REFERENCES Fuel(fuel_id)
+);
+
+CREATE TABLE Complaints (
+    complaint_id INT AUTO_INCREMENT PRIMARY KEY,
+    citizen_id INT,
+    service_id INT NULL,
+    utility_id INT NULL,
+    healthcare_id INT NULL,
+    transport_id INT NULL,
+    complaint_text TEXT NOT NULL,
+    status VARCHAR(50) DEFAULT 'Pending',
+    complaint_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (citizen_id) REFERENCES Citizen(citizen_id),
+    FOREIGN KEY (service_id) REFERENCES Service(service_id),
+    FOREIGN KEY (utility_id) REFERENCES Utility(utility_id),
+    FOREIGN KEY (healthcare_id) REFERENCES Healthcare(hospital_id),
+    FOREIGN KEY (transport_id) REFERENCES Transport(transport_id)
+);
+
+CREATE TABLE Users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('citizen', 'admin', 'provider', 'doctor') NOT NULL,
+    linked_id INT, -- references actual entity (citizen_id, provider_id, doctor_id)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE owns (
+    citizen_ID INT NOT NULL,
+    vehicle_no VARCHAR(20) NOT NULL,
+    PRIMARY KEY (vehicle_no),
+    FOREIGN KEY (vehicle_no) REFERENCES Vehicle(vehicle_no),
+    FOREIGN KEY (citizen_ID) REFERENCES Citizen(citizen_id)
+);
+
+CREATE TABLE lives_in (
+    house_id INT NOT NULL,
+    citizen_id INT NOT NULL,
+    PRIMARY KEY (house_id),
+    FOREIGN KEY (house_id) REFERENCES House(house_id),
+    FOREIGN KEY (citizen_id) REFERENCES Citizen(citizen_id)
+);
+
+CREATE TABLE located_in (
+    house_id INT NOT NULL,
+    zone_id INT NOT NULL,
+    PRIMARY KEY (house_id),
+    FOREIGN KEY (house_id) REFERENCES House(house_id),
+    FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
+);
+
+
+CREATE TABLE operates_on (
+    transport_id INT NOT NULL,
+    route_id INT NOT NULL,
+    PRIMARY KEY (transport_id, route_id),
+    FOREIGN KEY (transport_id) REFERENCES Transport(transport_id),
+    FOREIGN KEY (route_id) REFERENCES Route(route_id)
+);
+
+CREATE TABLE operated_by(
+citizen_id INT NOT NULL,
+service_id INT NOT NULL,
+provider_id INT NOT NULL,
+FOREIGN KEY (citizen_id) references Citizen(citizen_id),
+FOREIGN KEY (service_id) references Service(service_id),
+FOREIGN KEY (provider_id) references Service_provider(provider_id)
+);
+
+CREATE TABLE for_ (
+    schedule_id INT NOT NULL,
+    route_id INT NOT NULL,
+    PRIMARY KEY (schedule_id, route_id),
+    FOREIGN KEY (schedule_id) REFERENCES Transport_Schedule(schedule_id),
+    FOREIGN KEY (route_id) REFERENCES route(route_id)
+);
+
+CREATE TABLE works_in (
+    doctor_id INT NOT NULL,
+    hospital_id INT NOT NULL,
+    PRIMARY KEY (Doctor_ID, hospital_ID),
+    FOREIGN KEY (doctor_id) REFERENCES Doctors(doctor_id),
+    FOREIGN KEY (hospital_id) REFERENCES Healthcare(hospital_id)
+);
+
+
+CREATE TABLE Internet (
+    internet_id INT PRIMARY KEY,
+    provider_name VARCHAR(255),
+    bandwidth VARCHAR(160),
+    coverage_area VARCHAR(255),
+    cost_per_month DECIMAL(10,2),
+    service_type VARCHAR(100),
+    FOREIGN KEY (internet_id) REFERENCES Utility(utility_id)
+);
+
+CREATE TABLE Water (
+    water_id INT PRIMARY KEY,
+    source VARCHAR(255),
+    cost_per_litre DECIMAL(10,4),
+    distribution_area VARCHAR(255),
+    quality_level VARCHAR(100),
+    supply_hours VARCHAR(100),
+    FOREIGN KEY (water_id) REFERENCES Utility(utility_id)
+);
+
+
+CREATE TABLE Electricity (
+    electricity_id INT PRIMARY KEY,
+    provider_id INT,
+    voltage_level VARCHAR(50),
+    distribution_area VARCHAR(255),
+    source_type VARCHAR(100),
+    traffic_rate DECIMAL(10,4),
+    FOREIGN KEY (electricity_id) REFERENCES Utility(utility_id)
+);
+
+CREATE TABLE Waste_Management (
+    waste_id INT PRIMARY KEY,
+    collection_schedule VARCHAR(255),
+    processing_method VARCHAR(255),
+    type VARCHAR(100),
+    zone_id INT,
+    FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
+);
+
+ALTER TABLE Waste_Management ADD FOREIGN KEY (waste_id) references Utility(utility_id);
+
+CREATE TABLE Infrastructure (
+    asset_id INT AUTO_INCREMENT PRIMARY KEY,
+    zone_id INT,
+    FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
+);
+
+CREATE TABLE Smart_Bin (
+    bin_id INT PRIMARY KEY,
+    location VARCHAR(255),
+    capacity DECIMAL(10,2),
+    fill_level DECIMAL(5,2),
+    sensor_status VARCHAR(50),
+    collection_schedule VARCHAR(255),
+    managing_waste_id INT,
+    FOREIGN KEY (bin_id) REFERENCES Infrastructure(asset_id),
+    FOREIGN KEY (managing_waste_id) REFERENCES Waste_Management(waste_id)
+);
+
+CREATE TABLE Public_Light (
+    light_id INT PRIMARY KEY,
+    location VARCHAR(255),
+    status VARCHAR(50),
+    type VARCHAR(100),
+    installation_date DATE,
+    power_rating VARCHAR(50),
+    FOREIGN KEY (light_id) REFERENCES Infrastructure(asset_id)
+);
+
+CREATE TABLE Powernodes (
+    node_id INT PRIMARY KEY,
+    capacity VARCHAR(100),
+    installation_date DATE,
+    status VARCHAR(50),
+    FOREIGN KEY (node_id) REFERENCES Infrastructure(asset_id)
+);
+
+CREATE TABLE Pipeline (
+    pipeline_id INT PRIMARY KEY,
+    length DECIMAL(10,2),
+    diameter DECIMAL(10,2),
+    flow_type VARCHAR(100),
+    material_type VARCHAR(100),
+    FOREIGN KEY (pipeline_id) REFERENCES Infrastructure(asset_id)
+);
+
+CREATE TABLE consumes (
+    fuel_id INT NOT NULL,
+    vehicle_id VARCHAR(20) NOT NULL,
+    time TIME,
+    date DATE,
+    quantity DECIMAL(6,2),
+    Cost DECIMAL(10,1),
+    PRIMARY KEY (fuel_id, vehicle_id, time, date),
+    FOREIGN KEY (fuel_id) REFERENCES Fuel(fuel_id),
+    FOREIGN KEY (vehicle_id) REFERENCES Vehicle(vehicle_no)
+);
+
+CREATE TABLE infra_located_in (
+    asset_id INT NOT NULL,
+    zone_id INT NOT NULL,
+    PRIMARY KEY (asset_id),
+    FOREIGN KEY (asset_id) REFERENCES Infrastructure(asset_id),
+    FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
+);
+
+CREATE TABLE managed_by (
+    bin_id INT NOT NULL,
+    waste_id INT NOT NULL,
+    PRIMARY KEY (bin_id),
+    FOREIGN KEY (bin_id) REFERENCES Smart_Bin(bin_id),
+    FOREIGN KEY (waste_id) REFERENCES Waste_Management(waste_id)
+);
+
+CREATE TABLE provided_through (
+    pipeline_id INT NOT NULL,
+    water_id INT NOT NULL,
+    PRIMARY KEY (pipeline_id, water_id),
+    FOREIGN KEY (pipeline_id) REFERENCES Pipeline(pipeline_id),
+    FOREIGN KEY (water_id) REFERENCES Water(water_id)
+);
+
+CREATE TABLE provided_by (
+    electricity_id INT NOT NULL,
+    node_id INT NOT NULL,
+    PRIMARY KEY (electricity_id, Node_id),
+    FOREIGN KEY (electricity_id) REFERENCES Electricity(electricity_id),
+    FOREIGN KEY (node_id) REFERENCES Powernodes(node_id)
+);
+
+CREATE TABLE AuditLog (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  action VARCHAR(50),
+  resource VARCHAR(50),
+  details TEXT,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES Users(user_id)
+);
+
+
+INSERT INTO Zone (zone_name, type) VALUES
+('Vijay Nagar', 'Commercial'),
+('Rau', 'Industrial'),
+('Old Palasia', 'Residential'),
+('Annapurna', 'Mixed-Use');
+
+
+INSERT INTO House (type, area, zone_id) VALUES
+('Apartment', '1200 sq ft', 1),   -- Vijay Nagar
+('Bungalow', '2500 sq ft', 3),    -- Old Palasia
+('Duplex', '1800 sq ft', 4),      -- Annapurna
+('Villa', '3000 sq ft', 2),       -- Rau
+('Row House', '1500 sq ft', 1);   -- Vijay Nagar
+
+
+INSERT INTO Citizen 
+(first_name, last_name, gender, dob, street, area, city, pincode)
+VALUES
+('Priya', 'Sharma', 'Female', '1995-08-15', '123 AB Road', 'Vijay Nagar', 'Indore', '452010'),
+('Amit', 'Singh', 'Male', '1992-04-22', '456 MG Road', 'Old Palasia', 'Indore', '452001'),
+('Sonia', 'Verma', 'Female', '1988-11-01', '789 Ring Road', 'Annapurna', 'Indore', '452009'),
+('Rajesh', 'Kumar', 'Male', '1985-02-10', '101 Industrial Area', 'Rau', 'Indore', '453331');
+

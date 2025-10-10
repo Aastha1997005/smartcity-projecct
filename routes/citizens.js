@@ -3,6 +3,9 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 const { authenticateToken, authorizeRoles } = require("../middleware/auth");
+const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 
 // Bulk insert citizens (admin only)
 router.post("/bulk", authenticateToken, authorizeRoles("admin"), async (req, res) => {
@@ -14,12 +17,50 @@ router.post("/bulk", authenticateToken, authorizeRoles("admin"), async (req, res
     c.first_name, c.last_name, c.street, c.area, c.city, c.pincode, c.gender, c.dob, c.house_id
   ]);
   try {
-    await db.query(
+    // Insert citizens and get their IDs
+    const [result] = await db.query(
       `INSERT INTO Citizen (first_name, last_name, street, area, city, pincode, gender, dob, house_id)
       VALUES ?`,
       [values]
     );
-    res.json({ message: "Bulk citizens added", count: citizens.length });
+    // Get the first inserted ID
+    const firstId = result.insertId;
+    // Prepare user accounts and emails
+    const users = [];
+    const emails = [];
+    for (let i = 0; i < citizens.length; i++) {
+      const citizen = citizens[i];
+      const email = citizen.email; // must be provided in input
+      if (!email) continue;
+      const password = crypto.randomBytes(6).toString('base64');
+      const password_hash = await bcrypt.hash(password, 10);
+      const citizen_id = firstId + i;
+      users.push([email, password_hash, 'citizen', citizen_id]);
+      emails.push({ email, password });
+    }
+    if (users.length > 0) {
+      await db.query(
+        `INSERT INTO Users (username, password_hash, role, linked_id) VALUES ?`,
+        [users]
+      );
+      // Send emails with credentials
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.SMTP_USER || 'your_gmail@gmail.com',
+          pass: process.env.SMTP_PASS || 'your_gmail_app_password',
+        },
+      });
+      for (const e of emails) {
+        await transporter.sendMail({
+          from: process.env.SMTP_USER || 'your_gmail@gmail.com',
+          to: e.email,
+          subject: 'Your Smart City Account Credentials',
+          text: `Welcome!\nUsername: ${e.email}\nPassword: ${e.password}`,
+        });
+      }
+    }
+    res.json({ message: "Bulk citizens added and user accounts created", count: citizens.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
