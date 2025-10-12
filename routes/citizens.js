@@ -7,6 +7,63 @@ const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 
+// Get all dashboard data for a user (profile, vehicles, properties, bookings, complaints)
+router.get('/dashboard/:user_id', async (req, res) => {
+  const userId = req.params.user_id;
+  try {
+    // Get linked_id (citizen_id) for this user
+    const [users] = await db.query('SELECT linked_id FROM Users WHERE user_id = ?', [userId]);
+    if (!users.length || !users[0].linked_id) {
+      return res.status(404).json({ error: 'Citizen not found for this user' });
+    }
+    const citizenId = users[0].linked_id;
+    // Get citizen profile
+    const [citizens] = await db.query('SELECT * FROM Citizen WHERE citizen_id = ?', [citizenId]);
+    if (!citizens.length) {
+      return res.status(404).json({ error: 'Citizen not found' });
+    }
+    // Get vehicles
+    const [vehicles] = await db.query('SELECT * FROM Vehicle WHERE owner_citizen_id = ?', [citizenId]);
+    // Get properties
+    const [properties] = await db.query('SELECT * FROM Property WHERE owner_citizen_id = ?', [citizenId]);
+    // Get service bookings
+    const [bookings] = await db.query('SELECT * FROM Service_Booking WHERE citizen_id = ?', [citizenId]);
+    // Get complaints
+    const [complaints] = await db.query('SELECT * FROM Complaints WHERE citizen_id = ?', [citizenId]);
+    res.json({
+      citizen: citizens[0],
+      vehicles,
+      properties,
+      bookings,
+      complaints
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// Get citizen by user_id (linked_id in Users table)
+router.get('/by-user/:user_id', async (req, res) => {
+  const userId = req.params.user_id;
+  try {
+    // Find the user and get their linked_id
+    const [users] = await db.query('SELECT linked_id FROM Users WHERE user_id = ?', [userId]);
+    if (!users.length || !users[0].linked_id) {
+      return res.status(404).json({ error: 'Citizen not found for this user' });
+    }
+    const linkedId = users[0].linked_id;
+    // Get the citizen record
+    const [citizens] = await db.query('SELECT * FROM Citizen WHERE citizen_id = ?', [linkedId]);
+    if (!citizens.length) {
+      return res.status(404).json({ error: 'Citizen not found' });
+    }
+    res.json(citizens[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Bulk insert citizens (admin only)
 router.post("/bulk", authenticateToken, authorizeRoles("admin"), async (req, res) => {
   const citizens = req.body.citizens;
@@ -40,7 +97,7 @@ router.post("/bulk", authenticateToken, authorizeRoles("admin"), async (req, res
     }
     if (users.length > 0) {
       await db.query(
-        `INSERT INTO Users (username, password_hash, role, linked_id) VALUES ?`,
+        `INSERT INTO Users (email, password_hash, role, linked_id) VALUES ?`,
         [users]
       );
       // Send emails with credentials
@@ -56,7 +113,7 @@ router.post("/bulk", authenticateToken, authorizeRoles("admin"), async (req, res
           from: process.env.SMTP_USER || 'your_gmail@gmail.com',
           to: e.email,
           subject: 'Your Smart City Account Credentials',
-          text: `Welcome!\nUsername: ${e.email}\nPassword: ${e.password}`,
+          text: `Welcome!\nEmail: ${e.email}\nPassword: ${e.password}`,
         });
       }
     }

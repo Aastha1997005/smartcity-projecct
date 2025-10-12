@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Dashboard - Smart City</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --sidebar-width: 260px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            overflow-y: auto;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .nav-link.active {
+            background-color: white;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .welcome-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            border-left: 4px solid;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stats-card.blue { border-left-color: #667eea; }
+        .stats-card.green { border-left-color: #10b981; }
+        .stats-card.purple { border-left-color: #8b5cf6; }
+        .stats-card.orange { border-left-color: #f59e0b; }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .quick-action-btn {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+        
+        .quick-action-btn:hover {
+            background-color: #f3f4f6;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .activity-item {
+            padding: 12px;
+            border-left: 3px solid;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #f9fafb;
+        }
+        
+        .activity-item.pending { border-left-color: #fbbf24; }
+        .activity-item.confirmed { border-left-color: #3b82f6; }
+        .activity-item.completed { border-left-color: #10b981; }
+        
+        .announcement-card {
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            background-color: #eff6ff;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .city-metric {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #f9fafb;
+            border-radius: 10px;
+        }
+        
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                margin-left: calc(-1 * var(--sidebar-width));
+            }
+            .sidebar.show {
+                margin-left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-city me-2"></i>SmartCity</h3>
+            <small id="userRole">CITIZEN</small>
+        </div>
+        
+        <ul class="nav flex-column mt-3">
+            <li class="nav-item"><a class="nav-link active" href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="my-complaints.html"><i class="fas fa-file-alt"></i> My Complaints</a></li>
+            <li class="nav-item"><a class="nav-link" href="submit-complaint.html"><i class="fas fa-plus-circle"></i> Submit Complaint</a></li>
+            <li class="nav-item"><a class="nav-link" href="my-vehicles.html"><i class="fas fa-car"></i> My Vehicles</a></li>
+            <li class="nav-item"><a class="nav-link" href="my-properties.html"><i class="fas fa-home"></i> My Properties</a></li>
+            <li class="nav-item"><a class="nav-link" href="services.html"><i class="fas fa-concierge-bell"></i> Services</a></li>
+            <li class="nav-item"><a class="nav-link" href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+            <li class="nav-item"><a class="nav-link" href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h1 class="mb-2">Welcome back, <span id="userName">Citizen</span>!</h1>
+                    <p class="mb-3 opacity-75">Here's your personalized smart city dashboard</p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <span class="badge bg-white text-primary px-3 py-2">
+                            <i class="fas fa-check-circle me-1"></i> Verified Citizen
+                        </span>
+                        <span class="badge bg-white text-primary px-3 py-2">
+                            <i class="fas fa-calendar me-1"></i> Member since <span id="memberYear">2024</span>
+                        </span>
+                    </div>
+                </div>
+                <button class="btn btn-light mt-3 mt-md-0" onclick="toggleSidebar()">
+                    <i class="fas fa-bars me-2"></i> Menu
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="stats-card blue">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-muted mb-0">My Complaints</h6>
+                        <i class="fas fa-file-alt text-primary fa-2x"></i>
+                    </div>
+                    <h2 class="mb-1" id="totalComplaints">0</h2>
+                    <small class="text-muted"><span id="inProgressComplaints">0</span> in progress</small>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="stats-card green">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-muted mb-0">My Vehicles</h6>
+                        <i class="fas fa-car text-success fa-2x"></i>
+                    </div>
+                    <h2 class="mb-1" id="totalVehicles">0</h2>
+                    <small class="text-muted"><span id="expiringDocs">0</span> docs expiring</small>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="stats-card purple">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-muted mb-0">My Properties</h6>
+                        <i class="fas fa-home text-purple fa-2x"></i>
+                    </div>
+                    <h2 class="mb-1" id="totalProperties">0</h2>
+                    <small class="text-muted">Registered properties</small>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="stats-card orange">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-muted mb-0">Service Bookings</h6>
+                        <i class="fas fa-calendar-check text-warning fa-2x"></i>
+                    </div>
+                    <h2 class="mb-1" id="totalBookings">0</h2>
+                    <small class="text-muted"><span id="upcomingBookings">0</span> upcoming</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- City Overview -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-4">
+                    <i class="fas fa-city text-primary me-2"></i>City Overview - Indore
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="city-metric">
+                            <div class="metric-icon bg-primary bg-opacity-10 text-primary">
+                                <i class="fas fa-temperature-high"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Temperature</small>
+                                <strong id="temperature">28.5°C</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="city-metric">
+                            <div class="metric-icon bg-success bg-opacity-10 text-success">
+                                <i class="fas fa-wind"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Air Quality</small>
+                                <strong id="airQuality">Good (45 AQI)</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="city-metric">
+                            <div class="metric-icon bg-warning bg-opacity-10 text-warning">
+                                <i class="fas fa-traffic-light"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Traffic Speed</small>
+                                <strong id="trafficSpeed">45 km/h</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Quick Actions -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4"><i class="fas fa-bolt text-warning me-2"></i>Quick Actions</h5>
+                        <a href="submit-complaint.html" class="quick-action-btn">
+                            <i class="fas fa-plus-circle text-primary fa-lg me-3"></i>
+                            <span>Submit New Complaint</span>
+                        </a>
+                        <a href="my-complaints.html" class="quick-action-btn">
+                            <i class="fas fa-file-alt text-success fa-lg me-3"></i>
+                            <span>View My Complaints</span>
+                        </a>
+                        <a href="my-vehicles.html" class="quick-action-btn">
+                            <i class="fas fa-car text-info fa-lg me-3"></i>
+                            <span>Manage My Vehicles</span>
+                        </a>
+                        <a href="services.html" class="quick-action-btn">
+                            <i class="fas fa-concierge-bell text-purple fa-lg me-3"></i>
+                            <span>Browse Services</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4"><i class="fas fa-history text-info me-2"></i>Recent Activity</h5>
+                        <div id="recentActivity">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Announcements -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4"><i class="fas fa-bullhorn text-danger me-2"></i>City Announcements</h5>
+                        <div id="announcements">
+                            <div class="announcement-card">
+                                <h6 class="mb-2">Road Maintenance Schedule</h6>
+                                <p class="small text-muted mb-1">AB Road will be under maintenance from 10 PM to 6 AM for the next week.</p>
+                                <small class="text-muted"><i class="fas fa-clock me-1"></i>2 days ago</small>
+                            </div>
+                            <div class="announcement-card">
+                                <h6 class="mb-2">Water Supply Notice</h6>
+                                <p class="small text-muted mb-1">Water supply will be suspended in Vijay Nagar area on Sunday from 9 AM to 2 PM.</p>
+                                <small class="text-muted"><i class="fas fa-clock me-1"></i>5 days ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert for Expiring Documents -->
+        <div class="alert alert-warning mt-4" id="expiringAlert" style="display: none;">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                <div>
+                    <h6 class="mb-1">Document Expiry Alert!</h6>
+                    <p class="mb-0 small">You have <strong id="alertCount">0</strong> vehicle document(s) expiring soon. Please renew them to avoid penalties.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        let token = localStorage.getItem('token');
+        
+        // Check authentication
+        if (!token) {
+            window.location.href = 'index.html';
+        }
+        
+        // Get user info
+        const userEmail = localStorage.getItem('userEmail') || '';
+        const userName = userEmail.split('@')[0];
+        document.getElementById('userName').textContent = userName.charAt(0).toUpperCase() + userName.slice(1);
+        
+        // Set member year (current year for demo)
+        document.getElementById('memberYear').textContent = new Date().getFullYear();
+        
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.clear();
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Get user info from token (decode JWT)
+                const token = localStorage.getItem('token');
+                let userId = null;
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    userId = payload.id;
+                }
+                // Fetch all dashboard data in one call
+                if (userId) {
+                    const res = await fetch(`${API_BASE_URL}/citizens/dashboard/${userId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        // Complaints
+                        document.getElementById('totalComplaints').textContent = data.complaints.length;
+                        const inProgress = data.complaints.filter(c => c.status === 'in progress').length;
+                        document.getElementById('inProgressComplaints').textContent = inProgress;
+                        // Vehicles
+                        document.getElementById('totalVehicles').textContent = data.vehicles.length;
+                        const expiringDocs = data.vehicles.filter(v => v.is_expiring).length;
+                        document.getElementById('expiringDocs').textContent = expiringDocs;
+                        // Properties
+                        document.getElementById('totalProperties').textContent = data.properties.length;
+                        // Bookings
+                        document.getElementById('totalBookings').textContent = data.bookings.length;
+                        const upcoming = data.bookings.filter(b => b.status === 'upcoming').length;
+                        document.getElementById('upcomingBookings').textContent = upcoming;
+                        // Show expiring alert if there are expiring docs
+                        if (expiringDocs > 0) {
+                            document.getElementById('expiringAlert').style.display = 'block';
+                            document.getElementById('alertCount').textContent = expiringDocs;
+                        }
+                    }
+                }
+                // Load recent activity (optional: update to use real data)
+                loadRecentActivity();
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+        
+        function loadRecentActivity() {
+            const container = document.getElementById('recentActivity');
+            const activities = [
+                { type: 'completed', text: 'Water supply complaint resolved', date: '2 hours ago' },
+                { type: 'confirmed', text: 'Community hall booking confirmed', date: '1 day ago' },
+                { type: 'pending', text: 'Street light complaint submitted', date: '3 days ago' }
+            ];
+            
+            let html = '';
+            activities.forEach(activity => {
+                const color = {
+                    'completed': 'success',
+                    'confirmed': 'primary',
+                    'pending': 'warning'
+                }[activity.type] || 'secondary';
+                
+                html += `
+                    <div class="activity-item ${activity.type}">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                <span class="badge bg-${color} rounded-circle" style="width: 10px; height: 10px;"></span>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <p class="mb-1 small">${activity.text}</p>
+                                <small class="text-muted">${activity.date}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html || '<p class="text-center text-muted">No recent activity</p>';
+        }
+        
+        // Load data on page load
+        loadDashboardData();
+    </script>
+</body>
+</html>

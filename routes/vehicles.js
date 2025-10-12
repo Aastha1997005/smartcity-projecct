@@ -2,6 +2,26 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
+
+// Get all vehicles for a specific citizen (user)
+router.get("/user/:user_id", async (req, res) => {
+  const userId = req.params.user_id;
+  try {
+    const [rows] = await db.query(
+      `SELECT v.*, f.type AS fuel_type
+       FROM Vehicle v
+       LEFT JOIN Fuel f ON v.consumes_fuel_id = f.fuel_id
+       WHERE v.owner_citizen_id = ?`,
+      [userId]
+    );
+    // Add is_expiring mock property for demo (replace with real logic if needed)
+    rows.forEach(v => v.is_expiring = false);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get all vehicles
 router.get("/", async (req, res) => {
   try {

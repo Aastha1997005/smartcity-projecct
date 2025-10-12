@@ -2,13 +2,13 @@ const db = require('./db');
 const bcrypt = require('bcrypt');
 
 async function addAdmin() {
-  const username = 'admin@example.com'; // Change as needed
+  const email = 'admin@example.com'; // Change as needed
   const password = '1234admin'; // Change as needed
   const hashedPassword = await bcrypt.hash(password, 10);
   try {
     await db.query(
-      'INSERT INTO Users (username, password_hash, role) VALUES (?, ?, ?)',
-      [username, hashedPassword, 'admin']
+      'INSERT INTO Users (email, password_hash, role) VALUES (?, ?, ?)',
+      [email, hashedPassword, 'admin']
     );
     console.log('Admin user created successfully!');
   } catch (err) {

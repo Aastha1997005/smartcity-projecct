@@ -23,6 +23,7 @@ router.get('/:doctor_id', async (req, res) => {
     }
 });
 
+
 // Create doctor
 router.post('/', async (req, res) => {
     const { doctor_id, name, specialisation } = req.body;

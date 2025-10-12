@@ -2,6 +2,21 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
+// Get all service bookings for a specific user
+router.get("/bookings/user/:user_id", async (req, res) => {
+  const userId = req.params.user_id;
+  try {
+    const [rows] = await db.query(
+      `SELECT * FROM Service_Booking WHERE citizen_id = ?`,
+      [userId]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Analytics/statistics endpoint for services
 router.get("/usage", async (req, res) => {
   try {

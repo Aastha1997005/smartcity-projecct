@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Smart City Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 900px;
+            width: 100%;
+            margin: 20px;
+        }
+        .auth-left {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .auth-left h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .auth-left p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .auth-right {
+            padding: 60px 40px;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-right: none;
+        }
+        .form-control {
+            border-left: none;
+        }
+        .alert {
+            border-radius: 10px;
+        }
+        .icon-large {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        .auth-form {
+            display: none;
+        }
+        .auth-form.active {
+            display: block;
+        }
+        .nav-tabs {
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 30px;
+        }
+        .nav-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+        }
+        .nav-tabs .nav-link.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            background: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="row g-0">
+            <div class="col-lg-5 auth-left">
+                <i class="fas fa-city icon-large"></i>
+                <h1>SmartCity</h1>
+                <p>Manage your smart city infrastructure with ease</p>
+                <div class="mt-4">
+                    <i class="fas fa-users me-3"></i>
+                    <i class="fas fa-building me-3"></i>
+                    <i class="fas fa-bus me-3"></i>
+                    <i class="fas fa-hospital"></i>
+                </div>
+            </div>
+            <div class="col-lg-7 auth-right">
+                <!-- Tabs -->
+                <ul class="nav nav-tabs" id="authTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signup" type="button" role="tab">
+                            <i class="fas fa-user-plus me-2"></i>Sign Up
+                        </button>
+                    </li>
+                </ul>
+
+                <div id="alertContainer"></div>
+                
+                <div class="tab-content" id="authTabsContent">
+                    <!-- Login Form -->
+                    <div class="tab-pane fade show active" id="login" role="tabpanel">
+                        <h2 class="mb-2">Welcome Back</h2>
+                        <p class="text-muted mb-4">Sign in to access your dashboard</p>
+                        
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="loginEmail" class="form-label">Email Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" class="form-control" id="loginEmail" placeholder="Enter your email" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="loginPassword" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleLoginPassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">Remember me</label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 mb-3">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                            </button>
+                            
+                            <div class="text-center">
+                                <a href="#" class="text-decoration-none">Forgot Password?</a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Sign Up Form -->
+                    <div class="tab-pane fade" id="signup" role="tabpanel">
+                        <h2 class="mb-2">Create Account</h2>
+                        <p class="text-muted mb-4">Sign up to get started</p>
+                        
+                        <form id="signupForm">
+                            <div class="mb-3">
+                                <label for="signupEmail" class="form-label">Email Address <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" class="form-control" id="signupEmail" placeholder="Enter your email" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="signupPassword" class="form-label">Password <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="signupPassword" placeholder="Create a password" required minlength="6">
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleSignupPassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">Minimum 6 characters</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="role" class="form-label">I am a <span class="text-danger">*</span></label>
+                                <select class="form-select" id="role" required>
+                                    <option value="">Select Role</option>
+                                    <option value="citizen">Citizen</option>
+                                    <option value="provider">Service Provider</option>
+                                    <option value="doctor">Doctor</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                                <label class="form-check-label" for="agreeTerms">
+                                    I agree to the Terms and Conditions
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 mb-3">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
+                            
+                            <div class="text-center text-muted">
+                                <small>Note: Admin accounts can only be created by system administrators</small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api'
+
+        // Toggle password visibility for login
+        document.getElementById('toggleLoginPassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('loginPassword');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Toggle password visibility for signup
+        document.getElementById('toggleSignupPassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('signupPassword');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Show alert function
+        function showAlert(message, type = 'danger') {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        // Login form submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing in...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Store token and user info
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userRole', data.role);
+                    localStorage.setItem('userEmail', email);
+                    
+                    showAlert('Login successful! Redirecting...', 'success');
+                    
+                    // Redirect to dashboard after 1 second
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    showAlert(data.error || 'Login failed. Please check your credentials.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Sign In';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert('Connection error. Please make sure the server is running on port 5000.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Sign In';
+            }
+        });
+
+        // Sign up form submission
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const role = document.getElementById('role').value;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match!');
+                return;
+            }
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating account...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        email, 
+                        password, 
+                        role,
+                        linked_id: null // Will be filled in profile completion
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Account created successfully! Please complete your profile.', 'success');
+                    
+                    // Store temporary data for profile completion
+                    localStorage.setItem('tempEmail', email);
+                    localStorage.setItem('tempRole', role);
+                    localStorage.setItem('needsProfileCompletion', 'true');
+                    
+                    // Redirect to profile completion after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = 'completeProfile.html';
+                    }, 2000);
+                } else {
+                    showAlert(data.error || 'Registration failed. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Create Account';
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                showAlert('Connection error. Please make sure the server is running on port 5000.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Create Account';
+            }
+        });
+
+        // Check if already logged in
+        if (localStorage.getItem('token')) {
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Profile - Smart City</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        .profile-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+        }
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .profile-header .icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 2rem;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .progress-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .role-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="icon">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <h2>Complete Your Profile</h2>
+            <p class="text-muted">Please provide your details to activate your account</p>
+            <span class="role-badge" id="roleBadge"></span>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <!-- Progress Bar -->
+        <div class="progress mb-4" style="height: 5px;">
+            <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar"></div>
+        </div>
+
+        <!-- Citizen Form -->
+        <form id="citizenForm" class="profile-form" style="display: none;">
+            <h5 class="mb-3"><i class="fas fa-user me-2"></i>Personal Information</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">First Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="first_name" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="last_name" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Gender <span class="text-danger">*</span></label>
+                    <select class="form-select" name="gender" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" name="dob" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Street Address</label>
+                    <input type="text" class="form-control" name="street" placeholder="Street, Building Number">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Area <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="area" required placeholder="e.g., Vijay Nagar">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">City <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="city" value="Indore" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Pincode <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="pincode" required placeholder="452001">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">House ID (Optional)</label>
+                    <input type="number" class="form-control" name="house_id" placeholder="If you know your house ID">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-4">
+                <i class="fas fa-check-circle me-2"></i>Complete Profile
+            </button>
+        </form>
+
+        <!-- Doctor Form -->
+        <form id="doctorForm" class="profile-form" style="display: none;">
+            <h5 class="mb-3"><i class="fas fa-user-md me-2"></i>Doctor Information</h5>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="name" required placeholder="Dr. John Doe">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Specialisation <span class="text-danger">*</span></label>
+                    <select class="form-select" name="specialisation" required>
+                        <option value="">Select Specialisation</option>
+                        <option value="Cardiologist">Cardiologist</option>
+                        <option value="Orthopedic">Orthopedic</option>
+                        <option value="Pediatrician">Pediatrician</option>
+                        <option value="Neurologist">Neurologist</option>
+                        <option value="General Physician">General Physician</option>
+                        <option value="Surgeon">Surgeon</option>
+                        <option value="Dermatologist">Dermatologist</option>
+                        <option value="ENT Specialist">ENT Specialist</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-4">
+                <i class="fas fa-check-circle me-2"></i>Complete Profile
+            </button>
+        </form>
+
+        <!-- Provider Form -->
+        <form id="providerForm" class="profile-form" style="display: none;">
+            <h5 class="mb-3"><i class="fas fa-briefcase me-2"></i>Service Provider Information</h5>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Company/Organization Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="name" required placeholder="ABC Services Ltd.">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Contact Number <span class="text-danger">*</span></label>
+                    <input type="tel" class="form-control" name="contact_no" required placeholder="0731-1234567">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Service Type <span class="text-danger">*</span></label>
+                    <select class="form-select" name="service_type" required>
+                        <option value="">Select Service Type</option>
+                        <option value="Utility">Utility Services</option>
+                        <option value="Transport">Transport Services</option>
+                        <option value="Health Care">Health Care</option>
+                        <option value="Internet">Internet/Telecom</option>
+                        <option value="Waste Management">Waste Management</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-4">
+                <i class="fas fa-check-circle me-2"></i>Complete Profile
+            </button>
+        </form>
+
+        <div class="text-center mt-3">
+            <a href="index.html" class="text-decoration-none">
+                <i class="fas fa-arrow-left me-2"></i>Back to Login
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        
+        // Check if user needs profile completion
+        const needsProfileCompletion = localStorage.getItem('needsProfileCompletion');
+        const tempEmail = localStorage.getItem('tempEmail');
+        const tempRole = localStorage.getItem('tempRole');
+        
+        if (!needsProfileCompletion || !tempEmail || !tempRole) {
+            window.location.href = 'index.html';
+        }
+
+        // Display role badge
+        document.getElementById('roleBadge').textContent = tempRole.charAt(0).toUpperCase() + tempRole.slice(1);
+        
+        // Show appropriate form based on role
+        const forms = {
+            'citizen': document.getElementById('citizenForm'),
+            'doctor': document.getElementById('doctorForm'),
+            'provider': document.getElementById('providerForm')
+        };
+        
+        const currentForm = forms[tempRole];
+        if (currentForm) {
+            currentForm.style.display = 'block';
+            updateProgress(30);
+        }
+
+        // Update progress bar
+        function updateProgress(percent) {
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
+
+        // Show alert
+        function showAlert(message, type = 'danger') {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        // Update progress on form input
+        document.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('input', () => {
+                const form = element.closest('form');
+                const inputs = form.querySelectorAll('input[required], select[required]');
+                const filled = Array.from(inputs).filter(input => input.value).length;
+                const progress = 30 + (filled / inputs.length * 70);
+                updateProgress(progress);
+            });
+        });
+
+        // Handle Citizen Form Submission
+        document.getElementById('citizenForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            
+            try {
+                // Complete citizen profile
+                data.email = localStorage.getItem('tempEmail');
+                data.role = localStorage.getItem('tempRole');
+                const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    showAlert('Profile completed successfully! Redirecting to login...', 'success');
+                    updateProgress(100);
+                    localStorage.removeItem('needsProfileCompletion');
+                    localStorage.removeItem('tempEmail');
+                    localStorage.removeItem('tempRole');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Failed to complete profile. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Connection error. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
+            }
+        });
+
+        // Handle Doctor Form Submission
+        document.getElementById('doctorForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            
+            try {
+                // Complete doctor profile
+                data.email = localStorage.getItem('tempEmail');
+                data.role = localStorage.getItem('tempRole');
+                const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    showAlert('Profile completed successfully! Redirecting to login...', 'success');
+                    updateProgress(100);
+                    localStorage.removeItem('needsProfileCompletion');
+                    localStorage.removeItem('tempEmail');
+                    localStorage.removeItem('tempRole');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Failed to complete profile. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Connection error. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
+            }
+        });
+
+        // Handle Provider Form Submission
+        document.getElementById('providerForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            
+            try {
+                // Complete provider profile
+                data.email = localStorage.getItem('tempEmail');
+                data.role = localStorage.getItem('tempRole');
+                const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    showAlert('Profile completed successfully! Redirecting to login...', 'success');
+                    updateProgress(100);
+                    localStorage.removeItem('needsProfileCompletion');
+                    localStorage.removeItem('tempEmail');
+                    localStorage.removeItem('tempRole');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Failed to complete profile. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Connection error. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
+            }
+        });
+    </script>
+</body>
+</html>

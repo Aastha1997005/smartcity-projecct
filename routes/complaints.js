@@ -1,8 +1,19 @@
-
 const express = require("express");
 const db = require("../db");
 const router = express.Router();
 const { authenticateToken, authorizeRoles } = require("../middleware/auth");
+
+// Get all complaints for a specific citizen (user)
+router.get("/user/:user_id", authenticateToken, async (req, res) => {
+  const userId = req.params.user_id;
+  try {
+    const [rows] = await db.query("SELECT * FROM Complaints WHERE citizen_id = ?", [userId]);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 // Analytics/statistics endpoint for complaints (admin and service_provider)
 router.get("/stats", authenticateToken, authorizeRoles("admin", "service_provider"), async (req, res) => {

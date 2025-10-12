@@ -1,3 +1,4 @@
+
 // ...existing code...
 const express = require("express");
 const cors = require("cors");
@@ -72,6 +73,8 @@ const infrastructureRoutes = require("./routes/infrastructure");
 console.log("Loaded infrastructureRoutes");
 const routesRoutes = require("./routes/routes");
 console.log("Loaded routesRoutes");
+const propertiesRoutes = require("./routes/properties");
+console.log("Loaded propertiesRoutes");
 
 // Register routes
 app.use("/api/auth", authRoutes); console.log("Registered /api/auth");
@@ -94,6 +97,8 @@ app.use("/api/transport", transportRoutes); console.log("Registered /api/transpo
 app.use("/api/transport-schedules", transportSchedulesRoutes); console.log("Registered /api/transport-schedules");
 app.use("/api/infrastructure", infrastructureRoutes); console.log("Registered /api/infrastructure");
 app.use("/api/routes", routesRoutes); console.log("Registered /api/routes");
+app.use("/api/properties", propertiesRoutes); console.log("Registered /api/properties");
+
 
 // Default route
 app.get("/", (req, res) => {
