@@ -51,6 +51,8 @@ const providerRoutes = require("./routes/providers");
 console.log("Loaded providerRoutes");
 const doctorRoutes = require("./routes/doctors");
 console.log("Loaded doctorRoutes");
+const profileRoutes = require("./routes/profile");
+console.log("Loaded profileRoutes");
 const zonesRoutes = require("./routes/zones");
 console.log("Loaded zonesRoutes");
 const housesRoutes = require("./routes/houses");
@@ -86,6 +88,7 @@ app.use("/api/healthcare", healthcareRoutes); console.log("Registered /api/healt
 app.use("/api/services", serviceRoutes); console.log("Registered /api/services");
 app.use("/api/providers", providerRoutes); console.log("Registered /api/providers");
 app.use("/api/doctors", doctorRoutes); console.log("Registered /api/doctors");
+app.use("/api/profile", profileRoutes); console.log("Registered /api/profile");
 app.use("/api/zones", zonesRoutes); console.log("Registered /api/zones");
 app.use("/api/houses", housesRoutes); console.log("Registered /api/houses");
 app.use("/api/pipelines", pipelinesRoutes); console.log("Registered /api/pipelines");

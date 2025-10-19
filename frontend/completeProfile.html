@@ -93,11 +93,11 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">First Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="first_name" required>
+                    <input type="text" class="form-control" name="first_name" required pattern="[A-Za-z ]{2,}" title="Please enter a valid first name (letters and spaces only, min 2 chars)">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Last Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="last_name" required>
+                    <input type="text" class="form-control" name="last_name" required pattern="[A-Za-z ]{2,}" title="Please enter a valid last name (letters and spaces only, min 2 chars)">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Gender <span class="text-danger">*</span></label>
@@ -126,11 +126,11 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Pincode <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="pincode" required placeholder="452001">
+                    <input type="text" class="form-control" name="pincode" required placeholder="452001" pattern="\d{6}" maxlength="6" inputmode="numeric" title="Pincode must be 6 digits">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">House ID (Optional)</label>
-                    <input type="number" class="form-control" name="house_id" placeholder="If you know your house ID">
+                    <input type="number" class="form-control" name="house_id" placeholder="If you know your house ID" min="0">
                 </div>
             </div>
             <button type="submit" class="btn btn-primary w-100 mt-4">
@@ -177,7 +177,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Contact Number <span class="text-danger">*</span></label>
-                    <input type="tel" class="form-control" name="contact_no" required placeholder="0731-1234567">
+                    <input type="tel" class="form-control" name="contact_no" required placeholder="9876543210" pattern="\d{10}" maxlength="10" inputmode="numeric" title="Enter 10 digit mobile number">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Service Type <span class="text-danger">*</span></label>
@@ -198,7 +198,7 @@
         </form>
 
         <div class="text-center mt-3">
-            <a href="index.html" class="text-decoration-none">
+            <a href="login.html" class="text-decoration-none">
                 <i class="fas fa-arrow-left me-2"></i>Back to Login
             </a>
         </div>
@@ -214,7 +214,7 @@
         const tempRole = localStorage.getItem('tempRole');
         
         if (!needsProfileCompletion || !tempEmail || !tempRole) {
-            window.location.href = 'index.html';
+            window.location.href = 'login.html';
         }
 
         // Display role badge
@@ -264,6 +264,25 @@
         // Handle Citizen Form Submission
         document.getElementById('citizenForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            // Client-side validation
+            const dataCheck = Object.fromEntries(new FormData(e.target));
+            const email = localStorage.getItem('tempEmail');
+            if (!isValidEmail(email)) {
+                showAlert('Invalid email format.');
+                return;
+            }
+            if (!isValidPincode(dataCheck.pincode)) {
+                showAlert('Pincode must be 6 digits.');
+                return;
+            }
+            if (!isValidName(dataCheck.first_name) || !isValidName(dataCheck.last_name)) {
+                showAlert('Please enter valid names.');
+                return;
+            }
+            if (!isValidDOB(dataCheck.dob)) {
+                showAlert('Please enter a valid date of birth.');
+                return;
+            }
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
             const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -308,6 +327,7 @@
         // Handle Doctor Form Submission
         document.getElementById('doctorForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            // Add any doctor-specific validations here if needed
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
             const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -333,7 +353,7 @@
                     localStorage.removeItem('tempEmail');
                     localStorage.removeItem('tempRole');
                     setTimeout(() => {
-                        window.location.href = 'index.html';
+                        window.location.href = 'login.html';
                     }, 2000);
                 } else {
                     const error = await response.json();
@@ -352,6 +372,11 @@
         // Handle Provider Form Submission
         document.getElementById('providerForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const dataCheck = Object.fromEntries(new FormData(e.target));
+            if (!isValidPhone(dataCheck.contact_no)) {
+                showAlert('Contact number must be a 10 digit number.');
+                return;
+            }
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
             const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -377,7 +402,7 @@
                     localStorage.removeItem('tempEmail');
                     localStorage.removeItem('tempRole');
                     setTimeout(() => {
-                        window.location.href = 'index.html';
+                        window.location.href = 'login.html';
                     }, 2000);
                 } else {
                     const error = await response.json();
@@ -392,6 +417,38 @@
                 submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
             }
         });
+
+        // ------- Validation helpers -------
+        function isValidEmail(email) {
+            if (!email) return false;
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function isValidPhone(phone) {
+            if (!phone) return false;
+            const re = /^\d{10}$/;
+            return re.test(phone);
+        }
+
+        function isValidPincode(pin) {
+            if (!pin) return false;
+            const re = /^\d{6}$/;
+            return re.test(pin);
+        }
+
+        function isValidName(name) {
+            if (!name) return false;
+            const re = /^[A-Za-z ]{2,}$/;
+            return re.test(name);
+        }
+
+        function isValidDOB(dob) {
+            if (!dob) return false;
+            const date = new Date(dob);
+            const now = new Date();
+            return date instanceof Date && !isNaN(date) && date < now;
+        }
     </script>
 </body>
 </html>

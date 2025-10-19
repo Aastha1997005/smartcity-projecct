@@ -190,6 +190,9 @@ router.post("/", async (req, res) => {
     dob,
     house_id
   } = req.body;
+
+  // Set house_id to null if not provided or empty
+  const houseIdValue = house_id === '' || house_id === undefined ? null : house_id;
   try {
     await db.query(
       `INSERT INTO Citizen (first_name, last_name, street, area, city, pincode, gender, dob, house_id)

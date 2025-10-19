@@ -182,10 +182,10 @@
         
         <ul class="nav flex-column mt-3">
             <li class="nav-item"><a class="nav-link active" href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="my-complaints.html"><i class="fas fa-file-alt"></i> My Complaints</a></li>
-            <li class="nav-item"><a class="nav-link" href="submit-complaint.html"><i class="fas fa-plus-circle"></i> Submit Complaint</a></li>
-            <li class="nav-item"><a class="nav-link" href="my-vehicles.html"><i class="fas fa-car"></i> My Vehicles</a></li>
-            <li class="nav-item"><a class="nav-link" href="my-properties.html"><i class="fas fa-home"></i> My Properties</a></li>
+            <li class="nav-item"><a class="nav-link" href="my_complaints.html"><i class="fas fa-file-alt"></i> My Complaints</a></li>
+            <li class="nav-item"><a class="nav-link" href="submit_complaint.html"><i class="fas fa-plus-circle"></i> Submit Complaint</a></li>
+            <li class="nav-item"><a class="nav-link" href="my_vehicles.html"><i class="fas fa-car"></i> My Vehicles</a></li>
+            <li class="nav-item"><a class="nav-link" href="my_properties.html"><i class="fas fa-home"></i> My Properties</a></li>
             <li class="nav-item"><a class="nav-link" href="services.html"><i class="fas fa-concierge-bell"></i> Services</a></li>
             <li class="nav-item"><a class="nav-link" href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
             <li class="nav-item"><a class="nav-link" href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
@@ -313,15 +313,15 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title mb-4"><i class="fas fa-bolt text-warning me-2"></i>Quick Actions</h5>
-                        <a href="submit-complaint.html" class="quick-action-btn">
+                        <a href="submit_complaint.html" class="quick-action-btn">
                             <i class="fas fa-plus-circle text-primary fa-lg me-3"></i>
                             <span>Submit New Complaint</span>
                         </a>
-                        <a href="my-complaints.html" class="quick-action-btn">
+                        <a href="my_complaint.html" class="quick-action-btn">
                             <i class="fas fa-file-alt text-success fa-lg me-3"></i>
                             <span>View My Complaints</span>
                         </a>
-                        <a href="my-vehicles.html" class="quick-action-btn">
+                        <a href="my_vehicles.html" class="quick-action-btn">
                             <i class="fas fa-car text-info fa-lg me-3"></i>
                             <span>Manage My Vehicles</span>
                         </a>
@@ -390,7 +390,7 @@
         
         // Check authentication
         if (!token) {
-            window.location.href = 'index.html';
+            window.location.href = 'login.html';
         }
         
         // Get user info
@@ -404,7 +404,7 @@
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.clear();
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             }
         }
         
