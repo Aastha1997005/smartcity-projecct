@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services - Smart City</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --sidebar-width: 260px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            overflow-y: auto;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .nav-link.active {
+            background-color: white;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .welcome-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .page-title {
+            color: var(--secondary-color);
+            font-weight: 700;
+        }
+
+        .service-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .service-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .service-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                margin-left: calc(-1 * var(--sidebar-width));
+            }
+            .sidebar.show {
+                margin-left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-city me-2"></i>SmartCity</h3>
+            <small id="userRole">CITIZEN</small>
+        </div>
+        
+        <ul class="nav flex-column mt-3">
+            <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="my_complaints.html"><i class="fas fa-file-alt"></i> My Complaints</a></li>
+            <li class="nav-item"><a class="nav-link" href="submit_complaint.html"><i class="fas fa-plus-circle"></i> Submit Complaint</a></li>
+            <li class="nav-item"><a class="nav-link" href="my_vehicles.html"><i class="fas fa-car"></i> My Vehicles</a></li>
+            <li class="nav-item"><a class="nav-link" href="my-properties.html"><i class="fas fa-home"></i> My Properties</a></li>
+            <li class="nav-item"><a class="nav-link active" href="services.html"><i class="fas fa-concierge-bell"></i> Services</a></li>
+            <li class="nav-item"><a class="nav-link" href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+            <li class="nav-item"><a class="nav-link" href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="welcome-banner">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h1 class="mb-2">Explore City Services</h1>
+                    <p class="mb-3 opacity-75">Browse and book services provided through the city infrastructure and certified partners.</p>
+                </div>
+                <button class="btn btn-light mt-3 mt-md-0" onclick="toggleSidebar()">
+                    <i class="fas fa-bars me-2"></i> Menu
+                </button>
+            </div>
+        </div>
+
+        <h2 class="page-title mb-4"><i class="fas fa-concierge-bell me-2"></i>Available Services</h2>
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="servicesGrid">
+            
+            <div class="col">
+                <div class="card service-card p-4 text-center">
+                    <i class="fas fa-notes-medical service-icon text-danger"></i>
+                    <h5 class="card-title">Healthcare & Wellness</h5>
+                    <p class="card-text small text-muted">Book appointments with city doctors and access health records.</p>
+                    <a href="#" class="btn btn-outline-danger mt-2">Book Appointment</a>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="card service-card p-4 text-center">
+                    <i class="fas fa-bus service-icon text-success"></i>
+                    <h5 class="card-title">Public Transport</h5>
+                    <p class="card-text small text-muted">View live bus routes, schedules, and estimated arrival times.</p>
+                    <a href="#" class="btn btn-outline-success mt-2">View Schedules</a>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="card service-card p-4 text-center">
+                    <i class="fas fa-lightbulb service-icon text-warning"></i>
+                    <h5 class="card-title">Utility Management</h5>
+                    <p class="card-text small text-muted">Report power outages, check water pipeline status, and pay bills.</p>
+                    <a href="#" class="btn btn-outline-warning mt-2">Report Issue</a>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="card service-card p-4 text-center">
+                    <i class="fas fa-trash-alt service-icon text-info"></i>
+                    <h5 class="card-title">Waste Collection</h5>
+                    <p class="card-text small text-muted">Request special waste pickups and check smart bin statuses nearby.</p>
+                    <a href="#" class="btn btn-outline-info mt-2">Request Pickup</a>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="card service-card p-4 text-center">
+                    <i class="fas fa-map-marker-alt service-icon text-primary"></i>
+                    <h5 class="card-title">Infrastructure Reporting</h5>
+                    <p class="card-text small text-muted">Report damage to public lights, roads, or city property.</p>
+                    <a href="submit-complaint.html" class="btn btn-outline-primary mt-2">Report Damage</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- Shared JS functions ---
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.clear();
+                window.location.href = 'index.html'; // Adjust to your login page
+            }
+        }
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+        // --- End Shared JS functions ---
+
+        // The following JS would load dynamic services data from your SERVICES entity
+        /*
+        async function loadServices() {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API_BASE_URL}/services/catalog`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const services = await res.json();
+                
+                const grid = document.getElementById('servicesGrid');
+                grid.innerHTML = ''; 
+
+                services.forEach(s => {
+                    // Logic to map s.category to an icon and color
+                    const iconMap = {
+                        'Healthcare': { icon: 'fa-notes-medical', color: 'danger' },
+                        'Transport': { icon: 'fa-bus', color: 'success' },
+                        // ... more categories
+                    };
+                    const map = iconMap[s.category] || { icon: 'fa-concierge-bell', color: 'secondary' };
+
+                    const card = `
+                        <div class="col">
+                            <div class="card service-card p-4 text-center">
+                                <i class="fas ${map.icon} service-icon text-${map.color}"></i>
+                                <h5 class="card-title">${s.service_name}</h5>
+                                <p class="card-text small text-muted">${s.description}</p>
+                                <a href="book-service.html?id=${s.id}" class="btn btn-outline-${map.color} mt-2">Book Now</a>
+                            </div>
+                        </div>
+                    `;
+                    grid.innerHTML += card;
+                });
+            } catch (error) {
+                console.error('Failed to load services:', error);
+            }
+        }
+
+        // document.addEventListener('DOMContentLoaded', loadServices);
+        */
+    </script>
+</body>
+</html>
