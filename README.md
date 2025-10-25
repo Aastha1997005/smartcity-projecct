@@ -306,4 +306,3 @@ For support and questions:
 ---
 
 **Version**: 1.0.0  
-**Last Updated**: October 2025
