@@ -68,26 +68,33 @@ REFERENCES Citizen(citizen_id)
 ON DELETE CASCADE;
 
 
+
 CREATE TABLE Service_Provider (
   provider_id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   contact_no VARCHAR(20),
   service_type VARCHAR(100)
 );
-
 CREATE TABLE Doctors (
   doctor_id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
-  specialisation VARCHAR(100)
+  specialization VARCHAR(100)
 );
+
 
 CREATE TABLE Route (
     route_id INT AUTO_INCREMENT PRIMARY KEY,
     start_point VARCHAR(255) NOT NULL,
     end_point VARCHAR(255) NOT NULL,
-    distance DECIMAL(10, 2),
-    mode VARCHAR(100)
+    distance_km DECIMAL(10, 2)
 );
+
+ALTER TABLE Route
+DROP COLUMN mode;
+
+ALTER TABLE Route
+RENAME COLUMN distance TO distance_km;
+
 
 CREATE TABLE Service (
     service_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -96,6 +103,11 @@ CREATE TABLE Service (
     availability_status VARCHAR(50),
     operating_hours VARCHAR(100)
 );
+
+ALTER TABLE Service ADD COLUMN provider_id INT;
+ALTER TABLE Service
+ADD FOREIGN KEY (provider_id) REFERENCES Service_provider(provider_id);
+
 
 CREATE TABLE Service_Phone_Number (
     service_id INT,
@@ -134,12 +146,14 @@ ON DELETE CASCADE;
 
 CREATE TABLE Utility (
     utility_id INT PRIMARY KEY, -- FK to Service
-    price_per_unit DECIMAL(10, 4),
     unit VARCHAR(50),
     issue_date DATE,
-    consumption_amount DECIMAL(10, 2),
     FOREIGN KEY (utility_id) REFERENCES Service(service_id)
 );
+ALTER TABLE Utility
+DROP COLUMN   price_per_unit ;
+ALTER TABLE Utility
+DROP COLUMN consumption_amount;
 
 SHOW CREATE TABLE Utility;
 ALTER TABLE Utility
@@ -172,10 +186,12 @@ ON DELETE CASCADE;
 
 CREATE TABLE Transport (
     transport_id INT PRIMARY KEY, -- FK to Service
-    route_no VARCHAR(50),
     mode VARCHAR(100),
     FOREIGN KEY (transport_id) REFERENCES Service(service_id)
 );
+
+ALTER TABLE Transport
+DROP COLUMN route_no;
 
 ALTER TABLE Transport
 DROP FOREIGN KEY transport_ibfk_1;
@@ -183,6 +199,11 @@ DROP FOREIGN KEY transport_ibfk_1;
 ALTER TABLE Transport
 ADD CONSTRAINT fk_transport_service
 FOREIGN KEY (transport_id)
+REFERENCES Service(service_id)
+ON DELETE CASCADE;
+
+ALTER TABLE Transport
+ADD FOREIGN KEY (route_id)
 REFERENCES Service(service_id)
 ON DELETE CASCADE;
 
@@ -400,12 +421,45 @@ CREATE TABLE Complaints (
 
 CREATE TABLE Users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('citizen', 'admin', 'transport', 'utility', 'healthcare', 'internet') NOT NULL,
+    role ENUM('citizen', 'admin', 'provider', 'doctor') NOT NULL,
     linked_id INT, -- references actual entity (citizen_id, provider_id, doctor_id)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+UPDATE Users SET role='admin' WHERE role='admin';
+UPDATE Users SET role='healthcare' WHERE role='doctor';
+UPDATE Users SET role='transport' WHERE role='provider'; -- if you want to remap
+
+ALTER TABLE Users
+MODIFY COLUMN role ENUM(
+    'admin', 
+    'citizen', 
+    'transport', 
+    'utility',
+    'healthcare',
+    'internet'
+) NOT NULL;
+
+UPDATE Users u
+JOIN Service_Provider p ON u.linked_id = p.provider_id
+SET u.role = CASE
+    -- transport-related providers
+    WHEN LOWER(p.service_type) LIKE '%transport%' OR LOWER(p.service_type) LIKE '%bus%' OR LOWER(p.service_type) LIKE '%rail%' OR LOWER(p.service_type) LIKE '%metro%' OR LOWER(p.service_type) LIKE '%tram%' OR LOWER(p.service_type) LIKE '%taxi%' OR LOWER(p.service_type) LIKE '%cab%' OR LOWER(p.service_type) LIKE '%parking%' THEN 'transport'
+    -- utility-related providers (water, sanitation, electricity, lighting, sewage, waste)
+    WHEN LOWER(p.service_type) LIKE '%water%' OR LOWER(p.service_type) LIKE '%utility%' OR LOWER(p.service_type) LIKE '%sanitation%' OR LOWER(p.service_type) LIKE '%sewage%' OR LOWER(p.service_type) LIKE '%sewer%' OR LOWER(p.service_type) LIKE '%waste%' OR LOWER(p.service_type) LIKE '%garbage%' OR LOWER(p.service_type) LIKE '%electric%' OR LOWER(p.service_type) LIKE '%electricity%' OR LOWER(p.service_type) LIKE '%light%' OR LOWER(p.service_type) LIKE '%lighting%' OR LOWER(p.service_type) LIKE '%streetlight%' OR LOWER(p.service_type) LIKE '%street light%' THEN 'utility'
+    -- healthcare-related
+    WHEN LOWER(p.service_type) LIKE '%health%' OR LOWER(p.service_type) LIKE '%hospital%' OR LOWER(p.service_type) LIKE '%health care%' OR LOWER(p.service_type) LIKE '%clinic%' OR LOWER(p.service_type) LIKE '%ambulance%' OR LOWER(p.service_type) LIKE '%doctor%' THEN 'healthcare'
+    -- internet / telecom
+    WHEN LOWER(p.service_type) LIKE '%internet%' OR LOWER(p.service_type) LIKE '%telecom%' OR LOWER(p.service_type) LIKE '%wifi%' OR LOWER(p.service_type) LIKE '%broadband%' OR LOWER(p.service_type) LIKE '%isp%' THEN 'internet'
+    ELSE u.role END
+WHERE u.role IN ('provider') OR u.role IS NULL;
+
+
+
+ALTER TABLE Users 
+RENAME COLUMN username to email;
 
 CREATE TABLE owns (
     citizen_ID INT NOT NULL,
@@ -691,14 +745,16 @@ INSERT INTO House (type, area, zone_id) VALUES
 ('Villa', '3000 sq ft', 2),       -- Rau
 ('Row House', '1500 sq ft', 1);   -- Vijay Nagar
 
+INSERT INTO Citizen (first_name, last_name, gender, dob, street, area, city, pincode, house_id) VALUES
+('Priya', 'Sharma', 'Female', '1995-08-15', '123 AB Road', 'Vijay Nagar', 'Indore', '452010', 1),
+('Amit', 'Singh', 'Male', '1992-04-22', '456 MG Road', 'Old Palasia', 'Indore', '452001', 2),
+('Sonia', 'Verma', 'Female', '1988-11-01', '789 Ring Road', 'Annapurna', 'Indore', '452009', 3),
+('Rajesh', 'Kumar', 'Male', '1985-02-10', '101 Industrial Area', 'Rau', 'Indore', '453331', 4);
 
-INSERT INTO Citizen 
-(first_name, last_name, gender, dob, street, area, city, pincode)
-VALUES
-('Priya', 'Sharma', 'Female', '1995-08-15', '123 AB Road', 'Vijay Nagar', 'Indore', '452010'),
-('Amit', 'Singh', 'Male', '1992-04-22', '456 MG Road', 'Old Palasia', 'Indore', '452001'),
-('Sonia', 'Verma', 'Female', '1988-11-01', '789 Ring Road', 'Annapurna', 'Indore', '452009'),
-('Rajesh', 'Kumar', 'Male', '1985-02-10', '101 Industrial Area', 'Rau', 'Indore', '453331');
+INSERT INTO Citizen (first_name, last_name, gender, dob, street, area, city, pincode, house_id) VALUES
+('Neha', 'Patel', 'Female', '1993-06-18', '202 Silver Street', 'Vijay Nagar', 'Indore', '452011', 5);
+
+
 
 INSERT INTO Citizen_Phone_Number (citizen_id, phone_number) VALUES
 (1, '9876543210'),
@@ -707,8 +763,258 @@ INSERT INTO Citizen_Phone_Number (citizen_id, phone_number) VALUES
 (3, '7654321098'),
 (4, '6543210987');
 
-DELETE FROM Citizen;
+INSERT INTO lives_in (house_id, citizen_id) VALUES
+(1,1),
+(2,2),
+(3,3),
+(4,4);
+
+INSERT INTO Service_Provider (name, service_type, contact_no) VALUES
+('Indore Municipal Corporation', 'Utility', '0731-2535566'),
+('City Bus Services', 'Transport', '0731-2498877'),
+('Apex Hospitals', 'Health Care', '0731-4021111'),
+('Airtel', 'Internet', '18001034444');
+
+INSERT INTO Service (service_name, cost, availability_status, operating_hours, provider_id) VALUES
+('Waste Management', 150.00, 'Active', '06:00 - 12:00', 1),
+('Water Supply', 200.00, 'Active', '24/7', 1),
+('City Bus Route 5', 20.00, 'Active', '07:00 - 22:00', 2),
+('Emergency Care', 500.00, 'Active', '24/7', 3),
+('Fiber Internet', 799.00, 'Active', '24/7', 4);
 
 
 
+INSERT INTO Utility (utility_id, unit, issue_date) VALUES 
+(1,'monthly', '2025-11-01'),
+(2, 'KL', '2025-11-05'),
+(3,  'monthly', '2025-11-10'),
+(4,  'monthly', '2025-11-12'),
+(5,  'monthly', '2025-11-15');
+
+
+INSERT INTO Water (water_id, source, cost_per_litre, distribution_area, quality_level, supply_hours) VALUES 
+(2, 'Narmada River', 8.50, 'Vijay Nagar', 'Potable', '06:00-09:00, 18:00-21:00'),
+(5, 'Kshipra River', 10.00, 'Old Palasia', 'Potable', '07:00-10:00, 17:00-20:00');
+
+INSERT INTO Fuel (fuel_id, type, price_per_unit, provider_id, cost_per_month) VALUES 
+(1, 'Diesel', 95.50, 'PetroCorp', 1500.00),
+(5, 'CNG', 70.00, 'GreenFuel', 1200.00);
+
+INSERT INTO Electricity (electricity_id, provider_id, voltage_level, distribution_area, source_type, traffic_rate) VALUES 
+(1, 101, '230V', 'Vijay Nagar', 'Solar', 12.50),
+(4, 102, '110V', 'Old Palasia', 'Hydro', 10.75);
+
+INSERT INTO Internet (internet_id, provider_name, bandwidth, coverage_area, cost_per_month, service_type) VALUES
+(3, 'CityNet', '200 Mbps', 'City-wide', 1200.00, 'Fiber'),
+(4, 'HomeConnect', '100 Mbps', 'Residential', 800.00, 'DSL');
+
+INSERT INTO Vehicle (vehicle_no, type, model, owner_citizen_id, consumes_fuel_id) VALUES
+('MP09AB1234', 'Car', 'Honda City', 1, 1),
+('MP09CD5678', 'Bike', 'Yamaha FZ', 2, 5),
+('MP09GH3456', 'Car', 'Hyundai i20', 4, 5),
+('MP09IJ7890', 'Scooter', 'Honda Activa', 3, 5);
+
+INSERT INTO Route (start_point, end_point,distance_km) VALUES ('Rajwada', 'Vijay Nagar Square', 8.5);
+INSERT INTO Transport (transport_id, mode) VALUES (3, 'Bus');
+INSERT INTO Transport_Schedule (transport_id, route_id, days_of_operation, frequency, start_time, end_time, status) VALUES (3, 2, 'Mon-Sun', 'Every 20 mins', '07:00', '22:00', 'On-time');
+
+INSERT INTO Healthcare (hospital_id, name, capacity, type) VALUES (4, 'Apex Hospital Vijay Nagar', 150, 'Private');
+INSERT INTO Doctors (name, specialization) VALUES ('Dr. Gupta', 'Cardiologist'), ('Dr. Patel', 'Orthopedic');
+INSERT INTO works_in (doctor_id,hospital_id) values 
+(1,4),
+(2,4);
+
+INSERT INTO Infrastructure (zone_id) VALUES
+(1), -- Smart Bin in Vijay Nagar
+(3),-- Public Light in Old Palasia
+(1);-- Traffic Sensor in Vijay Nagar
+
+
+INSERT INTO Users (email, password_hash, role, linked_id)
+VALUES
+('priya.sharma@example.com', SHA2('password123', 256), 'citizen', 1),
+('amit.singh@example.com' , SHA2('password123', 256), 'citizen', 2),
+('sonia.verma@example.com', SHA2('password123', 256), 'citizen', 3),
+('rajesh.kumar@example.com', SHA2('password123', 256), 'citizen', 4);
+
+UPDATE Users SET email = 'amit.singh@example.com' WHERE linked_id = 2;
+UPDATE Users SET email = 'sonia.verma@example.com' WHERE linked_id = 3;
+UPDATE Users SET email = 'rajesh.kumar@example.com' WHERE linked_id = 4;
+
+DELETE FROM Users
+WHERE role='citizen';
+
+
+CREATE TABLE Notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+);
+
+CREATE TABLE Property (
+    property_id INT AUTO_INCREMENT PRIMARY KEY,
+    owner_citizen_id INT NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    type VARCHAR(50),
+    area_sqft INT,
+    registration_no VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_citizen_id) REFERENCES Citizen(citizen_id)
+);
+CREATE TABLE Service_Booking (
+    booking_id INT AUTO_INCREMENT PRIMARY KEY,
+    citizen_id INT NOT NULL,
+    service_id INT NOT NULL,
+    booking_date DATE NOT NULL,
+    status VARCHAR(50) DEFAULT 'upcoming',
+    details TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (citizen_id) REFERENCES Citizen(citizen_id),
+    FOREIGN KEY (service_id) REFERENCES Service(service_id)
+);
+USE Smartcity_management_system;
+CREATE TABLE IF NOT EXISTS Service_Booking (
+  booking_id INT AUTO_INCREMENT PRIMARY KEY,
+  citizen_id INT NOT NULL,
+  service_id INT NOT NULL,
+  booking_start DATETIME NOT NULL,
+  booking_end DATETIME NULL,
+  status ENUM('upcoming','scheduled','in_progress','completed','cancelled','no_show') DEFAULT 'upcoming',
+  details JSON NULL,
+  priority ENUM('low','medium','high') DEFAULT 'medium',
+  assigned_to INT NULL,
+  created_by INT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL,
+  provider_id INT NULL, -- denormalized cache from Service -> Service_Provider (if available)
+  service_name_cache VARCHAR(255) NULL, -- denormalized service name for quick frontend display
+  service_category_cache VARCHAR(100) NULL, -- optional category/tag for frontend grouping
+  FOREIGN KEY (citizen_id) REFERENCES Citizen(citizen_id) ON DELETE CASCADE,
+  FOREIGN KEY (service_id) REFERENCES Service(service_id) ON DELETE CASCADE,
+  FOREIGN KEY (assigned_to) REFERENCES Users(user_id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES Users(user_id) ON DELETE SET NULL
+);
+
+
+USE Smartcity_management_system;
+
+-- If Sensors exists but is wrong, drop and recreate (or ALTER accordingly)
+DELETE FROM Sensors;
+
+CREATE TABLE Sensors (
+  sensor_id INT AUTO_INCREMENT PRIMARY KEY,
+  asset_id INT NOT NULL,                        -- references infrastructure.asset_id
+  sensor_type VARCHAR(50) NOT NULL,             -- e.g. 'light_status','energy','temp'
+  status VARCHAR(50) DEFAULT 'active',
+  location VARCHAR(255) NULL,                   -- optional human-readable location
+  provider_id INT NULL,
+  data_frequency VARCHAR(100) NULL,
+  last_calibrated DATE NULL,
+  installation_date DATE NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (asset_id) REFERENCES Infrastructure(asset_id) ON DELETE CASCADE
+);
+
+ALTER TABLE Sensors
+RENAME COLUMN asset_id to sensor_id;
+
+CREATE TABLE Sensor_Data (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  sensor_id INT NOT NULL,
+  metric VARCHAR(100) NOT NULL,   -- e.g. 'light_status','power','lux'
+  value DOUBLE NULL,
+  unit VARCHAR(50) NULL,
+  recorded_at DATETIME NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX (sensor_id),
+  INDEX (recorded_at),
+  FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Alerts (
+  alert_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  asset_id INT NULL,
+  alert_type VARCHAR(100),
+  severity ENUM('info','warning','critical') DEFAULT 'warning',
+  details JSON NULL,
+  acknowledged BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  resolved_at TIMESTAMP NULL,
+  FOREIGN KEY (asset_id) REFERENCES Infrastructure(asset_id) ON DELETE cascade
+);
+DROP TABLE Alerts;
+
+
+CREATE TABLE Maintenance_Task (
+    task_id INT AUTO_INCREMENT PRIMARY KEY,
+    asset_id INT,
+    task_type VARCHAR(100),
+    description TEXT,
+    scheduled_date DATE,
+    completion_date DATE,
+    status ENUM('Scheduled', 'In Progress', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
+    assigned_to INT, -- User ID of maintenance personnel
+    FOREIGN KEY (asset_id) REFERENCES Infrastructure(asset_id),
+    FOREIGN KEY (assigned_to) REFERENCES Users(user_id)
+);
+ALTER TABLE Maintenance_Task
+  ADD COLUMN priority ENUM('low','medium','high') DEFAULT 'medium',
+  ADD COLUMN created_by INT NULL,
+  ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  ADD COLUMN updated_at TIMESTAMP NULL,
+  ADD INDEX (asset_id),
+  ADD INDEX (status);
+-- ensure assigned_to FK exists; you already have it
+
+
+
+CREATE TABLE IF NOT EXISTS Service_Category (
+  category_id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Service_To_Provider (
+  service_id INT NOT NULL,
+  provider_id INT NOT NULL,
+  PRIMARY KEY (service_id, provider_id),
+  FOREIGN KEY (service_id) REFERENCES Service(service_id) ON DELETE CASCADE,
+  FOREIGN KEY (provider_id) REFERENCES Service_Provider(provider_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Service_Category_Map (
+  service_id INT NOT NULL,
+  category_id INT NOT NULL,
+  PRIMARY KEY (service_id, category_id),
+  FOREIGN KEY (service_id) REFERENCES Service(service_id) ON DELETE CASCADE,
+  FOREIGN KEY (category_id) REFERENCES Service_Category(category_id) ON DELETE CASCADE
+);
+
+-- Insert common categories if they don't exist
+INSERT IGNORE INTO Service_Category (name, description) VALUES
+  ('water','Water supply and distribution services'),
+  ('electricity','Power generation and distribution services'),
+  ('internet','Internet and telecom services'),
+  ('transport','Public transport and related services'),
+  ('waste','Waste collection and management services'),
+  ('healthcare','Healthcare and medical services');
+  
+  INSERT IGNORE INTO Service_To_Provider (service_id, provider_id) VALUES
+  (1,1),
+  (2,1),
+  (3,2),
+  (4,3),
+  (5,4);
+  
+  INSERT IGNORE INTO Service_Category_Map (service_id, category_id) VALUES
+  (1,1),
+  (2,1),
+  (3,4),
+  (4,6),
+  (5,3);
+  
+  
 

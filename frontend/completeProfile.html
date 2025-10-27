@@ -217,14 +217,16 @@
             window.location.href = 'login.html';
         }
 
-        // Display role badge
-        document.getElementById('roleBadge').textContent = tempRole.charAt(0).toUpperCase() + tempRole.slice(1);
+        // Display role badge (human-friendly)
+        document.getElementById('roleBadge').textContent = tempRole.charAt(0).toUpperCase() + tempRole.slice(1).replace('_',' ');
         
         // Show appropriate form based on role
         const forms = {
             'citizen': document.getElementById('citizenForm'),
-            'doctor': document.getElementById('doctorForm'),
-            'provider': document.getElementById('providerForm')
+            'healthcare': document.getElementById('doctorForm'),
+            'transport': document.getElementById('providerForm'),
+            'utility': document.getElementById('providerForm'),
+            'internet': document.getElementById('providerForm')
         };
         
         const currentForm = forms[tempRole];

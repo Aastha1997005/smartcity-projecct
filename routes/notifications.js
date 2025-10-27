@@ -6,7 +6,7 @@ const { authenticateToken, authorizeRoles } = require("../middleware/auth");
 const db = require("../db");
 
 // Only service providers, doctors, and admin can create notifications
-router.post("/send", authenticateToken, authorizeRoles("admin", "provider", "doctor"), async (req, res) => {
+router.post("/send", authenticateToken, authorizeRoles("admin", "transport", "waste_management", "public_lights", "water", "electricity", "internet"), async (req, res) => {
   const { message, user_ids } = req.body;
   if (!message || !Array.isArray(user_ids) || user_ids.length === 0) {
     return res.status(400).json({ error: "Message and user_ids array required" });

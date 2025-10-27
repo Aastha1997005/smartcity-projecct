@@ -2,6 +2,8 @@ const express = require("express");
 const db = require("../db");
 const router = express.Router();
 const { authenticateToken, authorizeRoles } = require("../middleware/auth");
+// Departments that should be able to access complaint stats/search/list
+const departmentRolesForComplaints = ["transport", "utility", "healthcare", "internet"];
 
 // Get all complaints for the currently logged-in citizen
 router.get("/my", authenticateToken, async (req, res) => {
@@ -69,7 +71,7 @@ router.get("/user/:user_id", authenticateToken, async (req, res) => {
 
 
 // Analytics/statistics endpoint for complaints (admin and service_provider)
-router.get("/stats", authenticateToken, authorizeRoles("admin", "service_provider"), async (req, res) => {
+router.get("/stats", authenticateToken, authorizeRoles("admin", ...departmentRolesForComplaints), async (req, res) => {
   try {
     const [[{ total }]] = await db.query("SELECT COUNT(*) as total FROM Complaints");
     const [statusCounts] = await db.query("SELECT status, COUNT(*) as count FROM Complaints GROUP BY status");
@@ -79,7 +81,7 @@ router.get("/stats", authenticateToken, authorizeRoles("admin", "service_provide
   }
 });
 // Search complaints by text or ID (admin and service_provider)
-router.get("/search", authenticateToken, authorizeRoles("admin", "service_provider"), async (req, res) => {
+router.get("/search", authenticateToken, authorizeRoles("admin", ...departmentRolesForComplaints), async (req, res) => {
   const { q } = req.query;
   if (!q) return res.status(400).json({ error: "Missing search query" });
   const sql = `SELECT * FROM Complaints WHERE complaint_text LIKE ? OR complaint_id = ?`;
@@ -94,7 +96,7 @@ router.get("/search", authenticateToken, authorizeRoles("admin", "service_provid
 
 // Get all complaints (admin and service_provider)
 // Pagination, filtering, and sorting for complaints
-router.get("/", authenticateToken, authorizeRoles("admin", "service_provider"), async (req, res) => {
+router.get("/", authenticateToken, authorizeRoles("admin", ...departmentRolesForComplaints), async (req, res) => {
   const { citizen_id, status, page = 1, limit = 10, sort_by = "complaint_date", order = "desc" } = req.query;
   let sql = "SELECT * FROM Complaints";
   const params = [];

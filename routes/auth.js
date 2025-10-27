@@ -11,7 +11,7 @@ router.post("/register", async (req, res) => {
     return res.status(403).json({ error: 'Cannot register as admin.' });
   }
   const isEmail = v => typeof v === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  const allowedRoles = ['citizen','provider','doctor'];
+  const allowedRoles = ['citizen','transport','waste_management','public_lights','water','electricity','internet'];
   if (!isEmail(email)) return res.status(400).json({ error: 'Invalid email' });
   if (!password || password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
   if (!role || !allowedRoles.includes(role)) return res.status(400).json({ error: 'Invalid role' });
@@ -57,7 +57,7 @@ router.post("/complete-profile", async (req, res) => {
     const user = users[0];
     let linked_id = null;
 
-    if (role === 'citizen') {
+  if (role === 'citizen') {
       const { first_name, last_name, street, area, city, pincode, gender, dob, house_id } = req.body;
       if (!isName(first_name) || !isName(last_name)) return res.status(400).json({ error: 'Invalid name' });
       if (!area || !city) return res.status(400).json({ error: 'Area and city are required' });
@@ -71,19 +71,10 @@ router.post("/complete-profile", async (req, res) => {
       );
       linked_id = result.insertId;
 
-    } else if (role === 'doctor') {
-      const { name, specialisation } = req.body;
-      if (!isName(name) || !specialisation) return res.status(400).json({ error: 'Invalid doctor data' });
-      const [result] = await db.query(`INSERT INTO Doctors (name, specialisation) VALUES (?, ?)`, [name, specialisation]);
-      linked_id = result.insertId;
-
-    } else if (role === 'provider') {
-      const { name, contact_no, service_type } = req.body;
-      if (!isName(name) || !isPhone(String(contact_no)) || !service_type) return res.status(400).json({ error: 'Invalid provider data' });
-      const [result] = await db.query(`INSERT INTO Service_Provider (name, contact_no, service_type) VALUES (?, ?, ?)`, [name, contact_no, service_type]);
-      linked_id = result.insertId;
     } else {
-      return res.status(400).json({ error: 'Unsupported role' });
+      // For department roles (transport, water, etc.) we currently don't create a separate profile table.
+      // Only citizens have detailed profile creation. Departments users will be created as Users with linked_id NULL.
+      return res.status(400).json({ error: 'Unsupported role for profile completion' });
     }
 
     // Update user with correct linked_id (profile id)

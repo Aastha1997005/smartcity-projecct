@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
-// Get all service providers
+// Get all service providers (department providers)
 router.get("/", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM Service_Provider");

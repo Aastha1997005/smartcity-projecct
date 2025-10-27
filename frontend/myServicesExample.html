@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>My Services Example</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px }
+    .category { margin-bottom: 24px }
+    .booking { padding: 8px; border: 1px solid #ddd; margin: 6px 0 }
+    .badge { padding: 4px 8px; background: #eee; border-radius: 4px }
+  </style>
+</head>
+<body>
+  <h1>My Services (example)</h1>
+  <label>Citizen ID: <input id="citizenId" value="1"></label>
+  <button id="load">Load My Services</button>
+  <div id="content"></div>
+
+  <script>
+    async function load() {
+      const id = document.getElementById('citizenId').value;
+      const res = await fetch(`/api/services/bookings/user/${id}/grouped`);
+      if (!res.ok) { alert('Failed to load'); return }
+      const data = await res.json();
+      const content = document.getElementById('content');
+      content.innerHTML = '';
+      for (const cat of Object.keys(data)) {
+        const section = document.createElement('div');
+        section.className = 'category';
+        const h = document.createElement('h3');
+        h.textContent = cat;
+        section.appendChild(h);
+        data[cat].forEach(b => {
+          const div = document.createElement('div');
+          div.className = 'booking';
+          div.innerHTML = `<strong>${b.service_name}</strong> <span class="badge">${b.status}</span><br>${new Date(b.booking_start).toLocaleString()}${b.booking_end ? ' - '+new Date(b.booking_end).toLocaleString():''}`;
+          section.appendChild(div);
+        });
+        content.appendChild(section);
+      }
+    }
+    document.getElementById('load').addEventListener('click', load);
+  </script>
+</body>
+</html>

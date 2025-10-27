@@ -32,6 +32,18 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(cors());
 app.use(bodyParser.json());
 
+// App-level debug logger to trace incoming requests
+app.use((req, res, next) => {
+  console.log('[app] incoming', req.method, req.path);
+  next();
+});
+
+// Temporary diagnostic endpoint to confirm the process receives POSTs
+app.post('/sensors-local-test', (req, res) => {
+  console.log('[local test] received POST /sensors-local-test');
+  res.json({ ok: true, path: '/sensors-local-test' });
+});
+
 // Import routes
 const authRoutes = require("./routes/auth");
 console.log("Loaded authRoutes");
@@ -77,6 +89,10 @@ const routesRoutes = require("./routes/routes");
 console.log("Loaded routesRoutes");
 const propertiesRoutes = require("./routes/properties");
 console.log("Loaded propertiesRoutes");
+const departmentsRoutes = require("./routes/departments");
+console.log("Loaded departmentsRoutes");
+const maintenanceRoutes = require("./routes/maintenance");
+console.log("Loaded maintenanceRoutes");
 
 // Register routes
 app.use("/api/auth", authRoutes); console.log("Registered /api/auth");
@@ -101,6 +117,9 @@ app.use("/api/transport-schedules", transportSchedulesRoutes); console.log("Regi
 app.use("/api/infrastructure", infrastructureRoutes); console.log("Registered /api/infrastructure");
 app.use("/api/routes", routesRoutes); console.log("Registered /api/routes");
 app.use("/api/properties", propertiesRoutes); console.log("Registered /api/properties");
+app.use("/api/departments", departmentsRoutes); console.log("Registered /api/departments");
+app.use("/api/maintenance", maintenanceRoutes); console.log("Registered /api/maintenance");
+// Bookings endpoints are now provided via /api/services/bookings
 
 
 // Default route
@@ -126,7 +145,13 @@ process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
 });
 
-// Start the server
-app.listen(PORT, () => {
+// // Start the server
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });
+
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
+}).on('error', err => {
+  console.error('Server failed to start:', err);
 });
