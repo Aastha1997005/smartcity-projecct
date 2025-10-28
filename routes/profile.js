@@ -4,7 +4,7 @@ const router = express.Router();
 const db = require('../db'); // promise-based pool
 const { authenticateToken } = require('../middleware/auth');
 
-// GET current user's profile (citizen/doctor/provider) using JWT
+// GET current user's profile (citizen/healthcare/transport) using JWT
 router.get('/', authenticateToken, async (req, res) => {
     const userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'Authentication required' });
@@ -20,9 +20,8 @@ router.get('/', authenticateToken, async (req, res) => {
                 const [rows] = await db.query('SELECT c.* FROM Users u JOIN Citizen c ON u.linked_id = c.citizen_id WHERE u.user_id = ? AND u.role = "citizen"', [userId]);
                 if (!rows || rows.length === 0) return res.status(404).json({ error: 'Citizen profile not found' });
                 const profile = rows[0];
-                // Fetch email from Users table
-                const [[userRow]] = await db.query('SELECT email FROM Users WHERE user_id = ?', [userId]);
-                if (userRow && userRow.email) profile.email = userRow.email;
+                const [[userRow]] = await db.query('SELECT username FROM Users WHERE user_id = ?', [userId]);
+                if (userRow && userRow.username) profile.username = userRow.username;
                 // Fetch phone numbers from Citizen_Phone_Number
                 const [phones] = await db.query('SELECT phone_number FROM Citizen_Phone_Number WHERE citizen_id = ?', [profile.citizen_id]);
                 profile.phones = phones.map(p => p.phone_number);
@@ -31,16 +30,17 @@ router.get('/', authenticateToken, async (req, res) => {
                 return res.json(profile);
             }
 
-        if (role === 'doctor') {
-            const [rows] = await db.query('SELECT d.* FROM Users u JOIN Doctors d ON u.linked_id = d.doctor_id WHERE u.user_id = ? AND u.role = "doctor"', [userId]);
-            if (!rows || rows.length === 0) return res.status(404).json({ error: 'Doctor profile not found' });
+        if (role === 'healthcare') {
+            const [rows] = await db.query('SELECT d.* FROM Users u JOIN Doctors d ON u.linked_id = d.doctor_id WHERE u.user_id = ? AND u.role = "healthcare"', [userId]);
+            if (!rows || rows.length === 0) return res.status(404).json({ error: 'Healthcare profile not found' });
             return res.json(rows[0]);
         }
-
-        if (role === 'provider') {
-            const [rows] = await db.query('SELECT p.* FROM Users u JOIN Service_Provider p ON u.linked_id = p.provider_id WHERE u.user_id = ? AND u.role = "provider"', [userId]);
-            if (!rows || rows.length === 0) return res.status(404).json({ error: 'Provider profile not found' });
-            return res.json(rows[0]);
+    // For department roles (transport, waste_management, public_lights, water, electricity, internet, healthcare)
+    // return minimal user info; department users may have separate profile tables in future.
+    const departmentRoles = ['transport','waste_management','public_lights','water','electricity','internet','healthcare'];
+        if (departmentRoles.includes(role)) {
+            const [[userRow]] = await db.query('SELECT username, role, linked_id, created_at FROM Users WHERE user_id = ?', [userId]);
+            return res.json(userRow);
         }
 
         res.status(400).json({ error: 'Unsupported role' });
@@ -52,9 +52,12 @@ router.get('/', authenticateToken, async (req, res) => {
 
 // Generic helper to update a profile table by linked_id and fields
 async function patchProfileByRole(userId, roleTable, idField, updates) {
-    const [users] = await db.query('SELECT linked_id FROM Users WHERE user_id = ? AND role = ?', [userId, roleTable === 'Citizen' ? 'citizen' : roleTable === 'Doctors' ? 'doctor' : 'provider']);
+    // Resolve linked_id for the user. For Service_Provider, we only require the linked_id
+    // and will map provider.service_type to a logical role when needed.
+    const [users] = await db.query('SELECT linked_id FROM Users WHERE user_id = ?', [userId]);
     if (!users || users.length === 0) throw { status: 404, message: 'User not found' };
     const profileId = users[0].linked_id;
+    if (!profileId) throw { status: 400, message: 'Profile incomplete' };
     if (!profileId) throw { status: 400, message: 'Profile incomplete' };
     const fields = Object.keys(updates).map(f => `${f} = ?`).join(', ');
     if (!fields) throw { status: 400, message: 'No fields to update' };
@@ -124,7 +127,7 @@ router.put('/citizen/:user_id', async (req, res) => {
 
 router.get('/doctor/:user_id', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT d.* FROM Users u JOIN Doctors d ON u.linked_id = d.doctor_id WHERE u.user_id = ? AND u.role = "doctor"', [req.params.user_id]);
+        const [rows] = await db.query('SELECT d.* FROM Users u JOIN Doctors d ON u.linked_id = d.doctor_id WHERE u.user_id = ? AND u.role = "healthcare"', [req.params.user_id]);
         if (!rows || rows.length === 0) return res.status(404).json({ error: 'Profile not found' });
         res.json(rows[0]);
     } catch (err) {
@@ -136,7 +139,7 @@ router.get('/doctor/:user_id', async (req, res) => {
 router.put('/doctor/:user_id', async (req, res) => {
     try {
         const { name, specialization, phone } = req.body;
-        const [users] = await db.query('SELECT linked_id FROM Users WHERE user_id = ? AND role = "doctor"', [req.params.user_id]);
+    const [users] = await db.query('SELECT linked_id FROM Users WHERE user_id = ? AND role = "healthcare"', [req.params.user_id]);
         if (!users || users.length === 0) return res.status(404).json({ error: 'User not found' });
         const doctorId = users[0].linked_id;
         await db.query('UPDATE Doctors SET name = ?, specialization = ?, phone = ? WHERE doctor_id = ?', [name, specialization, phone, doctorId]);
@@ -149,9 +152,22 @@ router.put('/doctor/:user_id', async (req, res) => {
 
 router.get('/provider/:user_id', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT p.* FROM Users u JOIN Service_Provider p ON u.linked_id = p.provider_id WHERE u.user_id = ? AND u.role = "provider"', [req.params.user_id]);
+    // Resolve the linked provider id from Users and return provider profile with derived department role
+    const [[userRow]] = await db.query('SELECT linked_id FROM Users WHERE user_id = ?', [req.params.user_id]);
+    if (!userRow || !userRow.linked_id) return res.status(404).json({ error: 'User or linked provider not found' });
+    const providerId = userRow.linked_id;
+    const [rows] = await db.query('SELECT p.* FROM Service_Provider p WHERE p.provider_id = ?', [providerId]);
         if (!rows || rows.length === 0) return res.status(404).json({ error: 'Profile not found' });
-        res.json(rows[0]);
+        const profile = rows[0];
+        // Derive department role from service_type
+        const st = (profile.service_type || '').toLowerCase();
+        let derivedRole = 'transport';
+        if (st.includes('transport')) derivedRole = 'transport';
+        else if (st.includes('water') || st.includes('utility')) derivedRole = 'utility';
+        else if (st.includes('health') || st.includes('hospital')) derivedRole = 'healthcare';
+        else if (st.includes('internet') || st.includes('telecom')) derivedRole = 'internet';
+        profile.derived_role = derivedRole;
+        res.json(profile);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
@@ -161,7 +177,7 @@ router.get('/provider/:user_id', async (req, res) => {
 router.put('/provider/:user_id', async (req, res) => {
     try {
         const { name, service_type, phone } = req.body;
-        const [users] = await db.query('SELECT linked_id FROM Users WHERE user_id = ? AND role = "provider"', [req.params.user_id]);
+    const [users] = await db.query('SELECT linked_id FROM Users WHERE user_id = ? AND role = "transport"', [req.params.user_id]);
         if (!users || users.length === 0) return res.status(404).json({ error: 'User not found' });
         const providerId = users[0].linked_id;
         await db.query('UPDATE Service_Provider SET name = ?, service_type = ?, phone = ? WHERE provider_id = ?', [name, service_type, phone, providerId]);

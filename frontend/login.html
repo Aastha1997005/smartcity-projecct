@@ -4,54 +4,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Smart City Management</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
+        /* 2. ADDED: CSS Variables for Easy Color Changes */
+        :root {
+            --primary-color: #007bff; /* Bright Blue */
+            --secondary-color: #0056b3; /* Darker Blue */
+            --gradient-start: #007bff;
+            --gradient-end: #004d99; /* Deeper blue for gradients */
+            --font-family-heading: 'Montserrat', sans-serif;
+            --font-family-body: 'Open Sans', sans-serif;
+            --border-color: #ccc;
+        }
+        
+
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* 3. UPDATED: Full Page Background Image using the Public URL */
+            background:
+                /* Subtle dark overlay for readability */
+            
+                /* Your provided image link */
+                url('https://i.ibb.co/S4yxVvP2/img-smartcity.jpg ') center center / cover no-repeat fixed;
+            
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* UPDATED: Attractive Font */
+            font-family: var(--font-family-body);
+            color: #333; /* Default text color */
         }
+        
+        /* The main container styling remains mostly the same */
         .auth-container {
             background: white;
             border-radius: 20px;
+            border: 1px solid var(--border-color); 
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
             max-width: 900px;
             width: 100%;
             margin: 20px;
         }
+   
         .auth-left {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background:
+    /* 1. NEW: Semi-transparent white background color */
+            linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)),
+            /* Subtle dark overlay for readability */
+            
+                /* Your provided image link */
+            url('https://i.ibb.co/S4yxVvP2/img-smartcity.jpg ') center center / cover no-repeat fixed;
+            background-color: rgba(255, 255, 255, 0.15); 
+    
+    /* 2. NEW: Apply the blur filter to the background *behind* this panel */
+    
+    /* 3. ORIGINAL: Text color is now dark for contrast with the light blur */
+            color: #333; 
+    
             padding: 60px 40px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-        }
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+    
+    /* 4. Keep the accent border */
+            border-right: 4px solid var(--primary-color); 
+    
+            position: relative; 
+            z-index: 1; /* Ensures blur renders correctly */
+    }
+
+/* Ensure text and icons are dark */
+
+.auth-left .icon-large,
+.auth-left .fa-users, 
+.auth-left .fa-building, 
+.auth-left .fa-bus, 
+.auth-left .fa-hospital {
+    color: #333; 
+    text-shadow: none;
+}
+        /* This creates the blurred, dark overlay on top of the image */
+
+    
+        
+        /* Applied new heading font to the left panel title */
         .auth-left h1 {
             font-size: 2.5rem;
-            font-weight: bold;
+            font-weight: 700;
             margin-bottom: 20px;
+            font-family: var(--font-family-heading);
+            text-shadow: none;
+
         }
         .auth-left p {
             font-size: 1.1rem;
             opacity: 0.9;
+            font-family: var(--font-family-body);
         }
+        
         .auth-right {
+            background: rgb(244, 238, 232);
+            border-left: 1px solid #eee;
             padding: 60px 40px;
         }
-        .form-control:focus, .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        /* Applied new heading font to the right panel heading */
+        .auth-right h2 {
+            font-family: var(--font-family-heading);
+            font-weight: 600;
+            color: #333;
         }
+
+        /* 5. UPDATED: Primary Color for Focus */
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* RGBA equivalent of --primary-color */
+        }
+
+        /* 6. UPDATED: Button Color (uses CSS Variables) */
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             border: none;
             padding: 12px;
             font-size: 1rem;
@@ -60,7 +140,8 @@
         }
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            /* Updated hover shadow color */
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
         }
         .input-group-text {
             background-color: #f8f9fa;
@@ -87,16 +168,22 @@
             border-bottom: 2px solid #e9ecef;
             margin-bottom: 30px;
         }
+        /* 7. UPDATED: Tab Colors (uses CSS Variables) */
         .nav-tabs .nav-link {
             color: #6c757d;
             border: none;
             padding: 12px 24px;
             font-weight: 600;
+            font-family: var(--font-family-heading);
         }
         .nav-tabs .nav-link.active {
-            color: #667eea;
-            border-bottom: 3px solid #667eea;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
             background: none;
+        }
+        /* Link color update */
+        .text-decoration-none {
+            color: var(--primary-color);
         }
     </style>
 </head>
@@ -115,7 +202,6 @@
                 </div>
             </div>
             <div class="col-lg-7 auth-right">
-                <!-- Tabs -->
                 <ul class="nav nav-tabs" id="authTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab">
@@ -132,7 +218,6 @@
                 <div id="alertContainer"></div>
                 
                 <div class="tab-content" id="authTabsContent">
-                    <!-- Login Form -->
                     <div class="tab-pane fade show active" id="login" role="tabpanel">
                         <h2 class="mb-2">Welcome Back</h2>
                         <p class="text-muted mb-4">Sign in to access your dashboard</p>
@@ -172,7 +257,6 @@
                         </form>
                     </div>
 
-                    <!-- Sign Up Form -->
                     <div class="tab-pane fade" id="signup" role="tabpanel">
                         <h2 class="mb-2">Create Account</h2>
                         <p class="text-muted mb-4">Sign up to get started</p>
@@ -211,8 +295,10 @@
                                 <select class="form-select" id="role" required>
                                     <option value="">Select Role</option>
                                     <option value="citizen">Citizen</option>
-                                    <option value="provider">Service Provider</option>
-                                    <option value="doctor">Doctor</option>
+                                    <option value="transport">Transport</option>
+                                    <option value="utility">Utility</option>
+                                    <option value="healthcare">Healthcare</option>
+                                    <option value="internet">Internet</option>
                                 </select>
                             </div>
                             
@@ -289,7 +375,7 @@
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const email = document.getElementById('loginEmail').value;
+            const username = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const submitBtn = e.target.querySelector('button[type="submit"]');
             
@@ -303,7 +389,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ username, password })
                 });
                 
                 const data = await response.json();
@@ -312,7 +398,7 @@
                     // Store token and user info
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('userRole', data.role);
-                    localStorage.setItem('userEmail', email);
+                    localStorage.setItem('userEmail', username);
                     
                     showAlert('Login successful! Redirecting...', 'success');
                     
@@ -337,7 +423,7 @@
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const email = document.getElementById('signupEmail').value;
+            const username = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const role = document.getElementById('role').value;
@@ -360,7 +446,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ 
-                        email, 
+                        username, 
                         password, 
                         role,
                         linked_id: null // Will be filled in profile completion
@@ -373,7 +459,7 @@
                     showAlert('Account created successfully! Please complete your profile.', 'success');
                     
                     // Store temporary data for profile completion
-                    localStorage.setItem('tempEmail', email);
+                    localStorage.setItem('tempEmail', username);
                     localStorage.setItem('tempRole', role);
                     localStorage.setItem('needsProfileCompletion', 'true');
                     

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const db = require('../db');
-// Get all doctors
+// Get all doctors (healthcare professionals)
 router.get('/', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM Doctors');

@@ -87,17 +87,17 @@ router.post("/bulk", authenticateToken, authorizeRoles("admin"), async (req, res
     const emails = [];
     for (let i = 0; i < citizens.length; i++) {
       const citizen = citizens[i];
-      const email = citizen.email; // must be provided in input
-      if (!email) continue;
+      const username = citizen.username; // must be provided in input
+      if (!username) continue;
       const password = crypto.randomBytes(6).toString('base64');
       const password_hash = await bcrypt.hash(password, 10);
       const citizen_id = firstId + i;
-      users.push([email, password_hash, 'citizen', citizen_id]);
-      emails.push({ email, password });
+      users.push([username, password_hash, 'citizen', citizen_id]);
+      emails.push({ username, password });
     }
     if (users.length > 0) {
       await db.query(
-        `INSERT INTO Users (email, password_hash, role, linked_id) VALUES ?`,
+        `INSERT INTO Users (username, password_hash, role, linked_id) VALUES ?`,
         [users]
       );
       // Send emails with credentials
@@ -111,9 +111,9 @@ router.post("/bulk", authenticateToken, authorizeRoles("admin"), async (req, res
       for (const e of emails) {
         await transporter.sendMail({
           from: process.env.SMTP_USER || 'your_gmail@gmail.com',
-          to: e.email,
+          to: e.username,
           subject: 'Your Smart City Account Credentials',
-          text: `Welcome!\nEmail: ${e.email}\nPassword: ${e.password}`,
+          text: `Welcome!\nUsername: ${e.username}\nPassword: ${e.password}`,
         });
       }
     }
