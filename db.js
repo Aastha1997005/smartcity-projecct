@@ -1,11 +1,12 @@
+require('dotenv').config();
 const mysql = require('mysql2/promise');
 
 const db = mysql.createPool({
-  host: '127.0.0.1',
-  port: 3306,
-  user: 'root',
-  password: 'devanshi19',
-  database: 'smartcity_management_system'
+  host: process.env.DB_HOST || '127.0.0.1',
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASS || '',
+  database: process.env.DB_NAME || 'smartcity_management_system'
 });
 
 // Helper to log audit actions

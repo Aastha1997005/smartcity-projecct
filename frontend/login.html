@@ -291,7 +291,7 @@
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const email = document.getElementById('loginEmail').value;
+            const username = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const submitBtn = e.target.querySelector('button[type="submit"]');
             
@@ -305,7 +305,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ username, password })
                 });
                 
                 const data = await response.json();
@@ -314,7 +314,7 @@
                     // Store token and user info
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('userRole', data.role);
-                    localStorage.setItem('userEmail', email);
+                    localStorage.setItem('userEmail', username);
                     
                     showAlert('Login successful! Redirecting...', 'success');
                     
@@ -339,7 +339,7 @@
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const email = document.getElementById('signupEmail').value;
+            const username = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const role = document.getElementById('role').value;
@@ -362,7 +362,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ 
-                        email, 
+                        username, 
                         password, 
                         role,
                         linked_id: null // Will be filled in profile completion
@@ -375,7 +375,7 @@
                     showAlert('Account created successfully! Please complete your profile.', 'success');
                     
                     // Store temporary data for profile completion
-                    localStorage.setItem('tempEmail', email);
+                    localStorage.setItem('tempEmail', username);
                     localStorage.setItem('tempRole', role);
                     localStorage.setItem('needsProfileCompletion', 'true');
                     

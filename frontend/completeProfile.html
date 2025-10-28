@@ -266,10 +266,10 @@
         // Handle Citizen Form Submission
         document.getElementById('citizenForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('Citizen form submitted');
             // Client-side validation
             const dataCheck = Object.fromEntries(new FormData(e.target));
-            const email = localStorage.getItem('tempEmail');
-            if (!isValidEmail(email)) {
+            if (!isValidEmail(localStorage.getItem('tempEmail'))) {
                 showAlert('Invalid email format.');
                 return;
             }
@@ -293,8 +293,9 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
             
             try {
+                console.log('Sending complete profile request with data:', data);
                 // Complete citizen profile
-                data.email = localStorage.getItem('tempEmail');
+                data.username = localStorage.getItem('tempEmail');
                 data.role = localStorage.getItem('tempRole');
                 const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
                     method: 'POST',
@@ -303,7 +304,9 @@
                     },
                     body: JSON.stringify(data)
                 });
+                console.log('Received response:', response);
                 if (response.ok) {
+                    console.log('Profile completed successfully');
                     showAlert('Profile completed successfully! Redirecting to login...', 'success');
                     updateProgress(100);
                     localStorage.removeItem('needsProfileCompletion');
@@ -314,6 +317,7 @@
                     }, 2000);
                 } else {
                     const error = await response.json();
+                    console.error('Profile completion error:', error);
                     showAlert(error.error || 'Failed to complete profile. Please try again.');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
@@ -329,6 +333,7 @@
         // Handle Doctor Form Submission
         document.getElementById('doctorForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('Doctor form submitted');
             // Add any doctor-specific validations here if needed
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
@@ -338,8 +343,9 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
             
             try {
+                console.log('Sending complete profile request with data:', data);
                 // Complete doctor profile
-                data.email = localStorage.getItem('tempEmail');
+                data.username = localStorage.getItem('tempEmail');
                 data.role = localStorage.getItem('tempRole');
                 const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
                     method: 'POST',
@@ -348,7 +354,9 @@
                     },
                     body: JSON.stringify(data)
                 });
+                console.log('Received response:', response);
                 if (response.ok) {
+                    console.log('Profile completed successfully');
                     showAlert('Profile completed successfully! Redirecting to login...', 'success');
                     updateProgress(100);
                     localStorage.removeItem('needsProfileCompletion');
@@ -359,6 +367,7 @@
                     }, 2000);
                 } else {
                     const error = await response.json();
+                    console.error('Profile completion error:', error);
                     showAlert(error.error || 'Failed to complete profile. Please try again.');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
@@ -374,6 +383,7 @@
         // Handle Provider Form Submission
         document.getElementById('providerForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('Provider form submitted');
             const dataCheck = Object.fromEntries(new FormData(e.target));
             if (!isValidPhone(dataCheck.contact_no)) {
                 showAlert('Contact number must be a 10 digit number.');
@@ -387,8 +397,9 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
             
             try {
+                console.log('Sending complete profile request with data:', data);
                 // Complete provider profile
-                data.email = localStorage.getItem('tempEmail');
+                data.username = localStorage.getItem('tempEmail');
                 data.role = localStorage.getItem('tempRole');
                 const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
                     method: 'POST',
@@ -397,7 +408,9 @@
                     },
                     body: JSON.stringify(data)
                 });
+                console.log('Received response:', response);
                 if (response.ok) {
+                    console.log('Profile completed successfully');
                     showAlert('Profile completed successfully! Redirecting to login...', 'success');
                     updateProgress(100);
                     localStorage.removeItem('needsProfileCompletion');
@@ -408,6 +421,7 @@
                     }, 2000);
                 } else {
                     const error = await response.json();
+                    console.error('Profile completion error:', error);
                     showAlert(error.error || 'Failed to complete profile. Please try again.');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
@@ -420,18 +434,7 @@
             }
         });
 
-        // ------- Validation helpers -------
-        function isValidEmail(email) {
-            if (!email) return false;
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        }
-
-        function isValidPhone(phone) {
-            if (!phone) return false;
-            const re = /^\d{10}$/;
-            return re.test(phone);
-        }
+        // ------- Validation helpers -------\n        function isValidEmail(email) {\n            if (!email) return false;\n            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;\n            return re.test(email);\n        }\n\n        function isValidPhone(phone) {\n            if (!phone) return false;\n            const re = /^\\d{10}$/;\n            return re.test(phone);\n        }
 
         function isValidPincode(pin) {
             if (!pin) return false;
