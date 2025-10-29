@@ -59,16 +59,28 @@ router.post("/complete-profile", async (req, res) => {
 
   if (role === 'citizen') {
       const { first_name, last_name, street, area, city, pincode, gender, dob, house_id } = req.body;
+      console.log('house_id from req.body:', house_id);
+      const houseIdVal = (house_id === '' || house_id === undefined) ? null : house_id;
+      console.log('houseIdVal:', houseIdVal);
       if (!isName(first_name) || !isName(last_name)) return res.status(400).json({ error: 'Invalid name' });
       if (!area || !city) return res.status(400).json({ error: 'Area and city are required' });
       if (!isPincode(pincode)) return res.status(400).json({ error: 'Pincode must be 6 digits' });
       if (!isValidDOB(dob)) return res.status(400).json({ error: 'Invalid date of birth' });
       const houseIdVal = (house_id === '' || house_id === undefined) ? null : house_id;
+      if (houseIdVal) {
+        const [houses] = await db.query('SELECT * FROM House WHERE house_id = ?', [houseIdVal]);
+        if (houses.length === 0) {
+          return res.status(400).json({ error: 'Invalid house_id' });
+        }
+      }
+
+      console.log('Before inserting into Citizen table');
       const [result] = await db.query(
         `INSERT INTO Citizen (first_name, last_name, street, area, city, pincode, gender, dob, house_id)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
         [first_name, last_name, street, area, city, pincode, gender, dob, houseIdVal]
       );
+      console.log('After inserting into Citizen table, result:', result);
       linked_id = result.insertId;
 
     } else if (role === 'healthcare') {
