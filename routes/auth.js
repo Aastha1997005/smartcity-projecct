@@ -1,4 +1,3 @@
-const express = require("express");
 const router = express.Router();
 const db = require("../db");
 const bcrypt = require("bcrypt");
@@ -6,36 +5,36 @@ const jwt = require("jsonwebtoken");
 
 // Register user
 router.post("/register", async (req, res) => {
-  const { username, password, role } = req.body;
+  const { email, password, role } = req.body;
   if (role && role.toLowerCase() === 'admin') {
     return res.status(403).json({ error: 'Cannot register as admin.' });
   }
+  const isEmail = v => typeof v === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
   const allowedRoles = ['citizen','transport','waste_management','public_lights','water','electricity','internet'];
-  if (!username) return res.status(400).json({ error: 'Invalid username' });
+  if (!isEmail(email)) return res.status(400).json({ error: 'Invalid email' });
   if (!password || password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
   if (!role || !allowedRoles.includes(role)) return res.status(400).json({ error: 'Invalid role' });
   try {
     // Check if user already exists
-    const [existing] = await db.query("SELECT * FROM Users WHERE username = ?", [username]);
+    const [existing] = await db.query("SELECT * FROM Users WHERE email = ?", [email]);
     if (existing.length > 0) {
       return res.status(409).json({ error: "You are already registered" });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     await db.query(
-      "INSERT INTO Users (username, password_hash, role, linked_id) VALUES (?, ?, ?, ?)",
-      [username, hashedPassword, role, null]
+      "INSERT INTO Users (email, password_hash, role, linked_id) VALUES (?, ?, ?, ?)",
+      [email, hashedPassword, role, null]
     );
     res.json({ message: "User registered successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-
 // Complete profile endpoint
 router.post("/complete-profile", async (req, res) => {
-  const { username, role } = req.body;
+  const { email, role } = req.body;
 
   // Basic validators
+  const isEmail = (v) => typeof v === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
   const isName = (v) => typeof v === 'string' && /^[A-Za-z ]{2,}$/.test(v);
   const isPincode = (v) => typeof v === 'string' && /^\d{6}$/.test(v);
   const isPhone = (v) => typeof v === 'string' && /^\d{10}$/.test(v);
@@ -45,12 +44,12 @@ router.post("/complete-profile", async (req, res) => {
     return !isNaN(d) && d < new Date();
   };
 
-  if (!username) return res.status(400).json({ error: 'Invalid or missing username' });
+  if (!isEmail(email)) return res.status(400).json({ error: 'Invalid or missing email' });
   if (!role) return res.status(400).json({ error: 'Missing role' });
 
   try {
     // Find user
-    const [users] = await db.query("SELECT * FROM Users WHERE username = ?", [username]);
+    const [users] = await db.query("SELECT * FROM Users WHERE email = ?", [email]);
     if (users.length === 0) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -59,49 +58,18 @@ router.post("/complete-profile", async (req, res) => {
 
   if (role === 'citizen') {
       const { first_name, last_name, street, area, city, pincode, gender, dob, house_id } = req.body;
-      console.log('house_id from req.body:', house_id);
-      const houseIdVal = (house_id === '' || house_id === undefined) ? null : house_id;
-      console.log('houseIdVal:', houseIdVal);
       if (!isName(first_name) || !isName(last_name)) return res.status(400).json({ error: 'Invalid name' });
       if (!area || !city) return res.status(400).json({ error: 'Area and city are required' });
       if (!isPincode(pincode)) return res.status(400).json({ error: 'Pincode must be 6 digits' });
       if (!isValidDOB(dob)) return res.status(400).json({ error: 'Invalid date of birth' });
       const houseIdVal = (house_id === '' || house_id === undefined) ? null : house_id;
-      if (houseIdVal) {
-        const [houses] = await db.query('SELECT * FROM House WHERE house_id = ?', [houseIdVal]);
-        if (houses.length === 0) {
-          return res.status(400).json({ error: 'Invalid house_id' });
-        }
-      }
-
-      console.log('Before inserting into Citizen table');
       const [result] = await db.query(
         `INSERT INTO Citizen (first_name, last_name, street, area, city, pincode, gender, dob, house_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [first_name, last_name, street, area, city, pincode, gender, dob, houseIdVal]
       );
-      console.log('After inserting into Citizen table, result:', result);
       linked_id = result.insertId;
 
-    } else if (role === 'healthcare') {
-        const { name, specialisation } = req.body;
-        if (!isName(name)) return res.status(400).json({ error: 'Invalid name' });
-        if (!specialisation) return res.status(400).json({ error: 'Specialisation is required' });
-        const [result] = await db.query(
-            `INSERT INTO Doctors (name, specialisation) VALUES (?, ?)`,
-            [name, specialisation]
-        );
-        linked_id = result.insertId;
-    } else if (['transport', 'utility', 'internet'].includes(role)) {
-        const { name, contact_no, service_type } = req.body;
-        if (!isName(name)) return res.status(400).json({ error: 'Invalid name' });
-        if (!isPhone(contact_no)) return res.status(400).json({ error: 'Invalid contact number' });
-        if (!service_type) return res.status(400).json({ error: 'Service type is required' });
-        const [result] = await db.query(
-            `INSERT INTO Service_Provider (name, contact_no, service_type) VALUES (?, ?, ?)`,
-            [name, contact_no, service_type]
-        );
-        linked_id = result.insertId;
     } else {
       // For department roles (transport, water, etc.) we currently don't create a separate profile table.
       // Only citizens have detailed profile creation. Departments users will be created as Users with linked_id NULL.
@@ -115,13 +83,14 @@ router.post("/complete-profile", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+});
 
 // Login
 router.post("/login", async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
   try {
-    const [rows] = await db.query("SELECT * FROM Users WHERE username = ?", [
-      username,
+    const [rows] = await db.query("SELECT * FROM Users WHERE email = ?", [
+      email,
     ]);
     if (rows.length === 0)
       return res.status(400).json({ error: "User not found" });
