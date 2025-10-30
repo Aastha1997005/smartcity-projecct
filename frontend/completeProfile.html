@@ -135,7 +135,8 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">House ID (Optional)</label>
-                    <input type="number" class="form-control" name="house_id" placeholder="If you know your house ID" min="0">
+                    <input type="number" class="form-control" name="house_id" placeholder="If you know your house ID" min="0" list="house-list">
+                    <datalist id="house-list"></datalist>
                 </div>
             </div>
             <button type="submit" class="btn btn-primary w-100 mt-4">
@@ -212,6 +213,69 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API_BASE_URL = 'http://localhost:5000/api';
+
+        function isValidEmail(email) {
+            if (!email) return false;
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function isValidPhone(phone) {
+            if (!phone) return false;
+            const re = /^\d{10}$/;
+            return re.test(phone);
+        }
+
+        function isValidPincode(pin) {
+            if (!pin) return false;
+            const re = /^\d{6}$/;
+            return re.test(pin);
+        }
+
+        function isValidName(name) {
+            if (!name) return false;
+            const re = /^[A-Za-z ]{2,}$/;
+            return re.test(name);
+        }
+
+        function isValidDOB(dob) {
+            if (!dob) return false;
+            const date = new Date(dob);
+            const now = new Date();
+            return date instanceof Date && !isNaN(date) && date < now;
+        }
+
+        // ------- Validation helpers -------
+        function isValidEmail(email) {
+            if (!email) return false;
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function isValidPhone(phone) {
+            if (!phone) return false;
+            const re = /^\d{10}$/;
+            return re.test(phone);
+        }
+
+        function isValidPincode(pin) {
+            if (!pin) return false;
+            const re = /^\d{6}$/;
+            return re.test(pin);
+        }
+
+        function isValidName(name) {
+            if (!name) return false;
+            const re = /^[A-Za-z ]{2,}$/;
+            return re.test(name);
+        }
+
+        function isValidDOB(dob) {
+            if (!dob) return false;
+            const date = new Date(dob);
+            const now = new Date();
+            return date instanceof Date && !isNaN(date) && date < now;
+        }
         
         // Check if user needs profile completion
         const needsProfileCompletion = localStorage.getItem('needsProfileCompletion');
@@ -312,7 +376,7 @@
                 console.log('Received response:', response);
                 if (response.ok) {
                     console.log('Profile completed successfully');
-                    showAlert('Profile completed successfully! Redirecting to login...', 'success');
+                    showAlert('Profile completed successfully! Redirecting to dashboard...', 'success');
                     updateProgress(100);
                     localStorage.removeItem('needsProfileCompletion');
                     localStorage.removeItem('tempEmail');
@@ -329,7 +393,7 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showAlert('Connection error. Please try again.');
+                showAlert('An unexpected error occurred. Please try again. ' + error.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
             }
@@ -362,13 +426,13 @@
                 console.log('Received response:', response);
                 if (response.ok) {
                     console.log('Profile completed successfully');
-                    showAlert('Profile completed successfully! Redirecting to login...', 'success');
+                    showAlert('Profile completed successfully! Redirecting to dashboard...', 'success');
                     updateProgress(100);
                     localStorage.removeItem('needsProfileCompletion');
                     localStorage.removeItem('tempEmail');
                     localStorage.removeItem('tempRole');
                     setTimeout(() => {
-                        window.location.href = 'login.html';
+                        window.location.href = 'dashboard.html';
                     }, 2000);
                 } else {
                     const error = await response.json();
@@ -379,7 +443,7 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showAlert('Connection error. Please try again.');
+                showAlert('An unexpected error occurred. Please try again. ' + error.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
             }
@@ -416,13 +480,13 @@
                 console.log('Received response:', response);
                 if (response.ok) {
                     console.log('Profile completed successfully');
-                    showAlert('Profile completed successfully! Redirecting to login...', 'success');
+                    showAlert('Profile completed successfully! Redirecting to dashboard...', 'success');
                     updateProgress(100);
                     localStorage.removeItem('needsProfileCompletion');
                     localStorage.removeItem('tempEmail');
                     localStorage.removeItem('tempRole');
                     setTimeout(() => {
-                        window.location.href = 'login.html';
+                        window.location.href = 'dashboard.html';
                     }, 2000);
                 } else {
                     const error = await response.json();
@@ -433,13 +497,13 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showAlert('Connection error. Please try again.');
+                showAlert('An unexpected error occurred. Please try again. ' + error.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
             }
         });
 
-        // ------- Validation helpers -------\n        function isValidEmail(email) {\n            if (!email) return false;\n            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;\n            return re.test(email);\n        }\n\n        function isValidPhone(phone) {\n            if (!phone) return false;\n            const re = /^\\d{10}$/;\n            return re.test(phone);\n        }
+        // ------- Validation helpers -------\n        function isValidEmail(email) {\n            if (!email) return false;\n            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;\n            return re.test(email);\n        }\n\n        function isValidPhone(phone) {\n            if (!phone) return false;\n            const re = /^\d{10}$/;\n            return re.test(phone);\n        }
 
         function isValidPincode(pin) {
             if (!pin) return false;
@@ -459,6 +523,27 @@
             const now = new Date();
             return date instanceof Date && !isNaN(date) && date < now;
         }
+
+        // Fetch and populate houses
+        async function populateHouses() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/houses`);
+                if (response.ok) {
+                    const houses = await response.json();
+                    const houseList = document.getElementById('house-list');
+                    houses.forEach(house => {
+                        const option = document.createElement('option');
+                        option.value = house.house_id;
+                        option.textContent = `House ID: ${house.house_id}, Type: ${house.type}, Area: ${house.area}`;
+                        houseList.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching houses:', error);
+            }
+        }
+
+        populateHouses();
     </script>
 </body>
 </html>
