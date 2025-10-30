@@ -1,3 +1,4 @@
+const express = require("express");
 const router = express.Router();
 const db = require("../db");
 const bcrypt = require("bcrypt");
@@ -44,6 +45,7 @@ router.post("/complete-profile", async (req, res) => {
     return !isNaN(d) && d < new Date();
   };
 
+   
   if (!isEmail(email)) return res.status(400).json({ error: 'Invalid or missing email' });
   if (!role) return res.status(400).json({ error: 'Missing role' });
 
