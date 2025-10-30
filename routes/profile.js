@@ -20,9 +20,8 @@ router.get('/', authenticateToken, async (req, res) => {
                 const [rows] = await db.query('SELECT c.* FROM Users u JOIN Citizen c ON u.linked_id = c.citizen_id WHERE u.user_id = ? AND u.role = "citizen"', [userId]);
                 if (!rows || rows.length === 0) return res.status(404).json({ error: 'Citizen profile not found' });
                 const profile = rows[0];
-                // Fetch email from Users table
-                const [[userRow]] = await db.query('SELECT email FROM Users WHERE user_id = ?', [userId]);
-                if (userRow && userRow.email) profile.email = userRow.email;
+                const [[userRow]] = await db.query('SELECT username FROM Users WHERE user_id = ?', [userId]);
+                if (userRow && userRow.username) profile.username = userRow.username;
                 // Fetch phone numbers from Citizen_Phone_Number
                 const [phones] = await db.query('SELECT phone_number FROM Citizen_Phone_Number WHERE citizen_id = ?', [profile.citizen_id]);
                 profile.phones = phones.map(p => p.phone_number);
@@ -40,7 +39,7 @@ router.get('/', authenticateToken, async (req, res) => {
     // return minimal user info; department users may have separate profile tables in future.
     const departmentRoles = ['transport','waste_management','public_lights','water','electricity','internet','healthcare'];
         if (departmentRoles.includes(role)) {
-            const [[userRow]] = await db.query('SELECT email, role, linked_id, created_at FROM Users WHERE user_id = ?', [userId]);
+            const [[userRow]] = await db.query('SELECT username, role, linked_id, created_at FROM Users WHERE user_id = ?', [userId]);
             return res.json(userRow);
         }
 

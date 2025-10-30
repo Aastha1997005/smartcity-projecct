@@ -7,17 +7,20 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+       
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url('https://i.ibb.co/S4yxVvP2/img-smartcity.jpg') no-repeat center center fixed;
+            background-size: cover;
+            background-color: rgba(0, 0, 0, 0.4);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'poppins', sans-serif;
             padding: 20px;
         }
         .profile-container {
-            background: white;
+            background: rgb(244, 238, 232);
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             max-width: 700px;
@@ -37,7 +40,7 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
-            color: white;
+            color: rgb(244, 238, 232);
             font-size: 2rem;
         }
         .form-label {
@@ -45,7 +48,7 @@
             color: #495057;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, #667eea, #764ba2);
             border: none;
             padding: 12px;
             font-size: 1rem;
@@ -55,13 +58,15 @@
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(90deg, #536ee1, #693ca9);
+
         }
         .progress-bar {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         .role-badge {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            color: rgb(244, 238, 232);
             padding: 8px 16px;
             border-radius: 20px;
             display: inline-block;
@@ -130,7 +135,8 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">House ID (Optional)</label>
-                    <input type="number" class="form-control" name="house_id" placeholder="If you know your house ID" min="0">
+                    <input type="number" class="form-control" name="house_id" placeholder="If you know your house ID" min="0" list="house-list">
+                    <datalist id="house-list"></datalist>
                 </div>
             </div>
             <button type="submit" class="btn btn-primary w-100 mt-4">
@@ -207,6 +213,69 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API_BASE_URL = 'http://localhost:5000/api';
+
+        function isValidEmail(email) {
+            if (!email) return false;
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function isValidPhone(phone) {
+            if (!phone) return false;
+            const re = /^\d{10}$/;
+            return re.test(phone);
+        }
+
+        function isValidPincode(pin) {
+            if (!pin) return false;
+            const re = /^\d{6}$/;
+            return re.test(pin);
+        }
+
+        function isValidName(name) {
+            if (!name) return false;
+            const re = /^[A-Za-z ]{2,}$/;
+            return re.test(name);
+        }
+
+        function isValidDOB(dob) {
+            if (!dob) return false;
+            const date = new Date(dob);
+            const now = new Date();
+            return date instanceof Date && !isNaN(date) && date < now;
+        }
+
+        // ------- Validation helpers -------
+        function isValidEmail(email) {
+            if (!email) return false;
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function isValidPhone(phone) {
+            if (!phone) return false;
+            const re = /^\d{10}$/;
+            return re.test(phone);
+        }
+
+        function isValidPincode(pin) {
+            if (!pin) return false;
+            const re = /^\d{6}$/;
+            return re.test(pin);
+        }
+
+        function isValidName(name) {
+            if (!name) return false;
+            const re = /^[A-Za-z ]{2,}$/;
+            return re.test(name);
+        }
+
+        function isValidDOB(dob) {
+            if (!dob) return false;
+            const date = new Date(dob);
+            const now = new Date();
+            return date instanceof Date && !isNaN(date) && date < now;
+        }
         
         // Check if user needs profile completion
         const needsProfileCompletion = localStorage.getItem('needsProfileCompletion');
@@ -266,10 +335,10 @@
         // Handle Citizen Form Submission
         document.getElementById('citizenForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('Citizen form submitted');
             // Client-side validation
             const dataCheck = Object.fromEntries(new FormData(e.target));
-            const email = localStorage.getItem('tempEmail');
-            if (!isValidEmail(email)) {
+            if (!isValidEmail(localStorage.getItem('tempEmail'))) {
                 showAlert('Invalid email format.');
                 return;
             }
@@ -293,8 +362,9 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
             
             try {
+                console.log('Sending complete profile request with data:', data);
                 // Complete citizen profile
-                data.email = localStorage.getItem('tempEmail');
+                data.username = localStorage.getItem('tempEmail');
                 data.role = localStorage.getItem('tempRole');
                 const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
                     method: 'POST',
@@ -303,8 +373,10 @@
                     },
                     body: JSON.stringify(data)
                 });
+                console.log('Received response:', response);
                 if (response.ok) {
-                    showAlert('Profile completed successfully! Redirecting to login...', 'success');
+                    console.log('Profile completed successfully');
+                    showAlert('Profile completed successfully! Redirecting to dashboard...', 'success');
                     updateProgress(100);
                     localStorage.removeItem('needsProfileCompletion');
                     localStorage.removeItem('tempEmail');
@@ -314,13 +386,14 @@
                     }, 2000);
                 } else {
                     const error = await response.json();
+                    console.error('Profile completion error:', error);
                     showAlert(error.error || 'Failed to complete profile. Please try again.');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showAlert('Connection error. Please try again.');
+                showAlert('An unexpected error occurred. Please try again. ' + error.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
             }
@@ -329,6 +402,7 @@
         // Handle Doctor Form Submission
         document.getElementById('doctorForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('Doctor form submitted');
             // Add any doctor-specific validations here if needed
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
@@ -338,8 +412,9 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
             
             try {
+                console.log('Sending complete profile request with data:', data);
                 // Complete doctor profile
-                data.email = localStorage.getItem('tempEmail');
+                data.username = localStorage.getItem('tempEmail');
                 data.role = localStorage.getItem('tempRole');
                 const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
                     method: 'POST',
@@ -348,24 +423,27 @@
                     },
                     body: JSON.stringify(data)
                 });
+                console.log('Received response:', response);
                 if (response.ok) {
-                    showAlert('Profile completed successfully! Redirecting to login...', 'success');
+                    console.log('Profile completed successfully');
+                    showAlert('Profile completed successfully! Redirecting to dashboard...', 'success');
                     updateProgress(100);
                     localStorage.removeItem('needsProfileCompletion');
                     localStorage.removeItem('tempEmail');
                     localStorage.removeItem('tempRole');
                     setTimeout(() => {
-                        window.location.href = 'login.html';
+                        window.location.href = 'dashboard.html';
                     }, 2000);
                 } else {
                     const error = await response.json();
+                    console.error('Profile completion error:', error);
                     showAlert(error.error || 'Failed to complete profile. Please try again.');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showAlert('Connection error. Please try again.');
+                showAlert('An unexpected error occurred. Please try again. ' + error.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
             }
@@ -374,6 +452,7 @@
         // Handle Provider Form Submission
         document.getElementById('providerForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('Provider form submitted');
             const dataCheck = Object.fromEntries(new FormData(e.target));
             if (!isValidPhone(dataCheck.contact_no)) {
                 showAlert('Contact number must be a 10 digit number.');
@@ -387,8 +466,9 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
             
             try {
+                console.log('Sending complete profile request with data:', data);
                 // Complete provider profile
-                data.email = localStorage.getItem('tempEmail');
+                data.username = localStorage.getItem('tempEmail');
                 data.role = localStorage.getItem('tempRole');
                 const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
                     method: 'POST',
@@ -397,41 +477,33 @@
                     },
                     body: JSON.stringify(data)
                 });
+                console.log('Received response:', response);
                 if (response.ok) {
-                    showAlert('Profile completed successfully! Redirecting to login...', 'success');
+                    console.log('Profile completed successfully');
+                    showAlert('Profile completed successfully! Redirecting to dashboard...', 'success');
                     updateProgress(100);
                     localStorage.removeItem('needsProfileCompletion');
                     localStorage.removeItem('tempEmail');
                     localStorage.removeItem('tempRole');
                     setTimeout(() => {
-                        window.location.href = 'login.html';
+                        window.location.href = 'dashboard.html';
                     }, 2000);
                 } else {
                     const error = await response.json();
+                    console.error('Profile completion error:', error);
                     showAlert(error.error || 'Failed to complete profile. Please try again.');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showAlert('Connection error. Please try again.');
+                showAlert('An unexpected error occurred. Please try again. ' + error.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
             }
         });
 
-        // ------- Validation helpers -------
-        function isValidEmail(email) {
-            if (!email) return false;
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        }
-
-        function isValidPhone(phone) {
-            if (!phone) return false;
-            const re = /^\d{10}$/;
-            return re.test(phone);
-        }
+        // ------- Validation helpers -------\n        function isValidEmail(email) {\n            if (!email) return false;\n            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;\n            return re.test(email);\n        }\n\n        function isValidPhone(phone) {\n            if (!phone) return false;\n            const re = /^\d{10}$/;\n            return re.test(phone);\n        }
 
         function isValidPincode(pin) {
             if (!pin) return false;
@@ -451,6 +523,27 @@
             const now = new Date();
             return date instanceof Date && !isNaN(date) && date < now;
         }
+
+        // Fetch and populate houses
+        async function populateHouses() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/houses`);
+                if (response.ok) {
+                    const houses = await response.json();
+                    const houseList = document.getElementById('house-list');
+                    houses.forEach(house => {
+                        const option = document.createElement('option');
+                        option.value = house.house_id;
+                        option.textContent = `House ID: ${house.house_id}, Type: ${house.type}, Area: ${house.area}`;
+                        houseList.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching houses:', error);
+            }
+        }
+
+        populateHouses();
     </script>
 </body>
 </html>
