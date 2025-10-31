@@ -134,7 +134,7 @@ router.post("/complete-profile", async (req, res) => {
     const user = users[0];
     let linked_id = null;
 
-  if (role === 'citizen') {
+    if (role === 'citizen') {
       const { first_name, last_name, street, area, city, pincode, gender, dob, house_id } = req.body;
       if (!isName(first_name) || !isName(last_name)) return res.status(400).json({ error: 'Invalid name' });
       if (!area || !city) return res.status(400).json({ error: 'Area and city are required' });
@@ -148,9 +148,93 @@ router.post("/complete-profile", async (req, res) => {
       );
       linked_id = result.insertId;
 
+    } else if (role === 'healthcare') {
+      // Create a Service entry and Healthcare (hospital) row, then add service-level phones/emails
+      const { hospital_name, service_name, capacity, hospital_type, contact_no, phones, email, emails, availability_status, operating_hours, cost } = req.body;
+      const hospitalName = hospital_name || req.body.provider_name || null;
+      if (!hospitalName) return res.status(400).json({ error: 'Hospital/facility name required' });
+      const svcName = service_name || hospitalName;
+      const svcCost = (typeof cost !== 'undefined' && cost !== '') ? cost : 0;
+      const avail = availability_status || 'Active';
+      const hours = operating_hours || '24/7';
+
+      const [svcRes] = await db.query('INSERT INTO Service (service_name, cost, availability_status, operating_hours) VALUES (?, ?, ?, ?)', [svcName, svcCost, avail, hours]);
+      const hospitalId = svcRes.insertId;
+      await db.query('INSERT INTO Healthcare (hospital_id, name, capacity, type) VALUES (?, ?, ?, ?)', [hospitalId, hospitalName, capacity || null, hospital_type || null]);
+
+      // Insert phones: accept either `phones` (array or comma string) or `contact_no`
+      try {
+        const phoneList = [];
+        if (Array.isArray(phones)) phoneList.push(...phones);
+        else if (typeof phones === 'string' && phones.trim()) phoneList.push(...phones.split(',').map(s => s.trim()).filter(Boolean));
+        else if (contact_no) phoneList.push(contact_no);
+        for (const p of phoneList) {
+          if (!p) continue;
+          await db.query('INSERT IGNORE INTO Service_Phone_Number (service_id, phone_number) VALUES (?, ?)', [hospitalId, p]);
+        }
+      } catch (e) {
+        console.error('phones insert error', e.message);
+      }
+
+      // Insert emails: accept `emails` (array or comma string) or `email`
+      try {
+        const emailList = [];
+        if (Array.isArray(emails)) emailList.push(...emails);
+        else if (typeof emails === 'string' && emails.trim()) emailList.push(...emails.split(',').map(s => s.trim()).filter(Boolean));
+        else if (email) emailList.push(email);
+        for (const em of emailList) {
+          if (!em) continue;
+          await db.query('INSERT IGNORE INTO Service_Emails (service_id, email) VALUES (?, ?)', [hospitalId, em]);
+        }
+      } catch (e) {
+        console.error('emails insert error', e.message);
+      }
+
+      linked_id = hospitalId;
+
+    } else if (['transport','utility','internet'].includes(role)) {
+      // Create Service_Provider and optional Service_To_Provider mappings
+      const { provider_name, service_type, contact_no, phones, email, emails, services_offered } = req.body;
+      if (!provider_name || !service_type) return res.status(400).json({ error: 'provider_name and service_type required' });
+      const [provRes] = await db.query('INSERT INTO Service_Provider (name, service_type, contact_no) VALUES (?, ?, ?)', [provider_name, service_type, contact_no || null]);
+      const providerId = provRes.insertId;
+      linked_id = providerId;
+
+      // If services_offered provided (array of service_id), create mapping rows
+      try {
+        if (Array.isArray(services_offered) && services_offered.length) {
+          const values = services_offered.map(sid => [sid, providerId]);
+          await db.query('INSERT IGNORE INTO Service_To_Provider (service_id, provider_id) VALUES ?', [values]);
+        }
+      } catch (e) {
+        console.error('service mapping error', e.message);
+      }
+
+      // Optionally attach service-level phones/emails to listed services (if services_offered present)
+      try {
+        const phoneList = [];
+        if (Array.isArray(phones)) phoneList.push(...phones);
+        else if (typeof phones === 'string' && phones.trim()) phoneList.push(...phones.split(',').map(s => s.trim()).filter(Boolean));
+        else if (contact_no) phoneList.push(contact_no);
+        const emailList = [];
+        if (Array.isArray(emails)) emailList.push(...emails);
+        else if (typeof emails === 'string' && emails.trim()) emailList.push(...emails.split(',').map(s => s.trim()).filter(Boolean));
+        else if (email) emailList.push(email);
+        if (Array.isArray(services_offered) && services_offered.length) {
+          for (const sid of services_offered) {
+            for (const p of phoneList) {
+              await db.query('INSERT IGNORE INTO Service_Phone_Number (service_id, phone_number) VALUES (?, ?)', [sid, p]);
+            }
+            for (const em of emailList) {
+              await db.query('INSERT IGNORE INTO Service_Emails (service_id, email) VALUES (?, ?)', [sid, em]);
+            }
+          }
+        }
+      } catch (e) {
+        console.error('provider phones/emails attach error', e.message);
+      }
+
     } else {
-      // For department roles (transport, water, etc.) we currently don't create a separate profile table.
-      // Only citizens have detailed profile creation. Departments users will be created as Users with linked_id NULL.
       return res.status(400).json({ error: 'Unsupported role for profile completion' });
     }
 

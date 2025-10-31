@@ -402,9 +402,19 @@
                     
                     showAlert('Login successful! Redirecting...', 'success');
                     
-                    // Redirect to dashboard after 1 second
+                    // Redirect based on role after 1 second
                     setTimeout(() => {
-                        window.location.href = 'dashboard.html';
+                        const role = (data.role || '').toLowerCase();
+                        if (role === 'admin') {
+                            window.location.href = 'admin.html';
+                        } else if (role === 'healthcare') {
+                            window.location.href = 'healthcare.html';
+                        } else if (['transport','utility','internet'].includes(role)) {
+                            // provider landing page - optionally include role as query
+                            window.location.href = `provider.html?role=${encodeURIComponent(role)}`;
+                        } else {
+                            window.location.href = 'dashboard.html';
+                        }
                     }, 1000);
                 } else {
                     showAlert(data.error || 'Login failed. Please check your credentials.');

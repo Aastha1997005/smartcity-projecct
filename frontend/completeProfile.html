@@ -138,28 +138,48 @@
             </button>
         </form>
 
-        <!-- Doctor Form -->
-        <form id="doctorForm" class="profile-form" style="display: none;">
-            <h5 class="mb-3"><i class="fas fa-user-md me-2"></i>Doctor Information</h5>
+        <!-- Healthcare (hospital) Form -->
+        <form id="healthcareForm" class="profile-form" style="display: none;">
+            <h5 class="mb-3"><i class="fas fa-hospital me-2"></i>Healthcare / Hospital Information</h5>
             <div class="row g-3">
                 <div class="col-12">
-                    <label class="form-label">Full Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="name" required placeholder="Dr. John Doe">
+                    <label class="form-label">Hospital / Facility Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="hospital_name" required placeholder="City General Hospital">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Capacity (beds)</label>
+                    <input type="number" class="form-control" name="capacity" min="0" placeholder="e.g., 150">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Type</label>
+                    <input type="text" class="form-control" name="hospital_type" placeholder="e.g., District Hospital / Clinic">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Service Name (optional)</label>
+                    <input type="text" class="form-control" name="service_name" placeholder="e.g., Hospital Emergency Service">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Contact Number</label>
+                    <input type="tel" class="form-control" name="contact_no" placeholder="9876543210" pattern="\d{10}" maxlength="10" inputmode="numeric">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email (optional)</label>
+                    <input type="email" class="form-control" name="email" placeholder="hospital@example.com">
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Specialisation <span class="text-danger">*</span></label>
-                    <select class="form-select" name="specialisation" required>
-                        <option value="">Select Specialisation</option>
-                        <option value="Cardiologist">Cardiologist</option>
-                        <option value="Orthopedic">Orthopedic</option>
-                        <option value="Pediatrician">Pediatrician</option>
-                        <option value="Neurologist">Neurologist</option>
-                        <option value="General Physician">General Physician</option>
-                        <option value="Surgeon">Surgeon</option>
-                        <option value="Dermatologist">Dermatologist</option>
-                        <option value="ENT Specialist">ENT Specialist</option>
-                        <option value="Other">Other</option>
+                    <label class="form-label">Additional phone numbers (comma separated)</label>
+                    <input type="text" class="form-control" name="phones" placeholder="9876543210, 9123456780">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Availability Status</label>
+                    <select class="form-select" name="availability_status">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
                     </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Operating Hours</label>
+                    <input type="text" class="form-control" name="operating_hours" placeholder="24/7 or 9:00-18:00">
                 </div>
             </div>
             <button type="submit" class="btn btn-primary w-100 mt-4">
@@ -167,29 +187,87 @@
             </button>
         </form>
 
-        <!-- Provider Form -->
-        <form id="providerForm" class="profile-form" style="display: none;">
-            <h5 class="mb-3"><i class="fas fa-briefcase me-2"></i>Service Provider Information</h5>
+        <!-- Utility / Internet / Transport Provider Forms (reused structure) -->
+        <form id="transportForm" class="profile-form" style="display: none;">
+            <h5 class="mb-3"><i class="fas fa-bus me-2"></i>Transport Provider Information</h5>
             <div class="row g-3">
                 <div class="col-12">
-                    <label class="form-label">Company/Organization Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="name" required placeholder="ABC Services Ltd.">
+                    <label class="form-label">Organization / Provider Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="provider_name" required placeholder="City Transport Co.">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Contact Number <span class="text-danger">*</span></label>
-                    <input type="tel" class="form-control" name="contact_no" required placeholder="9876543210" pattern="\d{10}" maxlength="10" inputmode="numeric" title="Enter 10 digit mobile number">
+                    <input type="tel" class="form-control" name="contact_no" required placeholder="9876543210" pattern="\d{10}" maxlength="10" inputmode="numeric">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email (optional)</label>
+                    <input type="email" class="form-control" name="email" placeholder="provider@example.com">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Additional phone numbers (comma separated)</label>
+                    <input type="text" class="form-control" name="phones" placeholder="9876543210, 9123456780">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Service Type <span class="text-danger">*</span></label>
-                    <select class="form-select" name="service_type" required>
-                        <option value="">Select Service Type</option>
-                        <option value="Utility">Utility Services</option>
-                        <option value="Transport">Transport Services</option>
-                        <option value="Health Care">Health Care</option>
-                        <option value="Internet">Internet/Telecom</option>
-                        <option value="Waste Management">Waste Management</option>
-                        <option value="Other">Other</option>
-                    </select>
+                    <input type="text" class="form-control" name="service_type" required placeholder="e.g., Bus Service / Metro">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-4">
+                <i class="fas fa-check-circle me-2"></i>Complete Profile
+            </button>
+        </form>
+
+        <form id="utilityForm" class="profile-form" style="display: none;">
+            <h5 class="mb-3"><i class="fas fa-water me-2"></i>Utility Provider Information</h5>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Organization / Provider Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="provider_name" required placeholder="City Utilities Ltd.">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Contact Number <span class="text-danger">*</span></label>
+                    <input type="tel" class="form-control" name="contact_no" required placeholder="9876543210" pattern="\d{10}" maxlength="10" inputmode="numeric">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email (optional)</label>
+                    <input type="email" class="form-control" name="email" placeholder="provider@example.com">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Additional phone numbers (comma separated)</label>
+                    <input type="text" class="form-control" name="phones" placeholder="9876543210, 9123456780">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Service Type <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="service_type" required placeholder="e.g., Water Supply / Electricity">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-4">
+                <i class="fas fa-check-circle me-2"></i>Complete Profile
+            </button>
+        </form>
+
+        <form id="internetForm" class="profile-form" style="display: none;">
+            <h5 class="mb-3"><i class="fas fa-wifi me-2"></i>Internet / Telecom Provider Information</h5>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Organization / Provider Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="provider_name" required placeholder="CityNet Telecom">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Contact Number <span class="text-danger">*</span></label>
+                    <input type="tel" class="form-control" name="contact_no" required placeholder="9876543210" pattern="\d{10}" maxlength="10" inputmode="numeric">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email (optional)</label>
+                    <input type="email" class="form-control" name="email" placeholder="provider@example.com">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Additional phone numbers (comma separated)</label>
+                    <input type="text" class="form-control" name="phones" placeholder="9876543210, 9123456780">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Service Type <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="service_type" required placeholder="e.g., Broadband / Fiber" >
                 </div>
             </div>
             <button type="submit" class="btn btn-primary w-100 mt-4">
@@ -223,12 +301,12 @@
         // Show appropriate form based on role
         const forms = {
             'citizen': document.getElementById('citizenForm'),
-            'healthcare': document.getElementById('doctorForm'),
-            'transport': document.getElementById('providerForm'),
-            'utility': document.getElementById('providerForm'),
-            'internet': document.getElementById('providerForm')
+            'healthcare': document.getElementById('healthcareForm'),
+            'transport': document.getElementById('transportForm'),
+            'utility': document.getElementById('utilityForm'),
+            'internet': document.getElementById('internetForm')
         };
-        
+
         const currentForm = forms[tempRole];
         if (currentForm) {
             currentForm.style.display = 'block';
@@ -327,25 +405,31 @@
         });
 
         // Handle Doctor Form Submission
-        document.getElementById('doctorForm')?.addEventListener('submit', async (e) => {
+        // Healthcare (hospital) form submission
+        document.getElementById('healthcareForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // Add any doctor-specific validations here if needed
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
+            // attach email/role from localStorage
+            // normalize phones and emails into arrays
+            if (data.phones && typeof data.phones === 'string') {
+                data.phones = data.phones.split(',').map(s => s.trim()).filter(Boolean);
+            }
+            data.emails = [];
+            if (data.email) data.emails.push(data.email);
+            if (localStorage.getItem('tempEmail')) data.emails.push(localStorage.getItem('tempEmail'));
+            // ensure unique
+            data.emails = Array.from(new Set(data.emails.filter(Boolean)));
+            data.email = undefined;
+            data.email = localStorage.getItem('tempEmail');
+            data.role = localStorage.getItem('tempRole');
             const submitBtn = e.target.querySelector('button[type="submit"]');
-            
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
-            
             try {
-                // Complete doctor profile
-                data.email = localStorage.getItem('tempEmail');
-                data.role = localStorage.getItem('tempRole');
                 const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
                 if (response.ok) {
@@ -354,47 +438,46 @@
                     localStorage.removeItem('needsProfileCompletion');
                     localStorage.removeItem('tempEmail');
                     localStorage.removeItem('tempRole');
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 2000);
+                    setTimeout(() => window.location.href = 'login.html', 1500);
                 } else {
                     const error = await response.json();
-                    showAlert(error.error || 'Failed to complete profile. Please try again.');
+                    showAlert(error.error || 'Failed to complete profile.');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
                 }
-            } catch (error) {
-                console.error('Error:', error);
+            } catch (err) {
+                console.error(err);
                 showAlert('Connection error. Please try again.');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
             }
         });
 
-        // Handle Provider Form Submission
-        document.getElementById('providerForm')?.addEventListener('submit', async (e) => {
+        // Transport/Utility/Internet provider form handler (they post provider_name, contact_no, service_type)
+        async function handleProviderFormSubmit(e) {
             e.preventDefault();
-            const dataCheck = Object.fromEntries(new FormData(e.target));
-            if (!isValidPhone(dataCheck.contact_no)) {
-                showAlert('Contact number must be a 10 digit number.');
-                return;
-            }
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
+            // normalize field names for server: provider_name expected
+            if (data.name && !data.provider_name) data.provider_name = data.name;
+            // normalize phones -> array and emails
+            if (data.phones && typeof data.phones === 'string') {
+                data.phones = data.phones.split(',').map(s => s.trim()).filter(Boolean);
+            }
+            data.emails = [];
+            if (data.email) data.emails.push(data.email);
+            if (localStorage.getItem('tempEmail')) data.emails.push(localStorage.getItem('tempEmail'));
+            data.emails = Array.from(new Set(data.emails.filter(Boolean)));
+            data.email = undefined;
+            data.email = localStorage.getItem('tempEmail');
+            data.role = localStorage.getItem('tempRole');
             const submitBtn = e.target.querySelector('button[type="submit"]');
-            
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
-            
             try {
-                // Complete provider profile
-                data.email = localStorage.getItem('tempEmail');
-                data.role = localStorage.getItem('tempRole');
                 const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
                 if (response.ok) {
@@ -403,22 +486,26 @@
                     localStorage.removeItem('needsProfileCompletion');
                     localStorage.removeItem('tempEmail');
                     localStorage.removeItem('tempRole');
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 2000);
+                    setTimeout(() => window.location.href = 'login.html', 1500);
                 } else {
                     const error = await response.json();
-                    showAlert(error.error || 'Failed to complete profile. Please try again.');
+                    showAlert(error.error || 'Failed to complete profile.');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
                 }
-            } catch (error) {
-                console.error('Error:', error);
+            } catch (err) {
+                console.error(err);
                 showAlert('Connection error. Please try again.');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Complete Profile';
             }
-        });
+        }
+
+        document.getElementById('transportForm')?.addEventListener('submit', handleProviderFormSubmit);
+        document.getElementById('utilityForm')?.addEventListener('submit', handleProviderFormSubmit);
+        document.getElementById('internetForm')?.addEventListener('submit', handleProviderFormSubmit);
+
+        
 
         // ------- Validation helpers -------
         function isValidEmail(email) {
