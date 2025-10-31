@@ -14,14 +14,20 @@ router.get('/', authenticateToken, async (req, res) => {
         if (!users || users.length === 0) return res.status(404).json({ error: 'User not found' });
         const role = users[0].role;
         const linkedId = users[0].linked_id;
-        if (!linkedId) return res.status(400).json({ error: 'Profile incomplete' });
+        // If linked_id is not set, return minimal user info and a flag so the frontend
+        // can prompt the user to complete their profile rather than receiving a hard 400.
+        if (!linkedId) {
+            const [[userRow]] = await db.query('SELECT user_id, email, role, created_at FROM Users WHERE user_id = ?', [userId]);
+            return res.json({ needs_profile: true, user: userRow });
+        }
 
             if (role === 'citizen') {
                 const [rows] = await db.query('SELECT c.* FROM Users u JOIN Citizen c ON u.linked_id = c.citizen_id WHERE u.user_id = ? AND u.role = "citizen"', [userId]);
                 if (!rows || rows.length === 0) return res.status(404).json({ error: 'Citizen profile not found' });
                 const profile = rows[0];
-                const [[userRow]] = await db.query('SELECT username FROM Users WHERE user_id = ?', [userId]);
-                if (userRow && userRow.username) profile.username = userRow.username;
+                // Fetch email from Users table
+                const [[userRow]] = await db.query('SELECT email FROM Users WHERE user_id = ?', [userId]);
+                if (userRow && userRow.email) profile.email = userRow.email;
                 // Fetch phone numbers from Citizen_Phone_Number
                 const [phones] = await db.query('SELECT phone_number FROM Citizen_Phone_Number WHERE citizen_id = ?', [profile.citizen_id]);
                 profile.phones = phones.map(p => p.phone_number);
@@ -30,16 +36,49 @@ router.get('/', authenticateToken, async (req, res) => {
                 return res.json(profile);
             }
 
+        // If the user is a healthcare account, return the hospital/Healthcare profile
         if (role === 'healthcare') {
-            const [rows] = await db.query('SELECT d.* FROM Users u JOIN Doctors d ON u.linked_id = d.doctor_id WHERE u.user_id = ? AND u.role = "healthcare"', [userId]);
-            if (!rows || rows.length === 0) return res.status(404).json({ error: 'Healthcare profile not found' });
-            return res.json(rows[0]);
+            // Return enriched hospital profile: Healthcare row, linked Service (if any), listed doctors and contact phones/emails
+            const [[hRow]] = await db.query('SELECT h.* FROM Users u JOIN Healthcare h ON u.linked_id = h.hospital_id WHERE u.user_id = ? AND u.role = "healthcare"', [userId]);
+            if (!hRow) return res.status(404).json({ error: 'Healthcare profile not found' });
+
+            // If there is a Service record with service_id == hospital_id (legacy), fetch it
+            let service = null;
+            try {
+                const [[svc]] = await db.query('SELECT * FROM Service WHERE service_id = ? LIMIT 1', [hRow.hospital_id]);
+                if (svc) service = svc;
+            } catch (e) {
+                // ignore
+            }
+
+            // Fetch doctors working in this hospital
+            let doctors = [];
+            try {
+                const [docRows] = await db.query('SELECT d.* FROM works_in w JOIN Doctors d ON w.doctor_id = d.doctor_id WHERE w.hospital_id = ?', [hRow.hospital_id]);
+                doctors = docRows || [];
+            } catch (e) {
+                // ignore
+            }
+
+            // Aggregate provider contact info if Service_Provider/Service_Phone_No exists for this hospital
+            let contacts = { phones: [], emails: [] };
+            try {
+                const [phones] = await db.query('SELECT phone_number FROM Service_Phone_Number WHERE service_id = ?', [hRow.hospital_id]);
+                contacts.phones = phones.map(p => p.phone_number);
+            } catch (e) {}
+            try {
+                const [emails] = await db.query('SELECT email FROM Service_Emails WHERE service_id = ?', [hRow.hospital_id]);
+                contacts.emails = emails.map(e => e.email);
+            } catch (e) {}
+
+            const profile = { hospital: hRow, service, doctors, contacts };
+            return res.json(profile);
         }
     // For department roles (transport, waste_management, public_lights, water, electricity, internet, healthcare)
     // return minimal user info; department users may have separate profile tables in future.
     const departmentRoles = ['transport','waste_management','public_lights','water','electricity','internet','healthcare'];
         if (departmentRoles.includes(role)) {
-            const [[userRow]] = await db.query('SELECT username, role, linked_id, created_at FROM Users WHERE user_id = ?', [userId]);
+            const [[userRow]] = await db.query('SELECT email, role, linked_id, created_at FROM Users WHERE user_id = ?', [userId]);
             return res.json(userRow);
         }
 
@@ -77,9 +116,9 @@ router.patch('/citizen/:user_id', async (req, res) => {
     }
 });
 
-router.patch('/doctor/:user_id', async (req, res) => {
+router.patch('/hospital/:user_id', async (req, res) => {
     try {
-        await patchProfileByRole(req.params.user_id, 'Doctors', 'doctor_id', req.body);
+        await patchProfileByRole(req.params.user_id, 'Healthcare', 'hospital_id', req.body);
         res.json({ message: 'Profile updated (partial)' });
     } catch (err) {
         if (err && err.status) return res.status(err.status).json({ error: err.message });
@@ -125,9 +164,9 @@ router.put('/citizen/:user_id', async (req, res) => {
     }
 });
 
-router.get('/doctor/:user_id', async (req, res) => {
+router.get('/hospital/:user_id', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT d.* FROM Users u JOIN Doctors d ON u.linked_id = d.doctor_id WHERE u.user_id = ? AND u.role = "healthcare"', [req.params.user_id]);
+        const [rows] = await db.query('SELECT h.* FROM Users u JOIN Healthcare h ON u.linked_id = h.hospital_id WHERE u.user_id = ? AND u.role = "healthcare"', [req.params.user_id]);
         if (!rows || rows.length === 0) return res.status(404).json({ error: 'Profile not found' });
         res.json(rows[0]);
     } catch (err) {
@@ -136,13 +175,50 @@ router.get('/doctor/:user_id', async (req, res) => {
     }
 });
 
-router.put('/doctor/:user_id', async (req, res) => {
+router.put('/hospital/:user_id', async (req, res) => {
     try {
-        const { name, specialization, phone } = req.body;
-    const [users] = await db.query('SELECT linked_id FROM Users WHERE user_id = ? AND role = "healthcare"', [req.params.user_id]);
+        const { name, capacity, type, phones, emails, service_name } = req.body;
+        const [users] = await db.query('SELECT linked_id FROM Users WHERE user_id = ? AND role = "healthcare"', [req.params.user_id]);
         if (!users || users.length === 0) return res.status(404).json({ error: 'User not found' });
-        const doctorId = users[0].linked_id;
-        await db.query('UPDATE Doctors SET name = ?, specialization = ?, phone = ? WHERE doctor_id = ?', [name, specialization, phone, doctorId]);
+        const hospitalId = users[0].linked_id;
+
+        // Update Healthcare table
+        const fields = [];
+        const vals = [];
+        if (name !== undefined) { fields.push('name = ?'); vals.push(name); }
+        if (capacity !== undefined) { fields.push('capacity = ?'); vals.push(capacity); }
+        if (type !== undefined) { fields.push('type = ?'); vals.push(type); }
+        if (fields.length) {
+            await db.query(`UPDATE Healthcare SET ${fields.join(', ')} WHERE hospital_id = ?`, [...vals, hospitalId]);
+        }
+
+        // If a linked Service exists (service_id == hospitalId), update its service_name if provided
+        if (service_name !== undefined) {
+            try {
+                await db.query('UPDATE Service SET service_name = ? WHERE service_id = ?', [service_name, hospitalId]);
+            } catch (e) { /* ignore */ }
+        }
+
+        // Replace phone and email contacts if arrays provided
+        if (Array.isArray(phones)) {
+                try {
+                    await db.query('DELETE FROM Service_Phone_Number WHERE service_id = ?', [hospitalId]);
+                    for (const p of phones) {
+                        if (!p) continue;
+                        await db.query('INSERT INTO Service_Phone_Number (service_id, phone_number) VALUES (?, ?)', [hospitalId, p]);
+                    }
+                } catch (e) { /* ignore */ }
+        }
+        if (Array.isArray(emails)) {
+            try {
+                    await db.query('DELETE FROM Service_Emails WHERE service_id = ?', [hospitalId]);
+                    for (const em of emails) {
+                        if (!em) continue;
+                        await db.query('INSERT INTO Service_Emails (service_id, email) VALUES (?, ?)', [hospitalId, em]);
+                    }
+            } catch (e) { /* ignore */ }
+        }
+
         res.json({ message: 'Profile updated' });
     } catch (err) {
         console.error(err);

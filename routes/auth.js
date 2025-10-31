@@ -11,7 +11,7 @@ router.post("/register", async (req, res) => {
     return res.status(403).json({ error: 'Cannot register as admin.' });
   }
   const isEmail = v => typeof v === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  const allowedRoles = ['citizen','transport','waste_management','public_lights','water','electricity','internet'];
+  const allowedRoles = ['citizen','transport','waste_management','public_lights','water','electricity','internet','healthcare','utility'];
   if (!isEmail(email)) return res.status(400).json({ error: 'Invalid email' });
   if (!password || password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
   if (!role || !allowedRoles.includes(role)) return res.status(400).json({ error: 'Invalid role' });
@@ -26,6 +26,82 @@ router.post("/register", async (req, res) => {
       "INSERT INTO Users (email, password_hash, role, linked_id) VALUES (?, ?, ?, ?)",
       [email, hashedPassword, role, null]
     );
+    // If the registrant supplied provider details (for department/provider roles), create provider and mappings
+    try {
+      // fetch the created user id
+      const [[urow]] = await db.query('SELECT user_id FROM Users WHERE email = ? LIMIT 1', [email]);
+      const userId = urow ? urow.user_id : null;
+
+      // Special-case healthcare: create a Service + Healthcare (hospital) record and link the user
+      if (role === 'healthcare' && (req.body.hospital_name || req.body.provider_name)) {
+        const hospitalName = req.body.hospital_name || req.body.provider_name;
+        const serviceName = req.body.service_name || hospitalName;
+        const cost = req.body.cost || 0;
+        const availability_status = req.body.availability_status || 'Active';
+        const operating_hours = req.body.operating_hours || '24/7';
+
+        const [svcRes] = await db.query(
+          'INSERT INTO Service (service_name, cost, availability_status, operating_hours) VALUES (?, ?, ?, ?)',
+          [serviceName, cost, availability_status, operating_hours]
+        );
+        const hospitalId = svcRes.insertId;
+
+        // Create Healthcare record referencing the service as hospital
+        const capacity = req.body.capacity || null;
+        const type = req.body.hospital_type || null;
+        await db.query('INSERT INTO Healthcare (hospital_id, name, capacity, type) VALUES (?, ?, ?, ?)', [hospitalId, hospitalName, capacity, type]);
+
+        // Link the user to the healthcare hospital id
+        if (userId) {
+          await db.query('UPDATE Users SET linked_id = ? WHERE user_id = ?', [hospitalId, userId]);
+        }
+      }
+      // Only proceed for non-citizen roles when provider info is supplied
+      else if (role && role !== 'citizen' && req.body.provider_name && req.body.service_type) {
+        const { provider_name, service_type, contact_no } = req.body;
+        const [provRes] = await db.query(
+          'INSERT INTO Service_Provider (name, service_type, contact_no) VALUES (?, ?, ?)',
+          [provider_name, service_type, contact_no || null]
+        );
+        const providerId = provRes.insertId;
+
+        // Link the user to the new provider profile
+        if (userId) {
+          await db.query('UPDATE Users SET linked_id = ? WHERE user_id = ?', [providerId, userId]);
+        }
+
+        // services_offered: optional array of service_id numbers
+        if (Array.isArray(req.body.services_offered) && req.body.services_offered.length) {
+          const values = req.body.services_offered.map(sid => [sid, providerId]);
+          // Use INSERT IGNORE to avoid duplicates
+          await db.query('INSERT IGNORE INTO Service_To_Provider (service_id, provider_id) VALUES ?', [values]);
+        }
+
+        // service_category_map: optional array of objects { service_id, category_name }
+        if (Array.isArray(req.body.service_category_map) && req.body.service_category_map.length) {
+          for (const m of req.body.service_category_map) {
+            const sid = m.service_id;
+            const cname = (m.category_name || '').trim();
+            if (!sid || !cname) continue;
+            // ensure category exists
+            const [catRows] = await db.query('SELECT category_id FROM Service_Category WHERE name = ? LIMIT 1', [cname]);
+            let categoryId;
+            if (catRows && catRows.length) {
+              categoryId = catRows[0].category_id;
+            } else {
+              const [insCat] = await db.query('INSERT INTO Service_Category (name, description) VALUES (?, ?) ', [cname, null]);
+              categoryId = insCat.insertId;
+            }
+            // insert mapping (service -> category)
+            await db.query('INSERT IGNORE INTO Service_Category_Map (service_id, category_id) VALUES (?, ?)', [sid, categoryId]);
+          }
+        }
+      }
+    } catch (innerErr) {
+      // Non-fatal: log but do not fail registration
+      console.error('Provider creation during register failed:', innerErr);
+    }
+
     res.json({ message: "User registered successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });

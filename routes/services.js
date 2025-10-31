@@ -8,16 +8,16 @@ async function fetchProvidersForService(serviceId) {
   try {
     // Use GROUP_CONCAT to aggregate phones/emails per provider
     const [provRows] = await db.query(
-      `SELECT p.provider_id, p.name AS provider_name, p.service_type,
-              GROUP_CONCAT(DISTINCT pn.phone_number) AS phones,
-              GROUP_CONCAT(DISTINCT em.email) AS emails
-       FROM Service_To_Provider stp
-       JOIN Service_Provider p ON stp.provider_id = p.provider_id
-       LEFT JOIN Service_Phone_No pn ON p.provider_id = pn.provider_id
-       LEFT JOIN Service_Email em ON p.provider_id = em.provider_id
-       WHERE stp.service_id = ?
-       GROUP BY p.provider_id`,
-      [serviceId]
+  `SELECT p.provider_id, p.name AS provider_name, p.service_type,
+      GROUP_CONCAT(DISTINCT spn.phone_number) AS phones,
+      GROUP_CONCAT(DISTINCT se.email) AS emails
+   FROM Service_To_Provider stp
+   JOIN Service_Provider p ON stp.provider_id = p.provider_id
+   LEFT JOIN Service_Phone_Number spn ON stp.service_id = spn.service_id
+   LEFT JOIN Service_Emails se ON stp.service_id = se.service_id
+   WHERE stp.service_id = ?
+   GROUP BY p.provider_id`,
+  [serviceId]
     );
     if (provRows && provRows.length) {
       return provRows.map(r => ({
@@ -32,23 +32,21 @@ async function fetchProvidersForService(serviceId) {
     // If no explicit mapping, but Service.provider_id exists, try that
     const [[s]] = await db.query('SELECT provider_id FROM Service WHERE service_id = ? LIMIT 1', [serviceId]);
     if (s && s.provider_id) {
+      // Get provider info and attach service-level contacts for this serviceId (preferred)
       const [rows] = await db.query(
         `SELECT p.provider_id, p.name AS provider_name, p.service_type,
-                 GROUP_CONCAT(DISTINCT pn.phone_number) AS phones,
-                 GROUP_CONCAT(DISTINCT em.email) AS emails
+                 (SELECT GROUP_CONCAT(DISTINCT phone_number) FROM Service_Phone_Number WHERE service_id = ?) AS phones,
+                 (SELECT GROUP_CONCAT(DISTINCT email) FROM Service_Emails WHERE service_id = ?) AS emails
          FROM Service_Provider p
-         LEFT JOIN Service_Phone_No pn ON p.provider_id = pn.provider_id
-         LEFT JOIN Service_Email em ON p.provider_id = em.provider_id
-         WHERE p.provider_id = ?
-         GROUP BY p.provider_id`,
-        [s.provider_id]
+         WHERE p.provider_id = ?`,
+        [serviceId, serviceId, s.provider_id]
       );
       if (rows && rows.length) {
         return rows.map(r => ({
           provider_id: r.provider_id,
           name: r.provider_name,
           service_type: r.service_type,
-          phones: r.phones ? r.phones.split(',') : [],
+          phones: r.phones ? r.phones.split(',') : (r.contact_no ? [r.contact_no] : []),
           emails: r.emails ? r.emails.split(',') : []
         }));
       }

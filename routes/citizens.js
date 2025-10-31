@@ -87,17 +87,17 @@ router.post("/bulk", authenticateToken, authorizeRoles("admin"), async (req, res
     const emails = [];
     for (let i = 0; i < citizens.length; i++) {
       const citizen = citizens[i];
-      const username = citizen.username; // must be provided in input
-      if (!username) continue;
+      const email = citizen.email; // must be provided in input
+      if (!email) continue;
       const password = crypto.randomBytes(6).toString('base64');
       const password_hash = await bcrypt.hash(password, 10);
       const citizen_id = firstId + i;
-      users.push([username, password_hash, 'citizen', citizen_id]);
-      emails.push({ username, password });
+      users.push([email, password_hash, 'citizen', citizen_id]);
+      emails.push({ email, password });
     }
     if (users.length > 0) {
       await db.query(
-        `INSERT INTO Users (username, password_hash, role, linked_id) VALUES ?`,
+        `INSERT INTO Users (email, password_hash, role, linked_id) VALUES ?`,
         [users]
       );
       // Send emails with credentials
@@ -111,9 +111,9 @@ router.post("/bulk", authenticateToken, authorizeRoles("admin"), async (req, res
       for (const e of emails) {
         await transporter.sendMail({
           from: process.env.SMTP_USER || 'your_gmail@gmail.com',
-          to: e.username,
+          to: e.email,
           subject: 'Your Smart City Account Credentials',
-          text: `Welcome!\nUsername: ${e.username}\nPassword: ${e.password}`,
+          text: `Welcome!\nEmail: ${e.email}\nPassword: ${e.password}`,
         });
       }
     }
@@ -208,5 +208,103 @@ router.post("/", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+// List bookings for a citizen (only the citizen themselves or admin)
+router.get('/:citizen_id/bookings', authenticateToken, async (req, res) => {
+  const citizenId = req.params.citizen_id;
+  const requesterId = req.user && req.user.id;
+  try {
+    // verify requester is the same citizen (via Users.linked_id) or admin
+    const [[reqUser]] = await db.query('SELECT role, linked_id FROM Users WHERE user_id = ?', [requesterId]);
+    if (!reqUser) return res.status(404).json({ error: 'Requesting user not found' });
+    if (reqUser.role !== 'admin' && String(reqUser.linked_id) !== String(citizenId)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const [rows] = await db.query(
+      `SELECT b.*, s.service_name, s.cost, s.availability_status, b.service_name_cache, b.service_category_cache, b.provider_id
+       FROM Service_Booking b
+       LEFT JOIN Service s ON b.service_id = s.service_id
+       WHERE b.citizen_id = ?
+       ORDER BY b.booking_start DESC`,
+      [citizenId]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('Citizen bookings list error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Create a booking for a citizen (only the citizen themselves or admin)
+router.post('/:citizen_id/bookings', authenticateToken, async (req, res) => {
+  const citizenId = req.params.citizen_id;
+  const requesterId = req.user && req.user.id;
+  try {
+    // verify requester
+    const [[reqUser]] = await db.query('SELECT role, linked_id FROM Users WHERE user_id = ?', [requesterId]);
+    if (!reqUser) return res.status(404).json({ error: 'Requesting user not found' });
+    if (reqUser.role !== 'admin' && String(reqUser.linked_id) !== String(citizenId)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    let { service_id, booking_start, booking_end, details, priority } = req.body;
+    if (!service_id || !booking_start) return res.status(400).json({ error: 'Missing required fields' });
+    if (!booking_end) booking_end = booking_start;
+
+    // Overlap check: prevent overlapping bookings for the same citizen
+    const overlapSql = `SELECT COUNT(*) AS cnt FROM Service_Booking WHERE citizen_id = ? AND status IN ('upcoming','scheduled','in_progress')
+      AND NOT (booking_end <= ? OR booking_start >= ?)`;
+    const [ov] = await db.query(overlapSql, [citizenId, booking_start, booking_end]);
+    if (ov && ov.length && ov[0].cnt > 0) return res.status(409).json({ error: 'Overlapping booking exists for this citizen' });
+
+    // Overlap check for the service itself
+    const overlapServiceSql = `SELECT COUNT(*) AS cnt FROM Service_Booking WHERE service_id = ? AND status IN ('upcoming','scheduled','in_progress')
+      AND NOT (booking_end <= ? OR booking_start >= ?)`;
+    const [ovSvc] = await db.query(overlapServiceSql, [service_id, booking_start, booking_end]);
+    if (ovSvc && ovSvc.length && ovSvc[0].cnt > 0) return res.status(409).json({ error: 'Service is already booked for the requested time slot' });
+
+    const [result] = await db.query(
+      'INSERT INTO Service_Booking (citizen_id, service_id, booking_start, booking_end, details, priority, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [citizenId, service_id, booking_start, booking_end || null, JSON.stringify(details || {}), priority || 'medium', requesterId || null]
+    );
+    const bookingId = result.insertId;
+
+    // Autofill caches: service_name_cache, provider_id, service_category_cache
+    const [[serviceRow]] = await db.query('SELECT service_name, provider_id FROM Service WHERE service_id = ? LIMIT 1', [service_id]);
+    const svcName = serviceRow ? serviceRow.service_name : null;
+
+    // Try explicit mapping -> provider
+    let providerId = null;
+    try {
+      const [provRows] = await db.query('SELECT stp.provider_id FROM Service_To_Provider stp WHERE stp.service_id = ? LIMIT 1', [service_id]);
+      if (provRows && provRows.length) providerId = provRows[0].provider_id;
+    } catch (e) {
+      // ignore if table missing
+    }
+    if (!providerId && serviceRow && serviceRow.provider_id) providerId = serviceRow.provider_id;
+
+    // Category via mapping table
+    let category = null;
+    try {
+      const [catRows] = await db.query(
+        `SELECT sc.name FROM Service_Category_Map scm JOIN Service_Category sc ON scm.category_id = sc.category_id WHERE scm.service_id = ? LIMIT 1`,
+        [service_id]
+      );
+      if (catRows && catRows.length) category = catRows[0].name;
+    } catch (e) {
+      // ignore
+    }
+
+    await db.query('UPDATE Service_Booking SET provider_id = ?, service_name_cache = ?, service_category_cache = ? WHERE booking_id = ?', [providerId, svcName, category, bookingId]);
+
+    res.json({ booking_id: bookingId });
+  } catch (err) {
+    console.error('Citizen booking create error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 
 module.exports = router;
