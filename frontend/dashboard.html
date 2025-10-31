@@ -31,8 +31,8 @@
     />
     <style>
       :root {
-        --primary-color: #caf0f883; /* Deep clean blue */
-        --secondary-color: #caf0f883; /* Accent blue */
+        --primary-color: rgba(255, 255, 255, 0.6); /* Deep clean blue */
+        --secondary-color: rgba(255, 255, 255, 0.6); /* Accent blue */
         --sidebar-width: 260px;
         --bg-light: #f5f8ff;
         --text-dark: #03045E;
@@ -129,7 +129,7 @@ background:
       }
 
       .stats-card {
-        background: #caf0f885;
+        background: rgba(255, 255, 255, 0.6);
         border-radius: 18px;
         padding: 25px;
         backdrop-filter: blur(10px);
@@ -137,6 +137,7 @@ background:
         box-shadow: 0 4px 15px #03055e78;
         transition: all 0.3s ease;
         border-left: 4px solid;
+        color: #03045E;
       }
 
       .stats-card:hover {
@@ -145,26 +146,27 @@ background:
       }
 
       .stats-card.blue {
-        border-left-color: #03045E;
+        border-left-color: blue;
       }
       .stats-card.green {
-        border-left-color: #03045E;
+        border-left-color: green;
       }
       .stats-card.purple {
-        border-left-color: #03045E;
+        border-left-color: darkblue;
       }
       .stats-card.orange {
-        border-left-color: #03045E;
+        border-left-color: orange;
       }
 
       .card {
-        background: #caf0f883;
+        background:rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(10px);
         border: none;
         transition: all 0.3s ease;
 
         border-radius: 18px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 15px #03055e67;
+        color: #03045E;
       }
 
       .quick-action-btn {
@@ -194,7 +196,8 @@ background:
         border-left: 3px solid;
         margin-bottom: 10px;
         border-radius: 5px;
-        background-color: #ffffff89;
+        background-color: #ffffffba;
+        color: #03045E;
       }
 
       .activity-item.pending {
@@ -214,6 +217,7 @@ background:
         border-radius: 12px;
         margin-bottom: 15px;
         transition: 0.3s;
+        color: #03045E;
       }
       .announcement-card:hover {
         background: #e8f0ff;
@@ -223,7 +227,7 @@ background:
         display: flex;
         align-items: center;
         padding: 15px;
-        background-color: #ffffff89;
+        background-color: #ffffffb4;
         border-radius: 10px;
       }
 
@@ -278,7 +282,7 @@ background:
         border-radius: 15px;
         object-fit: contain;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 8px 22px #03055e7a;
         background-color: #ffffffd0;
       }
 
