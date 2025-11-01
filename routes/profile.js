@@ -51,13 +51,23 @@ router.get('/', authenticateToken, async (req, res) => {
                 // ignore
             }
 
-            // Fetch doctors working in this hospital
+            // Fetch doctors working in this hospital, include optional capacity/type if present on Doctors table
             let doctors = [];
             try {
-                const [docRows] = await db.query('SELECT d.* FROM works_in w JOIN Doctors d ON w.doctor_id = d.doctor_id WHERE w.hospital_id = ?', [hRow.hospital_id]);
+                const [cols] = await db.query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Doctors' AND COLUMN_NAME IN ('capacity','type')");
+                const colNames = (cols || []).map(c => c.COLUMN_NAME.toLowerCase());
+                const selectCols = ['d.doctor_id', 'd.name', 'd.specialisation'];
+                if (colNames.includes('capacity')) selectCols.push('d.capacity');
+                if (colNames.includes('type')) selectCols.push('d.type');
+                const sql = `SELECT ${selectCols.join(', ')} FROM works_in w JOIN Doctors d ON w.doctor_id = d.doctor_id WHERE w.hospital_id = ?`;
+                const [docRows] = await db.query(sql, [hRow.hospital_id]);
                 doctors = docRows || [];
             } catch (e) {
-                // ignore
+                // ignore if schema introspection fails
+                try {
+                    const [docRows] = await db.query('SELECT d.* FROM works_in w JOIN Doctors d ON w.doctor_id = d.doctor_id WHERE w.hospital_id = ?', [hRow.hospital_id]);
+                    doctors = docRows || [];
+                } catch (ee) { /* ignore */ }
             }
 
             // Aggregate provider contact info if Service_Provider/Service_Phone_No exists for this hospital
