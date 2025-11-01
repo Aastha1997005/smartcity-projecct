@@ -1,0 +1,84 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../db');
+const { authenticateToken, authorizeRoles } = require('../middleware/auth');
+
+/**
+ * ALERTS ROUTES
+ * Manages system alerts for infrastructure issues, sensor anomalies, etc.
+ */
+
+// Get all alerts with filtering
+router.get('/', authenticateToken, authorizeRoles('admin', 'utility', 'transport', 'healthcare'), async (req, res) => {
+  try {
+    const { severity, acknowledged, asset_id, limit = 50, offset = 0 } = req.query;
+    
+    let sql = `
+      SELECT a.*, i.zone_id, z.zone_name
+      FROM Alerts a
+      LEFT JOIN Infrastructure i ON a.asset_id = i.asset_id
+      LEFT JOIN Zone z ON i.zone_id = z.zone_id
+      WHERE 1=1
+    `;
+    const params = [];
+    
+    if (severity) {
+      sql += ' AND a.severity = ?';
+      params.push(severity);
+    }
+    if (acknowledged !== undefined) {
+      sql += ' AND a.acknowledged = ?';
+      params.push(acknowledged === 'true' ? 1 : 0);
+    }
+    if (asset_id) {
+      sql += ' AND a.asset_id = ?';
+      params.push(asset_id);
+    }
+    
+    sql += ' ORDER BY a.created_at DESC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), parseInt(offset));
+    
+    const [alerts] = await db.query(sql, params);
+    
+    const [summary] = await db.query(`
+      SELECT severity, COUNT(*) as count
+      FROM Alerts
+      WHERE acknowledged = 0
+      GROUP BY severity
+    `);
+    
+    res.json({ alerts, summary });
+  } catch (err) {
+    console.error('Alerts list error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get alert by ID
+router.get('/:alert_id', authenticateToken, async (req, res) => {
+  try {
+    const [[alert]] = await db.query(`
+      SELECT a.*, i.zone_id, z.zone_name
+      FROM Alerts a
+      LEFT JOIN Infrastructure i ON a.asset_id = i.asset_id
+      LEFT JOIN Zone z ON i.zone_id = z.zone_id
+      WHERE a.alert_id = ?
+    `, [req.params.alert_id]);
+    
+    if (!alert) {
+      return res.status(404).json({ error: 'Alert not found' });
+    }
+    
+    res.json(alert);
+  } catch (err) {
+    console.error('Alert detail error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create new alert
+router.post('/', authenticateToken, authorizeRoles('admin', 'utility'), async (req, res) => {
+  const { asset_id, alert_type, severity, details } = req.body;
+  
+  if (!alert_type || !severity) {
+    return res.status(400).json({ error: 'alert_type and severity are required'
