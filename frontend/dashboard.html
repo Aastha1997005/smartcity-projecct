@@ -355,15 +355,10 @@
                     <div class="card-body">
                         <h5 class="card-title mb-4"><i class="fas fa-bullhorn text-danger me-2"></i>City Announcements</h5>
                         <div id="announcements">
-                            <div class="announcement-card">
-                                <h6 class="mb-2">Road Maintenance Schedule</h6>
-                                <p class="small text-muted mb-1">AB Road will be under maintenance from 10 PM to 6 AM for the next week.</p>
-                                <small class="text-muted"><i class="fas fa-clock me-1"></i>2 days ago</small>
-                            </div>
-                            <div class="announcement-card">
-                                <h6 class="mb-2">Water Supply Notice</h6>
-                                <p class="small text-muted mb-1">Water supply will be suspended in Vijay Nagar area on Sunday from 9 AM to 2 PM.</p>
-                                <small class="text-muted"><i class="fas fa-clock me-1"></i>5 days ago</small>
+                            <div class="text-center py-4" id="announcements-loading">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -491,8 +486,81 @@
             container.innerHTML = html || '<p class="text-center text-muted">No recent activity</p>';
         }
         
+        // Load announcements from backend
+        async function loadAnnouncements() {
+            const container = document.getElementById('announcements');
+            try {
+                const res = await fetch(`${API_BASE_URL}/announcements`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error('Failed to load announcements');
+                const items = await res.json();
+                document.getElementById('announcements-loading')?.remove();
+                if (!items || items.length === 0) {
+                    container.innerHTML = '<p class="text-center text-muted">No announcements at this time.</p>';
+                    return;
+                }
+                let html = '';
+                items.slice(0,5).forEach(a => {
+                    const date = a.created_at ? new Date(a.created_at).toLocaleString() : '';
+                    html += `
+                        <div class="announcement-card">
+                            <h6 class="mb-2">${(a.title||'Announcement')}</h6>
+                            <p class="small text-muted mb-1">${(a.content||'')}</p>
+                            <small class="text-muted"><i class="fas fa-clock me-1"></i>${date}</small>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (err) {
+                console.error('Announcements load error', err);
+                container.innerHTML = '<p class="text-center text-danger">Failed to load announcements.</p>';
+            }
+        }
+
+        // Load user's complaints (recent)
+        async function loadMyComplaints() {
+            const container = document.getElementById('recentActivity');
+            try {
+                // Decode user id from token
+                let userId = null;
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    userId = payload.id;
+                }
+                if (!userId) return;
+                const res = await fetch(`${API_BASE_URL}/complaints/my`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error('Failed to load complaints');
+                const complaints = await res.json();
+                if (!complaints || complaints.length === 0) {
+                    container.innerHTML = '<p class="text-center text-muted">No recent complaints</p>';
+                    return;
+                }
+                let html = '';
+                complaints.slice(0,5).forEach(c => {
+                    const statusClass = (c.status || '').toLowerCase().includes('completed') ? 'completed' : (c.status || '').toLowerCase().includes('in progress') ? 'confirmed' : 'pending';
+                    const short = (c.subject || c.complaint_text || '').substring(0,80) + ((c.subject || c.complaint_text || '').length>80 ? '...' : '');
+                    html += `
+                        <div class="activity-item ${statusClass}">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-grow-1 ms-3">
+                                    <p class="mb-1 small">${short}</p>
+                                    <small class="text-muted">${new Date(c.created_at || c.complaint_date).toLocaleString()}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (err) {
+                console.error('Load my complaints error', err);
+                container.innerHTML = '<p class="text-center text-danger">Failed to load recent complaints.</p>';
+            }
+        }
+        
         // Load data on page load
         loadDashboardData();
+        // Also load announcements and recent complaints
+        loadAnnouncements();
+        loadMyComplaints();
     </script>
 </body>
 </html>

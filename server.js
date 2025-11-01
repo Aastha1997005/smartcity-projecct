@@ -93,6 +93,8 @@ const departmentsRoutes = require("./routes/departments");
 console.log("Loaded departmentsRoutes");
 const maintenanceRoutes = require("./routes/maintenance");
 console.log("Loaded maintenanceRoutes");
+const notificationsRoutes = require("./routes/notifications");
+console.log("Loaded notificationsRoutes");
 
 // Register routes
 app.use("/api/auth", authRoutes); console.log("Registered /api/auth");
@@ -119,6 +121,7 @@ app.use("/api/routes", routesRoutes); console.log("Registered /api/routes");
 app.use("/api/properties", propertiesRoutes); console.log("Registered /api/properties");
 app.use("/api/departments", departmentsRoutes); console.log("Registered /api/departments");
 app.use("/api/maintenance", maintenanceRoutes); console.log("Registered /api/maintenance");
+app.use("/api/announcements", notificationsRoutes); console.log("Registered /api/announcements");
 // Bookings endpoints are now provided via /api/services/bookings
 
 

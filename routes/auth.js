@@ -56,6 +56,37 @@ router.post("/register", async (req, res) => {
           await db.query('UPDATE Users SET linked_id = ? WHERE user_id = ?', [hospitalId, userId]);
         }
       }
+      // Special-case internet providers: create Service -> Utility -> Internet and link user
+      else if (role === 'internet' && (req.body.provider_name || req.body.bandwidth || req.body.coverage_area)) {
+        const providerName = req.body.provider_name || req.body.service_name || req.body.email || 'Internet Provider';
+        const serviceName = req.body.service_name || providerName;
+        const cost = req.body.cost || req.body.cost_per_month || 0;
+        const availability_status = req.body.availability_status || 'Active';
+        const operating_hours = req.body.operating_hours || '24/7';
+
+        const [svcRes2] = await db.query('INSERT INTO Service (service_name, cost, availability_status, operating_hours) VALUES (?, ?, ?, ?)', [serviceName, cost, availability_status, operating_hours]);
+        const serviceId2 = svcRes2.insertId;
+
+        // Create a Utility row referencing the service (utility_id = service_id)
+        try {
+          await db.query('INSERT INTO Utility (utility_id) VALUES (?)', [serviceId2]);
+        } catch (e) {
+          // if Utility has additional required columns, try a safer insert with NULLs
+          try { await db.query('INSERT INTO Utility (utility_id, unit, issue_date) VALUES (?, ?, ?)', [serviceId2, req.body.unit || null, req.body.issue_date || null]); } catch (ee) { console.error('Utility insert during internet register failed', ee.message); }
+        }
+
+        // Insert Internet-specific row
+        try {
+          await db.query('INSERT INTO Internet (internet_id, provider_name, bandwidth, coverage_area, cost_per_month, service_type) VALUES (?, ?, ?, ?, ?, ?)', [serviceId2, providerName, req.body.bandwidth || null, req.body.coverage_area || null, req.body.cost_per_month || req.body.cost || null, req.body.service_type || null]);
+        } catch (e) {
+          console.error('Internet insert failed during register:', e.message);
+        }
+
+        // Link the user to the service (consistent with healthcare linking to service_id)
+        if (userId) {
+          await db.query('UPDATE Users SET linked_id = ? WHERE user_id = ?', [serviceId2, userId]);
+        }
+      }
       // Only proceed for non-citizen roles when provider info is supplied
       else if (role && role !== 'citizen' && req.body.provider_name && req.body.service_type) {
         const { provider_name, service_type, contact_no } = req.body;
