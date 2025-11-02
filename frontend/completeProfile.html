@@ -372,6 +372,7 @@
             
             try {
                 // Complete citizen profile
+                console.log('Sending complete profile request with data:', data);
                 data.email = localStorage.getItem('tempEmail');
                 data.role = localStorage.getItem('tempRole');
                 const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
@@ -427,6 +428,7 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
             try {
+                console.log('Sending complete profile request with data:', data);
                 const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -475,6 +477,8 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
             try {
+                console.log('Sending complete profile request with data:', data);
+                // Complete provider profile
                 const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
