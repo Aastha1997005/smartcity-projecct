@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departments - Smart City Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="d-flex">
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h4 class="text-white mb-0">Smart City Admin</h4>
+            </div>
+            <ul class="list-unstyled components">
+                <li><a href="admin.html"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                <li><a href="citizens.html"><i class="bi bi-people"></i> Citizens</a></li>
+                <li><a href="transport.html"><i class="bi bi-truck"></i> Transport</a></li>
+                <li><a href="internet.html"><i class="bi bi-wifi"></i> Internet</a></li>
+                <li><a href="utilities.html"><i class="bi bi-lightning"></i> Utilities</a></li>
+                <li><a href="healthcare.html"><i class="bi bi-heart-pulse"></i> Healthcare</a></li>
+                <li><a href="complaints.html"><i class="bi bi-exclamation-circle"></i> Complaints</a></li>
+                <li><a href="maintenance.html"><i class="bi bi-wrench"></i> Maintenance</a></li>
+                <li><a href="bookings.html"><i class="bi bi-calendar"></i> Bookings</a></li>
+                <li><a href="announcements-admin.html"><i class="bi bi-bell"></i> Announcements</a></li>
+                <li><a href="add-citizen.html"><i class="bi bi-person-plus"></i> Add Citizen</a></li>
+                <li class="active"><a href="departments.html"><i class="bi bi-building"></i> Departments</a></li>
+            </ul>
+        </nav>
+
+        <div id="content" class="flex-fill">
+            <div class="container-fluid p-4">
+                <div class="mb-4">
+                    <h1 class="h2 fw-bold">Departments</h1>
+                    <p class="text-muted">Manage city departments and staff</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">All Departments</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Department</th>
+                                        <th>Department Head</th>
+                                        <th>Employees</th>
+                                        <th>Budget</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td class="fw-semibold">Transport Department</td>
+                                        <td>Michael Chen</td>
+                                        <td>25</td>
+                                        <td>$250,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td class="fw-semibold">Healthcare Department</td>
+                                        <td>Dr. Sarah Johnson</td>
+                                        <td>45</td>
+                                        <td>$500,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td class="fw-semibold">Utilities Department</td>
+                                        <td>Robert Williams</td>
+                                        <td>30</td>
+                                        <td>$300,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td class="fw-semibold">IT Department</td>
+                                        <td>Emma Davis</td>
+                                        <td>15</td>
+                                        <td>$150,000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

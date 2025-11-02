@@ -284,6 +284,63 @@ router.get('/:service_id', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+// Internet-specific service detail
+router.get('/internet/:service_id', async (req, res) => {
+  const { service_id } = req.params;
+  try {
+    const [[svc]] = await db.query('SELECT * FROM Service WHERE service_id = ? LIMIT 1', [service_id]);
+    if (!svc) return res.status(404).json({ error: 'Not found' });
+
+    // Try to fetch Internet specific row if table exists
+    let internetRow = null;
+    try {
+      const [ir] = await db.query('SELECT * FROM Internet WHERE internet_id = ? LIMIT 1', [service_id]);
+      if (ir && ir.length) internetRow = ir[0];
+    } catch (e) {
+      // table might not exist, ignore
+    }
+
+    // Fetch service-level phones/emails (preferred canonical)
+    let phones = [];
+    let emails = [];
+    try {
+      const [[p]] = await db.query('SELECT GROUP_CONCAT(DISTINCT phone_number) AS phones FROM Service_Phone_Number WHERE service_id = ?', [service_id]);
+      const [[e]] = await db.query('SELECT GROUP_CONCAT(DISTINCT email) AS emails FROM Service_Emails WHERE service_id = ?', [service_id]);
+      phones = p && p.phones ? p.phones.split(',') : [];
+      emails = e && e.emails ? e.emails.split(',') : [];
+    } catch (e) {
+      // ignore if tables missing
+    }
+
+    const providers = await fetchProvidersForService(service_id);
+
+    // Recent bookings for this service
+    let bookings = [];
+    try {
+      const [brows] = await db.query(
+        `SELECT b.booking_id, b.citizen_id, b.booking_start, b.booking_end, b.status, b.details, b.priority, b.provider_id, b.service_name_cache, b.service_category_cache, b.created_at,
+                c.first_name AS citizen_first_name, c.last_name AS citizen_last_name, u.email AS citizen_email,
+                sp.name AS provider_name
+         FROM Service_Booking b
+         LEFT JOIN Citizen c ON b.citizen_id = c.citizen_id
+         LEFT JOIN Users u ON u.linked_id = c.citizen_id
+         LEFT JOIN Service_Provider sp ON b.provider_id = sp.provider_id
+         WHERE b.service_id = ?
+         ORDER BY b.booking_start DESC LIMIT 50`,
+        [service_id]
+      );
+      bookings = brows;
+    } catch (e) {
+      // ignore
+    }
+
+    res.json({ service: svc, internet: internetRow, phones, emails, providers, bookings });
+  } catch (err) {
+    console.error('Internet service detail error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 // Search services by name or ID
 router.get("/search", async (req, res) => {
   const { q } = req.query;
