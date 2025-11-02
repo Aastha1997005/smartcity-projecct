@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 
 // Register user
 router.post("/register", async (req, res) => {
-  const { email, password, role } = req.body;
+  const { username: email, password, role } = req.body;
   if (role && role.toLowerCase() === 'admin') {
     return res.status(403).json({ error: 'Cannot register as admin.' });
   }
@@ -280,7 +280,7 @@ router.post("/complete-profile", async (req, res) => {
 
 // Login
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const { username: email, password } = req.body;
   try {
     const [rows] = await db.query("SELECT * FROM Users WHERE email = ?", [
       email,
