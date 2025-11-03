@@ -54,16 +54,58 @@ router.get('/', authenticateToken, authorizeRoles('admin', 'utility', 'transport
   }
 });
 
+// Get alerts by asset
+router.get('/asset/:asset_id', authenticateToken, async (req, res) => {
+  try {
+    const [alerts] = await db.query(
+      'SELECT * FROM Alerts WHERE asset_id = ? ORDER BY created_at DESC',
+      [req.params.asset_id]
+    );
+    res.json(alerts);
+  } catch (err) {
+    console.error('Asset alerts error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get active alerts summary
+router.get('/summary/active', authenticateToken, authorizeRoles('admin', 'utility'), async (req, res) => {
+  try {
+    const [summary] = await db.query(`
+      SELECT 
+        severity,
+        COUNT(*) as count,
+        MAX(created_at) as latest_alert
+      FROM Alerts
+      WHERE acknowledged = 0
+      GROUP BY severity
+    `);
+    
+    const [[total]] = await db.query(
+      'SELECT COUNT(*) as total FROM Alerts WHERE acknowledged = 0'
+    );
+    
+    res.json({ summary, total: total.total });
+  } catch (err) {
+    console.error('Alert summary error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get alert by ID
 router.get('/:alert_id', authenticateToken, async (req, res) => {
   try {
+    const alertId = req.params.alert_id;
+    // ensure numeric id to avoid catching other named routes
+    if (isNaN(parseInt(alertId))) return res.status(400).json({ error: 'Invalid alert id' });
+
     const [[alert]] = await db.query(`
       SELECT a.*, i.zone_id, z.zone_name
       FROM Alerts a
       LEFT JOIN Infrastructure i ON a.asset_id = i.asset_id
       LEFT JOIN Zone z ON i.zone_id = z.zone_id
       WHERE a.alert_id = ?
-    `, [req.params.alert_id]);
+    `, [alertId]);
     
     if (!alert) {
       return res.status(404).json({ error: 'Alert not found' });
@@ -81,8 +123,8 @@ router.post('/', authenticateToken, authorizeRoles('admin', 'utility'), async (r
   const { asset_id, alert_type, severity, details } = req.body;
   
   if (!alert_type || !severity) {
-    return res.status(400).json({ error: 'alert_type and severity are required'
-}
+    return res.status(400).json({ error: 'alert_type and severity are required' });
+  }
   
   const validSeverities = ['info', 'warning', 'critical'];
   if (!validSeverities.includes(severity)) {
