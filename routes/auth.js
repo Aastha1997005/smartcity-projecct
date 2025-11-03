@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 
 // Register user
 router.post("/register", async (req, res) => {
-  const { username: email, password, role } = req.body;
+  const { email, password, role } = req.body;
   if (role && role.toLowerCase() === 'admin') {
     return res.status(403).json({ error: 'Cannot register as admin.' });
   }
@@ -280,7 +280,9 @@ router.post("/complete-profile", async (req, res) => {
 
 // Login
 router.post("/login", async (req, res) => {
-  const { username: email, password } = req.body;
+  // Expect { email, password } from frontend
+  const email = req.body.email;
+  const password = req.body.password;
   try {
     const [rows] = await db.query("SELECT * FROM Users WHERE email = ?", [
       email,
@@ -292,9 +294,10 @@ router.post("/login", async (req, res) => {
   const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) return res.status(401).json({ error: "Invalid password" });
 
+    const jwtSecret = process.env.JWT_SECRET || 'your_jwt_secret';
     const token = jwt.sign(
       { id: user.user_id, role: user.role },
-      "your_jwt_secret",
+      jwtSecret,
       { expiresIn: "1h" }
     );
     res.json({ token, role: user.role });

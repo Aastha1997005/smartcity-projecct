@@ -47,7 +47,7 @@ background:
             
                 /* Your provided image link */
             url('https://i.ibb.co/S4yxVvP2/img-smartcity.jpg ') center center / cover no-repeat fixed;
-            background-color: rgba(255, 0, 0, 0.94); 
+            background-color: rgba(255, 255, 255, 0.94); 
             color: var(--text-dark);
         margin: 0;
         padding: 0;
@@ -72,7 +72,7 @@ background:
         color: rgba(0, 3, 154, 0.866);
         overflow-y: auto;
         transition: all 0.3s;
-        z-index: 1000;
+  z-index: 2000;
         transition: margin-left 0.4s ease-in-out;
       }
 
@@ -110,11 +110,19 @@ background:
       }
 
       .main-content {
-        margin-left: var(--sidebar-width);
-        padding: 20px;
+        /* ensure main content doesn't sit under the fixed sidebar */
+        margin-left: calc(var(--sidebar-width) + 40px);
+        padding: 24px 24px 48px 24px;
+        transition: margin-left 0.25s ease;
+  z-index: 1;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
+      }
+
+      /* extra offset helper for top rows (push cards further right) */
+      .content-offset {
+        margin-left: 20px;
       }
 
       .welcome-banner {
@@ -169,6 +177,8 @@ background:
         border-radius: 18px;
         box-shadow: 0 4px 15px #03055e67;
         color: #03045E;
+  position: relative;
+  z-index: 2;
       }
 
       .quick-action-btn {
@@ -334,7 +344,7 @@ background:
                     <a class="nav-link active" href="admin.html"><i class="fas fa-home"></i> Dashboard</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="citizens.html"><i class="fas fa-users"></i> Citizens</a>
+                    <a class="nav-link" href="citizen.html"><i class="fas fa-users"></i> Citizens</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="transport.html"><i class="fas fa-bus"></i> Transport</a>
@@ -349,7 +359,7 @@ background:
                     <a class="nav-link" href="healthcare.html"><i class="fas fa-hospital"></i> Healthcare</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="Allcomplaints.html"><i class="fas fa-exclamation-circle"></i> Complaints</a>
+                    <a class="nav-link" href="complaints.html"><i class="fas fa-exclamation-circle"></i> Complaints</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="maintenance.html"><i class="fas fa-wrench"></i> Maintenance</a>
@@ -387,8 +397,8 @@ background:
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
                                         <p class="text-muted mb-1 small">Total Citizens</p>
-                                        <h3 class="fw-bold mb-1">12,345</h3>
-                                        <small class="text-success">+12% from last month</small>
+                                        <h3 class="fw-bold mb-1"><span id="stat-citizens">—</span></h3>
+                                        <small class="text-success" id="stat-citizens-delta">&nbsp;</small>
                                     </div>
                                     <i class="bi bi-people text-muted" style="font-size: 1.5rem;"></i>
                                 </div>
@@ -401,8 +411,8 @@ background:
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
                                         <p class="text-muted mb-1 small">Active Complaints</p>
-                                        <h3 class="fw-bold mb-1">23</h3>
-                                        <small class="text-danger">-5% from last week</small>
+                                        <h3 class="fw-bold mb-1"><span id="stat-complaints">—</span></h3>
+                                        <small class="text-danger" id="stat-complaints-delta">&nbsp;</small>
                                     </div>
                                     <i class="bi bi-exclamation-circle text-muted" style="font-size: 1.5rem;"></i>
                                 </div>
@@ -415,8 +425,8 @@ background:
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
                                         <p class="text-muted mb-1 small">Maintenance Requests</p>
-                                        <h3 class="fw-bold mb-1">45</h3>
-                                        <small class="text-success">+8% from last week</small>
+                                        <h3 class="fw-bold mb-1"><span id="stat-maintenance">—</span></h3>
+                                        <small class="text-success" id="stat-maintenance-delta">&nbsp;</small>
                                     </div>
                                     <i class="bi bi-wrench text-muted" style="font-size: 1.5rem;"></i>
                                 </div>
@@ -429,8 +439,8 @@ background:
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
                                         <p class="text-muted mb-1 small">Pending Bookings</p>
-                                        <h3 class="fw-bold mb-1">67</h3>
-                                        <small class="text-success">+15% from last month</small>
+                                        <h3 class="fw-bold mb-1"><span id="stat-bookings">—</span></h3>
+                                        <small class="text-success" id="stat-bookings-delta">&nbsp;</small>
                                     </div>
                                     <i class="bi bi-calendar text-muted" style="font-size: 1.5rem;"></i>
                                 </div>
@@ -442,37 +452,17 @@ background:
                 <!-- Activity and Stats -->
                 <div class="row g-4 flex-grow-1">
                     <div class="col-lg-8">
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <h5 class="mb-0">Recent Activity</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="activity-item">
-                                    <div class="d-flex justify-content-between">
-                                        <span>New citizen registered</span>
-                                        <small class="text-muted">2 minutes ago</small>
-                                    </div>
-                                </div>
-                                <div class="activity-item">
-                                    <div class="d-flex justify-content-between">
-                                        <span>Complaint #1234 resolved</span>
-                                        <small class="text-muted">15 minutes ago</small>
-                                    </div>
-                                </div>
-                                <div class="activity-item">
-                                    <div class="d-flex justify-content-between">
-                                        <span>Maintenance request submitted</span>
-                                        <small class="text-muted">1 hour ago</small>
-                                    </div>
-                                </div>
-                                <div class="activity-item border-0">
-                                    <div class="d-flex justify-content-between">
-                                        <span>New booking created</span>
-                                        <small class="text-muted">2 hours ago</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <div class="card h-100">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Activity</h5>
+                <div>
+                  <button id="btn-add-activity" class="btn btn-sm btn-outline-primary" style="display:none;">Add Activity</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="recent-activity-list">Loading recent activity...</div>
+              </div>
+            </div>
                     </div>
                     <div class="col-lg-4">
                         <div class="card h-100">
@@ -482,25 +472,55 @@ background:
                             <div class="card-body">
                                 <div class="d-flex justify-content-between mb-3">
                                     <span class="text-muted">Transport Services</span>
-                                    <span class="fw-semibold">8 Active</span>
+                                    <span class="fw-semibold" id="quick-transport">-</span>
                                 </div>
                                 <div class="d-flex justify-content-between mb-3">
                                     <span class="text-muted">Internet Providers</span>
-                                    <span class="fw-semibold">5 Active</span>
+                                    <span class="fw-semibold" id="quick-internet">-</span>
                                 </div>
                                 <div class="d-flex justify-content-between mb-3">
                                     <span class="text-muted">Utility Services</span>
-                                    <span class="fw-semibold">12 Active</span>
+                                    <span class="fw-semibold" id="quick-utilities">-</span>
                                 </div>
                                 <div class="d-flex justify-content-between">
                                     <span class="text-muted">Healthcare Centers</span>
-                                    <span class="fw-semibold">15 Active</span>
+                                    <span class="fw-semibold" id="quick-healthcare">-</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
         </div>
+                <!-- Dynamic containers (populated by JS) -->
+                <div class="row g-4 mt-4">
+                  <div class="col-md-6">
+                    <div class="card card-body" id="hc-container">
+                      <h5>Healthcare Facilities</h5>
+                      <div id="hc-list">Loading...</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card card-body" id="svc-container">
+                      <h5>Service Categories</h5>
+                      <div id="svc-list">Loading...</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row g-4 mt-3">
+                  <div class="col-md-6">
+                    <div class="card card-body" id="ann-container">
+                      <h5>Announcements</h5>
+                      <div id="ann-list">Loading...</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card card-body" id="alerts-container">
+                      <h5>Active Alerts Summary</h5>
+                      <div id="alerts-summary">Loading...</div>
+                    </div>
+                  </div>
+                </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="app.js"></script>
@@ -511,6 +531,271 @@ background:
           window.location.href = "login.html";
         }
       }
+
+      (function(){
+  const API_BASE = window.API_BASE || '/api';
+  const token = localStorage.getItem('token');
+  // base headers; Authorization will be conditionally added per-request
+  const baseHeaders = { 'Accept': 'application/json' };
+  if (token) baseHeaders['Authorization'] = 'Bearer ' + token;
+
+        async function safeFetch(path, opts={}){
+          try{
+            const headers = Object.assign({}, baseHeaders, opts.headers || {});
+            const res = await fetch(API_BASE + path, Object.assign({}, opts, { headers }));
+            if (!res.ok) {
+              console.error('fetch', path, 'failed', res.status);
+              let body = null;
+              try { body = await res.text(); } catch(e){}
+              return { ok: false, status: res.status, data: null, body };
+            }
+            const data = await res.json();
+            return { ok: true, data };
+          } catch(e){
+            console.error('fetch', path, 'error', e);
+            return { ok: false, status: 0, data: null, error: String(e) };
+          }
+        }
+
+        // Load healthcare list
+        // show debug header
+        (function showDebug(){
+          const dbg = document.createElement('div');
+          dbg.className = 'mb-2 text-muted small';
+          dbg.id = 'admin-debug';
+          dbg.innerText = `API_BASE=${API_BASE} token=${token ? 'present' : 'missing'}`;
+          document.querySelector('.main-content').insertBefore(dbg, document.querySelector('.main-content').firstChild);
+          // raw response container for admin stats
+          const raw = document.createElement('pre');
+          raw.id = 'admin-stats-raw';
+          raw.style.maxHeight = '180px';
+          raw.style.overflow = 'auto';
+          raw.className = 'small text-muted';
+          document.querySelector('.main-content').insertBefore(raw, dbg.nextSibling);
+        })();
+
+        (async function loadHealthcare(){
+          const el = document.getElementById('hc-list');
+          const r = await safeFetch('/healthcare');
+          if (!r.ok) { el.innerText = 'Could not load healthcare list; see console for details'; console.error('healthcare fetch failed', r); return; }
+          const rows = r.data || [];
+          if (!rows.length) { el.innerText = 'No facilities found'; return; }
+          const ul = document.createElement('ul');
+          ul.className = 'list-group';
+          rows.forEach(h => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-start';
+            li.innerHTML = `<div><strong>${h.name || h.name}</strong><br/><small>Capacity: ${h.capacity || 'N/A'} · Type: ${h.type || 'N/A'}</small></div><div><a href=\"healthcare.html?hospital_id=${h.hospital_id}\" class=\"btn btn-sm btn-primary\">Open</a></div>`;
+            ul.appendChild(li);
+          });
+          el.innerHTML = '';
+          el.appendChild(ul);
+        })();
+
+        // Load grouped services
+        (async function loadServices(){
+          const el = document.getElementById('svc-list');
+          const r = await safeFetch('/services/grouped');
+          if (!r.ok) { el.innerText = 'Could not load services; see console for details'; console.error('services grouped fetch failed', r); return; }
+          const grouped = r.data || {};
+          const container = document.createElement('div');
+          for (const cat of Object.keys(grouped)){
+            const card = document.createElement('div');
+            card.className = 'mb-2';
+            const title = document.createElement('div');
+            title.innerHTML = `<strong>${cat}</strong>`;
+            card.appendChild(title);
+            const list = document.createElement('ul');
+            list.className = 'list-group list-group-flush';
+            (grouped[cat]||[]).slice(0,6).forEach(s => {
+              const li = document.createElement('li');
+              li.className = 'list-group-item';
+              li.innerHTML = `${s.service_name || s.service_name} <span class=\"text-muted small\">${s.provider_name ? ' · ' + s.provider_name : ''}</span>`;
+              list.appendChild(li);
+            });
+            card.appendChild(list);
+            container.appendChild(card);
+          }
+          el.innerHTML = '';
+          el.appendChild(container);
+        })();
+
+        // Load announcements
+        (async function loadAnnouncements(){
+          const el = document.getElementById('ann-list');
+          const a = await safeFetch('/announcements');
+          if (!a.ok) { el.innerText = 'Could not load announcements; see console for details'; console.error('announcements fetch failed', a); return; }
+          const rows = a.data || [];
+          if (!rows.length) { el.innerText = 'No announcements'; return; }
+          const frag = document.createDocumentFragment();
+          rows.slice(0,10).forEach(n => {
+            const d = document.createElement('div');
+            d.className = 'announcement-card';
+            const when = new Date(n.created_at || n.createdAt || Date.now()).toLocaleString();
+            d.innerHTML = `<div><strong>${n.message || n.title || ''}</strong></div><div class=\"text-muted small\">${when}</div>`;
+            frag.appendChild(d);
+          });
+          el.innerHTML = '';
+          el.appendChild(frag);
+        })();
+
+        // Load alerts summary (may require auth)
+        (async function loadAlerts(){
+          const el = document.getElementById('alerts-summary');
+          const r = await safeFetch('/alerts/summary/active');
+          if (!r.ok) { el.innerText = 'No permission or unable to load alerts summary; see console for details'; console.error('alerts summary fetch failed', r); return; }
+          const data = r.data || {};
+          // show raw JSON for debugging
+          const rawEl = document.getElementById('admin-stats-raw');
+          if (rawEl) rawEl.innerText = JSON.stringify(data, null, 2);
+          el.innerHTML = `<div>Total active: <strong>${data.total || data.count || 0}</strong></div>`;
+          if (data.by_severity) {
+            const ul = document.createElement('ul');
+            ul.className = 'list-group mt-2';
+            Object.entries(data.by_severity).forEach(([sev, cnt]) => {
+              const li = document.createElement('li');
+              li.className = 'list-group-item';
+              li.innerText = `${sev}: ${cnt}`;
+              ul.appendChild(li);
+            });
+            el.appendChild(ul);
+          }
+        })();
+
+        // Load admin dashboard summary stats (requires admin token)
+        (async function loadAdminStats(){
+          const elErr = document.getElementById('admin-debug');
+          const r = await safeFetch('/admin/dashboard/stats');
+          if (!r.ok) {
+            console.warn('admin dashboard stats not available for this user', r);
+            if (elErr) elErr.innerText += ' | admin-stats: unavailable';
+            // Fallback: try to gather best-effort public counts
+            try {
+              const [hcR, svcR, annR, alertsR] = await Promise.all([
+                safeFetch('/healthcare'),
+                safeFetch('/services/grouped'),
+                safeFetch('/announcements'),
+                safeFetch('/alerts/summary/active')
+              ]);
+              // citizens -> unavailable without admin; show healthcare count as proxy
+              document.getElementById('stat-citizens').innerText = hcR.ok ? (hcR.data.length || 0) : 'N/A';
+              // complaints likely unavailable; mark N/A
+              document.getElementById('stat-complaints').innerText = 'N/A';
+              // maintenance/infrastructure proxy
+              if (alertsR.ok && alertsR.data && (alertsR.data.total !== undefined)) {
+                document.getElementById('stat-maintenance').innerText = alertsR.data.total;
+              } else {
+                document.getElementById('stat-maintenance').innerText = 'N/A';
+              }
+              // bookings proxy: count total services
+              if (svcR.ok && svcR.data) {
+                const grouped = svcR.data;
+                const servicesCount = Object.keys(grouped).reduce((s, k) => s + (grouped[k] ? grouped[k].length : 0), 0);
+                document.getElementById('stat-bookings').innerText = servicesCount;
+                // quick stats
+                document.getElementById('quick-transport').innerText = (grouped.transport ? grouped.transport.length : 0) + ' Active';
+                document.getElementById('quick-internet').innerText = (grouped.internet ? grouped.internet.length : 0) + ' Active';
+                document.getElementById('quick-utilities').innerText = ((grouped.water?grouped.water.length:0) + (grouped.electricity?grouped.electricity.length:0)) + ' Active';
+                document.getElementById('quick-healthcare').innerText = (grouped.healthcare ? grouped.healthcare.length : (hcR.ok ? hcR.data.length : 0)) + ' Active';
+              } else {
+                document.getElementById('stat-bookings').innerText = 'N/A';
+              }
+            } catch (e) {
+              console.error('fallback admin stats error', e);
+            }
+            return;
+          }
+          const data = r.data || {};
+          try {
+            const sum = data.summary || {};
+            document.getElementById('stat-citizens').innerText = sum.citizens || 0;
+            document.getElementById('stat-complaints').innerText = sum.complaints || 0;
+            document.getElementById('stat-maintenance').innerText = (data.infrastructure && data.infrastructure.length) ? data.infrastructure.length : (sum.infrastructure || 0);
+            // For bookings, use serviceStats total bookings if available; fallback to 0
+            const bookingsCount = (data.recentActivity && data.recentActivity.length) ? data.recentActivity.length : (sum.bookings || 0);
+            document.getElementById('stat-bookings').innerText = bookingsCount;
+          } catch (e) {
+            console.error('populate admin stats error', e);
+          }
+          // Load recent activity from admin stats if present
+          try {
+            const recent = data.recentActivity || [];
+            const activityEl = document.getElementById('recent-activity-list');
+            if (recent.length) {
+              activityEl.innerHTML = '';
+              recent.forEach(it => {
+                const div = document.createElement('div');
+                div.className = 'activity-item';
+                const when = new Date(it.complaint_date || it.created_at || Date.now()).toLocaleString();
+                div.innerHTML = `<div class=\"d-flex justify-content-between\"><div>${(it.complaint_text||it.message||it.service_name||'Activity')}</div><small class=\"text-muted\">${when}</small></div>`;
+                activityEl.appendChild(div);
+              });
+            } else {
+              // fallback to announcements/notifications
+              const a = await safeFetch('/announcements');
+              if (a.ok && a.data && a.data.length) {
+                activityEl.innerHTML = '';
+                a.data.slice(0,8).forEach(n => {
+                  const div = document.createElement('div');
+                  div.className = 'activity-item';
+                  const when = new Date(n.created_at || Date.now()).toLocaleString();
+                  div.innerHTML = `<div class=\"d-flex justify-content-between\"><div>${n.message || n.content || ''}</div><small class=\"text-muted\">${when}</small></div>`;
+                  activityEl.appendChild(div);
+                });
+              } else {
+                // try to create a simple announcement for this user if allowed
+                try {
+                  const profileRes = await safeFetch('/profile');
+                  if (profileRes.ok && profileRes.data) {
+                    const role = profileRes.data.role || profileRes.data.user && profileRes.data.user.role;
+                    // roles allowed to create announcements: admin, transport, utility, healthcare, internet
+                    const allowed = ['admin','transport','utility','healthcare','internet'];
+                    if (allowed.includes(role)) {
+                      // create a personal announcement
+                      const userIdRes = await safeFetch('/profile');
+                      const createRes = await safeFetch('/announcements/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: `Welcome activity created for ${role}`, user_ids: [1] }) });
+                      // attempt to reload announcements
+                      const a2 = await safeFetch('/announcements');
+                      if (a2.ok && a2.data && a2.data.length) {
+                        activityEl.innerHTML = '';
+                        a2.data.slice(0,8).forEach(n => {
+                          const div = document.createElement('div');
+                          div.className = 'activity-item';
+                          const when = new Date(n.created_at || Date.now()).toLocaleString();
+                          div.innerHTML = `<div class=\"d-flex justify-content-between\"><div>${n.message || n.content || ''}</div><small class=\"text-muted\">${when}</small></div>`;
+                          activityEl.appendChild(div);
+                        });
+                        return;
+                      }
+                    }
+                  }
+                } catch(e) {
+                  console.error('attempt to create fallback announcement failed', e);
+                }
+                activityEl.innerText = 'No recent activity';
+              }
+            }
+          } catch(e) { console.error('load recent activity failed', e); }
+
+          // Show Add Activity for admins (token present)
+          try {
+            if (token) {
+              const btn = document.getElementById('btn-add-activity');
+              btn.style.display = 'inline-block';
+              btn.addEventListener('click', async () => {
+                const msg = prompt('Enter announcement message');
+                if (!msg) return;
+                // send to all users as demo (server requires user_ids array)
+                // fetch sample users list (admin-only) or send to user 1 as demo
+                const userIds = [1];
+                const res = await safeFetch('/announcements/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, user_ids: userIds }) });
+                if (res.ok) alert('Announcement created'); else alert('Failed to create announcement');
+              });
+            }
+          } catch(e) { console.error('setup add activity failed', e); }
+        })();
+
+      })();
     </script>
 </body>
 </html>
