@@ -161,9 +161,11 @@ router.post('/bookings', authenticateToken, async (req, res) => {
     }
     if (!category && svcName) {
       const s = svcName.toLowerCase();
-      if (s.includes('water') || s.includes('pipeline') || s.includes('sewage')) category = 'water';
-      else if (s.includes('elect') || s.includes('power') || s.includes('meter')) category = 'electricity';
-      else if (s.includes('internet') || s.includes('wifi') || s.includes('telecom')) category = 'internet';
+    // normalize for variants like 'broad band' or 'broad-band'
+    const sNorm = s.replace(/[^a-z0-9]/g, '');
+    if (s.includes('water') || s.includes('pipeline') || s.includes('sewage')) category = 'water';
+  else if (s.includes('elect') || s.includes('power') || s.includes('meter')) category = 'electricity';
+  else if (s.includes('internet') || s.includes('wifi') || s.includes('telecom') || s.includes('broadband') || s.includes('broad-band') || sNorm.includes('broadband')) category = 'internet';
       else if (s.includes('transport') || s.includes('bus') || s.includes('taxi') || s.includes('rail')) category = 'transport';
       else if (s.includes('waste') || s.includes('garbage') || s.includes('sanitation')) category = 'waste';
       else if (s.includes('health') || s.includes('clinic') || s.includes('doctor') || s.includes('hospital')) category = 'healthcare';
@@ -223,9 +225,10 @@ router.put('/bookings/:booking_id', authenticateToken, async (req, res) => {
         }
         if (!category && svcName) {
           const s = svcName.toLowerCase();
+          const sNorm = s.replace(/[^a-z0-9]/g, '');
           if (s.includes('water') || s.includes('pipeline') || s.includes('sewage')) category = 'water';
-          else if (s.includes('elect') || s.includes('power') || s.includes('meter')) category = 'electricity';
-          else if (s.includes('internet') || s.includes('wifi') || s.includes('telecom')) category = 'internet';
+            else if (s.includes('elect') || s.includes('power') || s.includes('meter')) category = 'electricity';
+            else if (s.includes('internet') || s.includes('wifi') || s.includes('telecom') || s.includes('broadband') || s.includes('broad-band') || sNorm.includes('broadband')) category = 'internet';
           else if (s.includes('transport') || s.includes('bus') || s.includes('taxi') || s.includes('rail')) category = 'transport';
           else if (s.includes('waste') || s.includes('garbage') || s.includes('sanitation')) category = 'waste';
           else if (s.includes('health') || s.includes('clinic') || s.includes('doctor') || s.includes('hospital')) category = 'healthcare';
@@ -269,6 +272,51 @@ router.get('/categories', async (req, res) => {
     { name: 'waste', description: 'Waste collection and management services' },
     { name: 'healthcare', description: 'Healthcare and medical services' }
   ]);
+});
+
+// Get services grouped by category for frontend service selection
+router.get('/grouped', async (req, res) => {
+  try {
+    // Try to use explicit category mapping first
+    const [mapped] = await db.query(
+    `SELECT sc.name AS category_name, s.service_id, s.service_name, s.cost, s.availability_status, s.operating_hours, s.provider_id, p.name AS provider_name
+       FROM Service s
+       JOIN Service_Category_Map scm ON s.service_id = scm.service_id
+       JOIN Service_Category sc ON scm.category_id = sc.category_id
+       LEFT JOIN Service_Provider p ON s.provider_id = p.provider_id
+       ORDER BY sc.name, s.service_name`
+    );
+    if (mapped && mapped.length) {
+      const grouped = {};
+      for (const r of mapped) {
+        const cat = r.category_name;
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(r);
+      }
+      return res.json(grouped);
+    }
+
+    // Fallback: heuristic grouping by service_name
+    const [rows] = await db.query('SELECT s.*, p.name AS provider_name FROM Service s LEFT JOIN Service_Provider p ON s.provider_id = p.provider_id ORDER BY s.service_name');
+    const grouped = {};
+    for (const s of rows) {
+      let cat = 'uncategorized';
+    const n = (s.service_name || '').toLowerCase();
+    const nNorm = n.replace(/[^a-z0-9]/g, '');
+    if (n.includes('water') || n.includes('pipeline') || n.includes('sewage')) cat = 'water';
+    else if (n.includes('elect') || n.includes('power') || n.includes('meter')) cat = 'electricity';
+  else if (n.includes('internet') || n.includes('wifi') || n.includes('telecom') || n.includes('broadband') || n.includes('broad-band') || nNorm.includes('broadband')) cat = 'internet';
+      else if (n.includes('transport') || n.includes('bus') || n.includes('taxi') || n.includes('rail')) cat = 'transport';
+      else if (n.includes('waste') || n.includes('garbage') || n.includes('sanitation')) cat = 'waste';
+      else if (n.includes('health') || n.includes('clinic') || n.includes('doctor') || n.includes('hospital')) cat = 'healthcare';
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(s);
+    }
+    res.json(grouped);
+  } catch (err) {
+    console.error('Grouped services error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // Service detail including mapped providers and their contact info
@@ -355,50 +403,7 @@ router.get("/search", async (req, res) => {
   }
 });
 
-// Get services grouped by category for frontend service selection
-router.get('/grouped', async (req, res) => {
-  try {
-    // Try to use explicit category mapping first
-    const [mapped] = await db.query(
-      `SELECT sc.name AS category_name, s.service_id, s.service_name, s.cost, s.availability_status, s.operating_hours, s.provider_id, p.name AS provider_name
-       FROM Service s
-       JOIN Service_Category_Map scm ON s.service_id = scm.service_id
-       JOIN Service_Category sc ON scm.category_id = sc.category_id
-       LEFT JOIN Service_Provider p ON s.provider_id = p.provider_id
-       WHERE s.active = TRUE
-       ORDER BY sc.name, s.service_name`
-    );
-    if (mapped && mapped.length) {
-      const grouped = {};
-      for (const r of mapped) {
-        const cat = r.category_name;
-        if (!grouped[cat]) grouped[cat] = [];
-        grouped[cat].push(r);
-      }
-      return res.json(grouped);
-    }
 
-    // Fallback: heuristic grouping by service_name
-  const [rows] = await db.query('SELECT s.*, p.name AS provider_name FROM Service s LEFT JOIN Service_Provider p ON s.provider_id = p.provider_id WHERE s.active = TRUE ORDER BY s.service_name');
-    const grouped = {};
-    for (const s of rows) {
-      let cat = 'uncategorized';
-      const n = (s.service_name || '').toLowerCase();
-      if (n.includes('water') || n.includes('pipeline') || n.includes('sewage')) cat = 'water';
-      else if (n.includes('elect') || n.includes('power') || n.includes('meter')) cat = 'electricity';
-      else if (n.includes('internet') || n.includes('wifi') || n.includes('telecom')) cat = 'internet';
-      else if (n.includes('transport') || n.includes('bus') || n.includes('taxi') || n.includes('rail')) cat = 'transport';
-      else if (n.includes('waste') || n.includes('garbage') || n.includes('sanitation')) cat = 'waste';
-      else if (n.includes('health') || n.includes('clinic') || n.includes('doctor') || n.includes('hospital')) cat = 'healthcare';
-      if (!grouped[cat]) grouped[cat] = [];
-      grouped[cat].push(s);
-    }
-    res.json(grouped);
-  } catch (err) {
-    console.error('Grouped services error:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
 
   // Admin: set provider_id on a Service (explicit mapping)
   router.post('/set-provider', authenticateToken, async (req, res) => {
