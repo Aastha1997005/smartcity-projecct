@@ -359,7 +359,7 @@ background:
                 <a class="nav-link" href="healthcare.html"><i class="fas fa-hospital"></i> Healthcare</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="Allcomplaints.html"><i class="fas fa-exclamation-circle"></i> Complaints</a>
+                <a class="nav-link" href="complaints.html"><i class="fas fa-exclamation-circle"></i> Complaints</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="maintenance.html"><i class="fas fa-wrench"></i> Maintenance</a>
@@ -397,18 +397,24 @@ background:
                             <h5 class="mb-0">Create Announcement</h5>
                         </div>
                         <div class="card-body">
-                            <form id="announcementForm">
-                                <div class="mb-3">
-                                    <label for="title" class="form-label">Title</label>
-                                    <input type="text" class="form-control" id="title" placeholder="Enter announcement title" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="message" class="form-label">Message</label>
-                                    <textarea class="form-control" id="message" rows="6" placeholder="Enter announcement message" required></textarea>
-                                </div>
-                                                                    <button type="submit" class="btn btn-outline-primary w-100">
-                                                                        <i class="bi bi-bell"></i> Send Announcement
-                                                                    </button>                            </form>
+              <form id="announcementForm">
+                <div class="mb-3">
+                  <label for="title" class="form-label">Title</label>
+                  <input type="text" class="form-control" id="title" placeholder="Enter announcement title">
+                </div>
+                <div class="mb-3">
+                  <label for="message" class="form-label">Message</label>
+                  <textarea class="form-control" id="message" rows="6" placeholder="Enter announcement message" required></textarea>
+                </div>
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="sendToAll" checked>
+                  <label class="form-check-label" for="sendToAll">Send to all users (broadcast)</label>
+                  <div class="form-text">When checked, announcement will be sent to all users. Uncheck to send to specific users (not supported in this UI).</div>
+                </div>
+                <button type="submit" class="btn btn-outline-primary w-100">
+                  <i class="bi bi-bell"></i> Send Announcement
+                </button>
+              </form>
                         </div>
                     </div>
                 </div>
@@ -461,6 +467,70 @@ background:
           window.location.href = "login.html";
         }
       }
+
+      // Helper to escape HTML
+      function escapeHtml(s) {
+        if (!s) return '';
+        return s.replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]; });
+      }
+
+      // Load notifications for current authenticated user
+      async function loadNotifications() {
+        const token = localStorage.getItem('token');
+        try {
+          const res = await fetch(`${window.API_BASE.replace(/\/api$/, '')}/api/announcements`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+          if (!res.ok) {
+            console.warn('Failed to load notifications', res.status);
+            return;
+          }
+          const data = await res.json();
+          const recentBody = document.querySelectorAll('.card .card-body')[1];
+          recentBody.innerHTML = '';
+          (data || []).forEach(a => {
+            const div = document.createElement('div');
+            div.className = 'announcement-card';
+            div.innerHTML = `<div class="d-flex justify-content-between"><div><h6 class="fw-semibold mb-1">${escapeHtml(a.title || 'Announcement')}</h6><p class="text-muted small mb-0">${escapeHtml(a.content || a.message || '')}</p></div><small class="text-muted">${new Date(a.created_at || a.createdAt || Date.now()).toLocaleString()}</small></div>`;
+            recentBody.appendChild(div);
+          });
+        } catch (err) {
+          console.error('loadNotifications error', err);
+        }
+      }
+
+      document.getElementById('announcementForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('title').value.trim();
+        const message = document.getElementById('message').value.trim();
+        const sendToAll = document.getElementById('sendToAll') ? document.getElementById('sendToAll').checked : true;
+        const token = localStorage.getItem('token');
+        if (!token) return alert('Login required to send announcements.');
+        try {
+          const payload = sendToAll ? { message, all: true } : { message };
+          const res = await fetch(`${window.API_BASE.replace(/\/api$/, '')}/api/announcements/send`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+          });
+          const body = await res.json();
+          if (!res.ok) {
+            alert(body.error || body.message || 'Failed to send announcement');
+            return;
+          }
+          alert(body.message || 'Announcement sent');
+          document.getElementById('announcementForm').reset();
+          loadNotifications();
+        } catch (err) {
+          console.error('send announcement error', err);
+          alert('Error sending announcement');
+        }
+      });
+
+      window.addEventListener('DOMContentLoaded', loadNotifications);
     </script>
 </body>
 </html>

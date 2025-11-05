@@ -4,18 +4,23 @@ const db = require('../db');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 /**
+ * ===================================
  * SERVICE CATEGORIES ROUTES
  * Manages service category taxonomy and mappings
+ * ===================================
  */
 
-// Get all service categories
+/**
+ * @route GET /
+ * @description Get all service categories (with a count of services in each)
+ */
 router.get('/', async (req, res) => {
   try {
     const [categories] = await db.query(`
       SELECT sc.*, 
              COUNT(DISTINCT scm.service_id) as service_count
-      FROM Service_Category sc
-      LEFT JOIN Service_Category_Map scm ON sc.category_id = scm.category_id
+      FROM service_category sc
+      LEFT JOIN service_category_map scm ON sc.category_id = scm.category_id
       GROUP BY sc.category_id
       ORDER BY sc.name
     `);
@@ -27,24 +32,29 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get category by ID
+/**
+ * @route GET /:category_id
+ * @description Get a single category by ID (and list its services)
+ */
 router.get('/:category_id', async (req, res) => {
   try {
-    const [[category]] = await db.query(
-      'SELECT * FROM Service_Category WHERE category_id = ?',
+    const [rows] = await db.query(
+      'SELECT * FROM service_category WHERE category_id = ?',
       [req.params.category_id]
     );
-    
+
+    const category = rows && rows.length ? rows[0] : null;
     if (!category) {
       return res.status(404).json({ error: 'Category not found' });
     }
     
     // Get services in this category
     const [services] = await db.query(`
-      SELECT s.*
-      FROM Service_Category_Map scm
-      JOIN Service s ON scm.service_id = s.service_id
+      SELECT s.service_id, s.service_name, s.availability_status
+      FROM service_category_map scm
+      JOIN service s ON scm.service_id = s.service_id
       WHERE scm.category_id = ?
+      ORDER BY s.service_name
     `, [req.params.category_id]);
     
     res.json({ category, services });
@@ -54,7 +64,10 @@ router.get('/:category_id', async (req, res) => {
   }
 });
 
-// Create new category
+/**
+ * @route POST /
+ * @description Create a new category (Admin Only)
+ */
 router.post('/', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const { name, description } = req.body;
   
@@ -64,18 +77,24 @@ router.post('/', authenticateToken, authorizeRoles('admin'), async (req, res) =>
   
   try {
     const [result] = await db.query(
-      'INSERT INTO Service_Category (name, description) VALUES (?, ?)',
-      [name, description]
+      'INSERT INTO service_category (name, description) VALUES (?, ?)',
+      [name, description || null]
     );
     
-    res.json({ message: 'Category created successfully', category_id: result.insertId });
+    res.status(201).json({ message: 'Category created successfully', category_id: result.insertId });
   } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({ error: 'A category with this name already exists.' });
+    }
     console.error('Category creation error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Update category
+/**
+ * @route PUT /:category_id
+ * @description Update a category (Admin Only)
+ */
 router.put('/:category_id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const { name, description } = req.body;
   
@@ -91,51 +110,90 @@ router.put('/:category_id', authenticateToken, authorizeRoles('admin'), async (r
     }
     
     params.push(req.params.category_id);
-    await db.query(
-      `UPDATE Service_Category SET ${updates.join(', ')} WHERE category_id = ?`,
-      params
-    );
+  // Build the SQL string safely (updates already parameterized)
+  const sql = `UPDATE service_category SET ${updates.join(', ')} WHERE category_id = ?`;
+  const [result] = await db.query(sql, params);
+
+    if (result.affectedRows === 0) {
+        return res.status(404).json({ error: 'Category not found' });
+    }
     
     res.json({ message: 'Category updated successfully' });
   } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({ error: 'Another category already has this name.' });
+    }
     console.error('Category update error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Delete category
+/**
+ * @route DELETE /:category_id
+ * @description Delete a category (Admin Only)
+ */
 router.delete('/:category_id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   try {
-    await db.query('DELETE FROM Service_Category WHERE category_id = ?', [req.params.category_id]);
+    const [result] = await db.query('DELETE FROM service_category WHERE category_id = ?', [req.params.category_id]);
+
+    if (result.affectedRows === 0) {
+        return res.status(404).json({ error: 'Category not found' });
+    }
+    
     res.json({ message: 'Category deleted successfully' });
   } catch (err) {
+    if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+        return res.status(409).json({ error: 'Cannot delete. This category is still linked to services. Please unmap them first.' });
+    }
     console.error('Category deletion error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Map service to category
-router.post('/:category_id/services/:service_id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+/**
+ * @route POST /map
+ * @description Map a service to a category (Admin Only)
+ */
+router.post('/map', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+  const { service_id, category_id } = req.body;
+  if (!service_id || !category_id) {
+    return res.status(400).json({ error: 'service_id and category_id are required.' });
+  }
   try {
+    // Use ON DUPLICATE KEY to prevent crashes if mapping already exists
     await db.query(
-      'INSERT INTO Service_Category_Map (service_id, category_id) VALUES (?, ?)',
-      [req.params.service_id, req.params.category_id]
+      'INSERT INTO service_category_map (service_id, category_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE category_id=category_id',
+      [service_id, category_id]
     );
     
     res.json({ message: 'Service mapped to category successfully' });
   } catch (err) {
+    if (err.code === 'ER_NO_REFERENCED_ROW_2') {
+        return res.status(404).json({ error: 'The specified service or category does not exist.' });
+    }
     console.error('Category mapping error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Unmap service from category
-router.delete('/:category_id/services/:service_id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+/**
+ * @route DELETE /unmap
+ * @description Unmap a service from a category (Admin Only)
+ */
+router.delete('/unmap', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+  const { service_id, category_id } = req.body;
+  if (!service_id || !category_id) {
+    return res.status(400).json({ error: 'service_id and category_id are required.' });
+  }
   try {
-    await db.query(
-      'DELETE FROM Service_Category_Map WHERE service_id = ? AND category_id = ?',
-      [req.params.service_id, req.params.category_id]
+    const [result] = await db.query(
+      'DELETE FROM service_category_map WHERE service_id = ? AND category_id = ?',
+      [service_id, category_id]
     );
+
+    if (result.affectedRows === 0) {
+        return res.status(404).json({ error: 'This mapping does not exist.' });
+    }
     
     res.json({ message: 'Service unmapped from category' });
   } catch (err) {

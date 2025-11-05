@@ -267,52 +267,112 @@
         }
         // --- End Shared JS functions ---
 
-        // The following JS would integrate with your backend API using the VEHICLES entity
-        /*
+        // Helper: API base (set by frontend/app.js) and safe fetch helper
+        const API_BASE = window.API_BASE || 'http://127.0.0.1:5000/api';
+
+        async function safeFetch(path, opts = {}) {
+            const token = localStorage.getItem('token');
+            const headers = opts.headers || {};
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            opts.headers = headers;
+            const res = await fetch(API_BASE + path, opts);
+            if (!res.ok) {
+                const txt = await res.text().catch(() => '');
+                throw new Error(`${res.status} ${res.statusText} - ${txt}`);
+            }
+            return res.json();
+        }
+
+        function parseJwt(token) {
+            if (!token) return null;
+            try {
+                const payload = token.split('.')[1];
+                return JSON.parse(atob(payload));
+            } catch (e) { return null; }
+        }
+
         async function loadVehicles() {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`${API_BASE_URL}/vehicles/my`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const vehicles = await res.json();
-                
+                const payload = parseJwt(token);
+                const userId = payload ? payload.id : null;
+                if (!userId) {
+                    console.warn('No user id in token');
+                    document.getElementById('noVehiclesMessage').innerText = 'You need to login to see your vehicles.';
+                    document.getElementById('noVehiclesMessage').style.display = 'block';
+                    return;
+                }
+
+                const vehicles = await safeFetch(`/vehicles/user/${userId}`);
                 const tableBody = document.getElementById('vehiclesTableBody');
                 tableBody.innerHTML = ''; // Clear existing rows
-
-                if (vehicles.length === 0) {
+                if (!vehicles || vehicles.length === 0) {
                     document.getElementById('noVehiclesMessage').style.display = 'block';
                     return;
                 }
 
                 vehicles.forEach(v => {
-                    const isExpiring = new Date(v.insurance_expiry) < new Date(new Date().setMonth(new Date().getMonth() + 3)); // expiring in next 3 months
+                    const expiryDate = v.insurance_expiry || v.insuranceExpiry || null;
+                    const isExpiring = expiryDate ? (new Date(expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 3))) : false;
                     const statusClass = isExpiring ? 'doc-expiring' : 'doc-ok';
-                    const statusText = isExpiring ? `${v.insurance_expiry} (Due Soon)` : v.insurance_expiry;
+                    const statusText = expiryDate ? (isExpiring ? `${expiryDate} (Due Soon)` : expiryDate) : 'N/A';
 
-                    const row = `
-                        <tr>
-                            <td>${v.reg_no}</td>
-                            <td>${v.model}</td>
-                            <td>${v.vehicle_type}</td>
-                            <td><span class="badge bg-success">${v.status}</span></td>
-                            <td class="${statusClass}">${statusText}</td>
-                            <td>
-                                <button class="btn btn-sm btn-info table-action-btn" onclick="viewVehicle(${v.id})"><i class="fas fa-eye"></i></button>
-                                <button class="btn btn-sm btn-warning table-action-btn" onclick="editVehicle(${v.id})"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-sm btn-danger table-action-btn" onclick="deleteVehicle(${v.id})"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${v.vehicle_no || v.reg_no || ''}</td>
+                        <td>${v.model || ''}</td>
+                        <td>${v.type || v.vehicle_type || ''}</td>
+                        <td><span class="badge bg-success">${v.status || 'Registered'}</span></td>
+                        <td class="${statusClass}">${statusText}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info table-action-btn" onclick="viewVehicle('${encodeURIComponent(v.vehicle_no || v.reg_no || '')}')"><i class="fas fa-eye"></i></button>
+                            <button class="btn btn-sm btn-warning table-action-btn" onclick="editVehicle('${encodeURIComponent(v.vehicle_no || v.reg_no || '')}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger table-action-btn" onclick="deleteVehicle('${encodeURIComponent(v.vehicle_no || v.reg_no || '')}')"><i class="fas fa-trash"></i></button>
+                        </td>
                     `;
-                    tableBody.innerHTML += row;
+                    tableBody.appendChild(row);
                 });
             } catch (error) {
                 console.error('Failed to load vehicles:', error);
+                document.getElementById('noVehiclesMessage').innerText = 'Failed to load vehicles.';
+                document.getElementById('noVehiclesMessage').style.display = 'block';
             }
         }
 
-        // document.addEventListener('DOMContentLoaded', loadVehicles);
-        */
+        async function registerVehicle(form) {
+            const data = {
+                vehicle_no: document.getElementById('regNo').value.trim(),
+                model: document.getElementById('model').value.trim(),
+                type: document.getElementById('vehicleType').value,
+                owner_citizen_id: null // will attempt server-side resolution via token
+            };
+            try {
+                await safeFetch('/vehicles', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                // close modal and reload
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addVehicleModal'));
+                modal.hide();
+                loadVehicles();
+            } catch (err) {
+                alert('Register failed: ' + err.message);
+            }
+        }
+
+        function viewVehicle(id) { window.location.href = `vehicle.html?vehicle_no=${id}`; }
+        function editVehicle(id) { alert('Edit ' + decodeURIComponent(id)); }
+        async function deleteVehicle(id) {
+            if (!confirm('Delete this vehicle?')) return;
+            try {
+                await safeFetch(`/vehicles/${decodeURIComponent(id)}`, { method: 'DELETE' });
+                loadVehicles();
+            } catch (e) { alert('Delete failed: ' + e.message); }
+        }
+
+        document.getElementById('addVehicleForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            registerVehicle(this);
+        });
+
+        document.addEventListener('DOMContentLoaded', loadVehicles);
     </script>
 </body>
 </html>

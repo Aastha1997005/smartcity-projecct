@@ -194,16 +194,72 @@ router.post("/", async (req, res) => {
   // Set house_id to null if not provided or empty
   const houseIdValue = house_id === '' || house_id === undefined ? null : house_id;
   try {
-    await db.query(
+    const [result] = await db.query(
       `INSERT INTO Citizen (first_name, last_name, street, area, city, pincode, gender, dob, house_id)
       VALUES ( ?, ?, ?, ?, ?, ?, ?, ?,?)`,
-      [first_name, last_name, street, area, city, pincode, gender, dob, house_id]
+      [first_name, last_name, street, area, city, pincode, gender, dob, houseIdValue]
     );
+
+    const newCitizenId = result.insertId;
+
+    // If email provided, create a Users account for this citizen.
+    // Admin may optionally supply a password in req.body.password. If omitted, the server generates one and returns it in the response.
+    let generatedPassword = null;
+    let emailSent = false;
+    let emailAddress = null;
+    if (req.body.email) {
+      try {
+        const email = req.body.email;
+        emailAddress = email;
+        let password = req.body.password && String(req.body.password).trim();
+        if (!password) {
+          // generate a temporary password
+          password = crypto.randomBytes(6).toString('base64');
+          generatedPassword = password;
+        }
+        const password_hash = await bcrypt.hash(password, 10);
+        await db.query(`INSERT INTO Users (email, password_hash, role, linked_id) VALUES (?, ?, ?, ?)`, [email, password_hash, 'citizen', newCitizenId]);
+
+        // send credentials email (best-effort)
+        try {
+          const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: process.env.SMTP_USER || 'your_gmail@gmail.com',
+              pass: process.env.SMTP_PASS || 'your_gmail_app_password',
+            },
+          });
+          const info = await transporter.sendMail({
+            from: process.env.SMTP_USER || 'your_gmail@gmail.com',
+            to: email,
+            subject: 'Your Smart City Account Credentials',
+            text: `Welcome to SmartCity!\nEmail: ${email}\nPassword: ${password}`,
+          });
+          // nodemailer returns an info object when successful
+          if (info && (info.accepted && info.accepted.length > 0 || info.messageId)) {
+            emailSent = true;
+          }
+        } catch (emailErr) {
+          console.error('Failed to send citizen credentials email:', emailErr);
+          // don't fail the whole request if email sending fails
+        }
+      } catch (userErr) {
+        console.error('Failed to create user account for new citizen:', userErr);
+        // continue; citizen was created
+      }
+    }
+
     if (req.user) {
       const { logAuditAction } = require("../db");
       logAuditAction(req.user.id, "create", "Citizen", JSON.stringify({ first_name, last_name }));
     }
-    res.json({ message: "Citizen added" });
+    const responseBody = { message: "Citizen added", citizen_id: newCitizenId };
+    if (generatedPassword) responseBody.generated_password = generatedPassword;
+    if (emailAddress) {
+      responseBody.email = emailAddress;
+      responseBody.email_sent = !!emailSent;
+    }
+    res.json(responseBody);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

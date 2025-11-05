@@ -401,48 +401,103 @@ background:
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td class="fw-semibold">John Doe</td>
-                                    <td>Transport</td>
-                                    <td>Bus not arriving on time</td>
-                                    <td>2024-01-15</td>
-                                    <td><span class="badge bg-danger">Open</span></td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td class="fw-semibold">Jane Smith</td>
-                                    <td>Internet</td>
-                                    <td>Slow connection speed</td>
-                                    <td>2024-01-14</td>
-                                    <td><span class="badge bg-warning text-dark">In Progress</span></td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td class="fw-semibold">Bob Johnson</td>
-                                    <td>Utilities</td>
-                                    <td>Water supply issue</td>
-                                    <td>2024-01-13</td>
-                                    <td><span class="badge bg-success">Resolved</span></td>
-                                </tr>
-                            </tbody>
+              <tbody id="complaintsBody">
+                <tr><td colspan="6" class="text-center p-4">Loading...</td></tr>
+              </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+            <!-- Submission removed: complaints are managed elsewhere (submit via Submit Complaint page) -->
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="app.js"></script>
     <script>
-      function logout() {
-        if (confirm("Are you sure you want to logout?")) {
-          localStorage.clear();
-          window.location.href = "login.html";
+      const API_BASE = window.API_BASE || 'http://127.0.0.1:5000/api';
+      async function safeFetch(path, opts = {}) {
+        const token = localStorage.getItem('token');
+        const headers = opts.headers || {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        opts.headers = headers;
+        const res = await fetch(API_BASE + path, opts);
+        if (!res.ok) {
+          let txt = '';
+          try { txt = await res.text(); } catch (e) {}
+          const err = new Error(`${res.status} ${res.statusText} ${txt}`);
+          err.status = res.status;
+          throw err;
+        }
+        return res.json();
+      }
+
+      async function loadComplaints() {
+        const tbody = document.getElementById('complaintsBody');
+        try {
+          const token = localStorage.getItem('token');
+          let userId = null;
+          if (token) {
+            try { const payload = JSON.parse(atob(token.split('.')[1])); userId = payload.id; } catch (e) { /* ignore */ }
+          }
+          if (!userId) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-muted">You must <a href="login.html">login</a> to view complaints.</td></tr>`;
+            return;
+          }
+
+          // Decide endpoint based on role: admins and department roles should fetch the admin list
+          const payload = (() => { try { return token ? JSON.parse(atob(token.split('.')[1])) : null; } catch(e){ return null; } })();
+          const role = payload && payload.role;
+          const departmentRoles = ['transport','waste_management','public_lights','water','electricity','internet','healthcare','utility'];
+          const endpoint = (role === 'admin' || departmentRoles.includes(role)) ? '/complaints' : '/complaints/my';
+
+          const res = await fetch(`${(window.API_BASE||'http://127.0.0.1:5000/api')}${endpoint}`, { headers: { 'Authorization': `Bearer ${token}` } });
+          if (!res.ok) {
+            let errMsg = 'Failed to load complaints';
+            try {
+              const j = await res.json();
+              errMsg = j.message || j.error || JSON.stringify(j);
+            } catch (e) {}
+            throw new Error(errMsg);
+          }
+          const complaints = await res.json();
+          if (!complaints || complaints.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-muted">No complaints found.</td></tr>';
+            return;
+          }
+          tbody.innerHTML = '';
+          for (const c of complaints) {
+            const id = c.complaint_id || c.tracking_id || '';
+            const subject = c.subject || (c.complaint_text ? (c.complaint_text.split('\n')[1] || c.complaint_text.substring(0,50)) : '');
+            const date = c.created_at || c.complaint_date || '';
+            const category = c.category || (c.complaint_text ? ( (c.complaint_text.match(/^Category: (.*)/m) || [])[1] || 'N/A') : 'N/A');
+            const status = c.status || 'New';
+            const statusClass = (status || '').toLowerCase().includes('resolved') ? 'bg-success' : (status || '').toLowerCase().includes('in progress') ? 'bg-warning text-dark' : 'bg-danger';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${id}</td>
+              <td>${c.citizen_name || ''}</td>
+              <td>${category}</td>
+              <td>${subject}</td>
+              <td>${date}</td>
+              <td><span class="badge ${statusClass}">${status}</span></td>
+            `;
+            tbody.appendChild(tr);
+          }
+        } catch (err) {
+          console.error('Complaints load failed', err);
+          const msg = (err && err.message) ? err.message : 'Unknown error';
+          if (msg.toLowerCase().includes('profile') || msg.toLowerCase().includes('complete your profile')) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-muted">${msg} <a href="add-citizen.html">Complete your profile</a></td></tr>`;
+          } else {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-danger">Failed to load: ${msg}</td></tr>`;
+          }
         }
       }
+
+      function logout() { if (confirm('Logout?')) { localStorage.clear(); window.location.href='login.html'; } }
+
+      document.addEventListener('DOMContentLoaded', loadComplaints);
     </script>
 </body>
 </html>
