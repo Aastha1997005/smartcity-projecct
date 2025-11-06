@@ -4,34 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Complete Your Profile - Smart City</title>
+    <!-- Fonts from login.html -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Flaticon from login.html -->
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-solid-rounded/css/uicons-solid-rounded.css">
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-bold-rounded/css/uicons-bold-rounded.css">
     <style>
+        /* CSS Variables from login.html for Easy Color Changes */
+        :root {
+            --primary-color: #007bff; /* Bright Blue */
+            --secondary-color: #0056b3; /* Darker Blue */
+            --gradient-start: #007bff;
+            --gradient-end: #004d99; /* Deeper blue for gradients */
+            --font-family-heading: 'Montserrat', sans-serif;
+            --font-family-body: 'Open Sans', sans-serif;
+            --border-color: #ccc;
+        }
+
+        /* Body style from login.html */
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background:
+                url('https://i.ibb.co/S4yxVvP2/img-smartcity.jpg ') center center / cover no-repeat fixed;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--font-family-body);
             padding: 20px;
         }
+
+        /* Adapted container style */
         .profile-container {
-            background: white;
+            background: rgb(244, 238, 232);
             border-radius: 20px;
+            border: 1px solid var(--border-color);
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             max-width: 700px;
             width: 100%;
             padding: 40px;
+            margin: 20px;
         }
+
+        /* Header styles adapted with new colors */
         .profile-header {
             text-align: center;
             margin-bottom: 30px;
         }
+        .profile-header h2 {
+            font-family: var(--font-family-heading);
+            font-weight: 600;
+            color: #333;
+        }
         .profile-header .icon {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -40,12 +70,20 @@
             color: white;
             font-size: 2rem;
         }
+
+        /* Form styles from login.html */
         .form-label {
             font-weight: 600;
             color: #495057;
         }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        /* Button styles from login.html */
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             border: none;
             padding: 12px;
             font-size: 1rem;
@@ -54,22 +92,35 @@
         }
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
         }
+
+        /* Progress bar and badge adapted with new colors */
         .progress-bar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
         }
         .role-badge {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             color: white;
             padding: 8px 16px;
             border-radius: 20px;
             display: inline-block;
             margin-bottom: 20px;
         }
+
+        /* Link color from login.html */
+        .text-decoration-none {
+            color: var(--primary-color);
+        }
+
+        /* Alert style from login.html */
+        .alert {
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
+    <!-- The body is the same as the original completeProfile.html -->
     <div class="profile-container">
         <div class="profile-header">
             <div class="icon">
@@ -283,6 +334,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- The script is the same as the original completeProfile.html, with the bug fix -->
     <script>
         const API_BASE_URL = 'http://localhost:5000/api';
         
@@ -389,7 +441,7 @@
                     localStorage.removeItem('tempEmail');
                     localStorage.removeItem('tempRole');
                     setTimeout(() => {
-                        window.location.href = 'dashboard.html';
+                        window.location.href = 'login.html';
                     }, 2000);
                 } else {
                     const error = await response.json();
