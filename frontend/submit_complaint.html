@@ -7,104 +7,159 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /*
-         * CUSTOM STYLES COPIED FROM dashboard.html
-         * Ensures the Submit Complaint page looks identical to the dashboard.
-         */
-        :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --sidebar-width: 260px;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-        }
-        
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: var(--sidebar-width);
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: white;
-            overflow-y: auto;
-            transition: all 0.3s;
-            z-index: 1000;
-        }
-        
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .nav-link {
-            color: rgba(255,255,255,0.8);
-            padding: 12px 20px;
-            border-radius: 10px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-        }
-        
-        .nav-link:hover {
-            background-color: rgba(255,255,255,0.1);
-            color: white;
-        }
-        
-        .nav-link.active {
-            background-color: white;
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-        
-        .nav-link i {
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
-        }
-        
-        .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 20px;
-            min-height: 100vh;
-        }
-        
-        .welcome-banner {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
-            padding: 30px;
-            color: white;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
+      /* Custom styles from announcements.html */
+      :root {
+        --primary-color: rgba(255, 255, 255, 0.6); /* Deep clean blue */
+        --secondary-color: rgba(255, 255, 255, 0.6); /* Accent blue */
+        --sidebar-width: 260px;
+        --bg-light: #f5f8ff;
+        --text-dark: #03045e;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        background:
+          linear-gradient(
+            rgba(255, 255, 255, 0.6),
+            rgba(255, 255, 255, 0.6)
+          ),
+            url("https://i.ibb.co/S4yxVvP2/img-smartcity.jpg ") center center /
+            cover no-repeat fixed;
+        background-color: rgba(255, 255, 255, 0.94);
+        color: var(--text-dark);
+        margin: 0;
+        padding: 0;
+      }
 
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+
+        background: linear-gradient(
+          180deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+
+        color: rgba(0, 3, 154, 0.866);
+        overflow-y: auto;
+        transition: all 0.3s;
+        z-index: 1000;
+        transition: margin-left 0.4s ease-in-out;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .nav-link {
+        color: #03045e;
+        padding: 12px 20px;
+        border-radius: 10px;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+      }
+
+      .nav-link:hover {
+        background-color: #0076b680;
+        transform: translateX(5px);
+
+        color: rgb(0, 5, 137);
+      }
+
+      .nav-link.active {
+        background-color: #03045e;
+        color: #caf0f8;
+        font-weight: 600;
+      }
+
+      .nav-link i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+      }
+
+      .main-content {
+        margin-left: var(--sidebar-width);
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      .welcome-banner {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-radius: 15px;
+        padding: 30px;
+        color: #03045e;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px #03055e76;
+      }
+      
+      .card {
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 18px;
+        padding: 25px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px #03055e78;
+        transition: all 0.3s ease;
+        border: none;
+        color: #03045E;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          margin-left: calc(-1 * var(--sidebar-width));
         }
-        
-        /* Responsive adjustments from dashboard.html */
-        @media (max-width: 768px) {
-            .sidebar {
-                margin-left: calc(-1 * var(--sidebar-width));
-            }
-            .sidebar.show {
-                margin-left: 0;
-            }
-            .main-content {
-                margin-left: 0;
-            }
+        .sidebar.show {
+          margin-left: 0;
         }
+        .main-content {
+          margin-left: 0;
+        }
+      }
+
+      .logo-img {
+        width: 200px;
+        max-width: 60%;
+        height: auto;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        object-fit: contain;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 8px 22px #03055e7a;
+        background-color: #ffffffd0;
+      }
+
+      .logo-img:hover {
+        transform: scale(1.06);
+        box-shadow: 0 10px 28px rgba(19, 63, 110, 0.568);
+      }
+
+      .btn-outline-primary {
+        color: #03045E;
+        border-color: #03045E;
+      }
+
+      .btn-outline-primary:hover {
+        background-color: #03045E;
+        color: #CAF0F8;
+      }
+
     </style>
 </head>
 <body>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h3><i class="fas fa-city me-2"></i>SmartCity</h3>
+            <h3><img src="assets/07.png" alt="Smart City Logo" class="logo-img" />SmartCity</h3>
             <small id="userRole">CITIZEN</small>
         </div>
         
@@ -113,7 +168,7 @@
             <li class="nav-item"><a class="nav-link" href="my_complaints.html"><i class="fas fa-file-alt"></i> My Complaints</a></li>
             <li class="nav-item"><a class="nav-link active" href="submit_complaint.html"><i class="fas fa-plus-circle"></i> Submit Complaint</a></li>
             <li class="nav-item"><a class="nav-link" href="my_vehicles.html"><i class="fas fa-car"></i> My Vehicles</a></li>
-            <li class="nav-item"><a class="nav-link" href="my-properties.html"><i class="fas fa-home"></i> My Properties</a></li>
+            <li class="nav-item"><a class="nav-link" href="my_properties.html"><i class="fas fa-home"></i> My Properties</a></li>
             <li class="nav-item"><a class="nav-link" href="services.html"><i class="fas fa-concierge-bell"></i> Services</a></li>
             <li class="nav-item"><a class="nav-link" href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
             <li class="nav-item"><a class="nav-link" href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
@@ -136,7 +191,7 @@
 
         <div class="card p-4">
             <div class="card-body">
-                <h5 class="card-title mb-4"><i class="fas fa-edit me-2 text-primary"></i> Complaint Details</h5>
+                <h5 class="card-title mb-4"><i class="fas fa-edit me-2"></i> Complaint Details</h5>
                 
                 <form id="complaintForm">
                     <div class="row g-3">
@@ -185,7 +240,7 @@
                         </div>
 
                         <div class="col-12 pt-3">
-                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                            <button type="submit" class="btn btn-outline-primary btn-lg" id="submitBtn">
                                 <i class="fas fa-paper-plane me-2"></i> Submit Complaint
                             </button>
                             <button type="reset" class="btn btn-outline-secondary btn-lg">
@@ -207,12 +262,10 @@
         const API_BASE_URL = 'http://localhost:5000/api';
         let token = localStorage.getItem('token');
         
-        // Check authentication
         if (!token) {
             window.location.href = 'login.html';
         }
         
-        // Get user info from token (decode JWT for userId)
         let userId = null;
         if (token) {
             try {
@@ -220,8 +273,6 @@
                 userId = payload.id;
             } catch (e) {
                 console.error("Invalid token format.");
-                // Optionally redirect to login if token is unparsable
-                // window.location.href = 'login.html'; 
             }
         }
 
@@ -236,7 +287,6 @@
             document.getElementById('sidebar').classList.toggle('show');
         }
 
-        // --- Complaint Submission Logic ---
         document.getElementById('complaintForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -245,13 +295,11 @@
             const loadingSpinner = document.getElementById('loadingSpinner');
             const alertMessage = document.getElementById('alertMessage');
             
-            // Basic form validation (Bootstrap handled required fields, but good to double-check)
-                if (!userId) {
+            if (!userId) {
                 showAlert('danger', 'Error: User ID not found. Please log in again.');
                 return;
             }
 
-            // Prepare form data
             const formData = {
                 user_id: userId,
                 subject: form.complaintSubject.value,
@@ -259,22 +307,17 @@
                 location: form.complaintLocation.value,
                 description: form.complaintDescription.value,
                 contact_preference: form.contactPreference.value,
-                // Files would require FormData object and a dedicated API handling file upload
-                // For simplicity in this demo, we submit text data only.
             };
 
-            // UI: Disable button and show spinner
             submitBtn.disabled = true;
             loadingSpinner.style.display = 'inline-block';
             alertMessage.style.display = 'none';
 
             try {
-                // Check attachments file sizes
                 const files = document.getElementById('complaintAttachment').files;
                 for (let i=0;i<files.length;i++){
                     if (files[i].size > 5 * 1024 * 1024) return showAlert('danger','Each attachment must be <= 5MB');
                 }
-                // Assuming your backend has a POST /api/complaints endpoint
                 const res = await fetch(`${API_BASE_URL}/complaints`, {
                     method: 'POST',
                     headers: { 
@@ -289,9 +332,8 @@
                 if (res.ok) {
                     showAlert('success', `Complaint submitted successfully! Your tracking ID is: <strong>${data.trackingId || 'N/A'}</strong>. You will be redirected shortly.`);
                     form.reset();
-                    // Redirect after a short delay
                     setTimeout(() => {
-                        window.location.href = 'my_complaint.html';
+                        window.location.href = 'my_complaints.html';
                     }, 3000);
                 } else {
                     const errMsg = data.message || data.error || 'Server error.';
@@ -302,7 +344,6 @@
                 console.error('Submission error:', error);
                 showAlert('danger', 'Network error. Could not connect to the server.');
             } finally {
-                // UI: Re-enable button and hide spinner
                 submitBtn.disabled = false;
                 loadingSpinner.style.display = 'none';
             }
@@ -314,7 +355,6 @@
             alertMessage.style.display = 'block';
         }
 
-        // Initial setup
         document.getElementById('userRole').textContent = 'CITIZEN'; 
     </script>
 </body>
