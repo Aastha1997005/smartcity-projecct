@@ -32,7 +32,6 @@
         margin: 0;
       }
 
-
       /* side bar */
       .sidebar {
         position: fixed;
@@ -40,7 +39,7 @@
         left: 0;
         height: 100vh;
         width: var(--sidebar-width);
-        
+
         background: linear-gradient(
           180deg,
           var(--primary-color),
@@ -117,7 +116,7 @@
 
         color: rgb(0, 5, 137);
       }
-       .nav-link.active {
+      .nav-link.active {
         background-color: #03045e;
         color: #CAF0F8;
         font-weight: 600;
@@ -178,77 +177,96 @@
           margin-left: 0;
         }
       }
+.spec-tag {
+  background: linear-gradient(135deg, #0c0052, #0096c7);
+  padding: 6px 14px;
+  border-radius: 50px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 119, 182, 0.3);
+}
+
+      /* ✅ Minor styling to match the cards for the bookings list */
+      #myBookingsSection {
+        margin-top: 30px;
+      }
+      #myBookingsList .list-group-item {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 12px;
+        margin-bottom: 8px;
+        padding: 12px 15px;
+        box-shadow: 0 2px 8px #03055e40;
+      }
     </style>
   </head>
   <body>
-    
+
 <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <h3>
-            <img src="assets/07.png" alt="Smart City Logo" class="logo-img" />
-            SmartCity
-        </h3>
-        <small>CITIZEN</small>
-    </div>
+  <div class="sidebar-header">
+    <h3>
+      <img src="assets/07.png" alt="Smart City Logo" class="logo-img" />
+      SmartCity
+    </h3>
+    <small>CITIZEN</small>
+  </div>
 
-    <ul class="nav flex-column mt-3">
-        <li class="nav-item">
-            <a class="nav-link" href="dashboard.html">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-        </li>
+  <ul class="nav flex-column mt-3">
+    <li class="nav-item">
+      <a class="nav-link" href="dashboard.html">
+        <i class="fas fa-home"></i> Dashboard
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="my_complaints.html">
-                <i class="fas fa-file-alt"></i> My Complaints
-            </a>
-        </li>
+    <li class="nav-item">
+      <a class="nav-link" href="my_complaints.html">
+        <i class="fas fa-file-alt"></i> My Complaints
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="submit_complaint.html">
-                <i class="fas fa-plus-circle"></i> Submit Complaint
-            </a>
-        </li>
+    <li class="nav-item">
+      <a class="nav-link" href="submit_complaint.html">
+        <i class="fas fa-plus-circle"></i> Submit Complaint
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="my_vehicles.html">
-                <i class="fas fa-car"></i> My Vehicles
-            </a>
-        </li>
+    <li class="nav-item">
+      <a class="nav-link" href="my_vehicles.html">
+        <i class="fas fa-car"></i> My Vehicles
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="my-properties.html">
-                <i class="fas fa-home"></i> My Properties
-            </a>
-        </li>
+    <li class="nav-item">
+      <a class="nav-link" href="my-properties.html">
+        <i class="fas fa-home"></i> My Properties
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link active" href="services.html">
-                <i class="fas fa-concierge-bell"></i> Services
-            </a>
-        </li>
+    <li class="nav-item">
+      <a class="nav-link active" href="services.html">
+        <i class="fas fa-concierge-bell"></i> Services
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="announcements.html">
-                <i class="fas fa-bullhorn"></i> Announcements
-            </a>
-        </li>
+    <li class="nav-item">
+      <a class="nav-link" href="announcements.html">
+        <i class="fas fa-bullhorn"></i> Announcements
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="profile.html">
-                <i class="fas fa-user"></i> My Profile
-            </a>
-        </li>
+    <li class="nav-item">
+      <a class="nav-link" href="profile.html">
+        <i class="fas fa-user"></i> My Profile
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="#" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
-        </li>
-    </ul>
+    <li class="nav-item">
+      <a class="nav-link" href="#" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </li>
+  </ul>
 </div>
-
-
 
     <div class="main-content">
       <div
@@ -318,6 +336,12 @@
           </div>
         </div>
       </div>
+
+      <!-- ✅ My Bookings Section (moved inside .main-content, below the cards) -->
+      <div id="myBookingsSection" class="service-card mt-4">
+        <h4><i class="fa-solid fa-book me-2"></i>My Bookings</h4>
+        <ul id="myBookingsList" class="list-group small"></ul>
+      </div>
     </div>
 
     <!-- Success Modal -->
@@ -336,7 +360,7 @@
             <p class="mb-0" id="okText"></p>
           </div>
           <div class="modal-footer">
-            <a href="bookings.html" class="btn btn-primary">View My Bookings</a>
+            <button class="btn btn-primary" onclick="scrollToBookings()">View My Bookings</button>
             <button class="btn btn-secondary" data-bs-dismiss="modal">
               Close
             </button>
@@ -449,6 +473,41 @@
         }
       }
 
+      function scrollToBookings() {
+        document.getElementById("myBookingsSection").scrollIntoView({
+          behavior: "smooth"
+        });
+      }
+
+      function loadBookings() {
+        const list = document.getElementById("myBookingsList");
+        list.innerHTML = "";
+
+        // hardcoded sample bookings
+        const hardcoded = [
+          { doctor: { name: "Dr. A. Mehta", spec: "Cardiologist" }, date: "2025-02-10", time: "10:00" },
+          { doctor: { name: "Dr. B. Shah", spec: "Dentist" },      date: "2025-02-09", time: "14:30" }
+        ];
+
+        // saved bookings from localStorage
+        const saved = JSON.parse(localStorage.getItem("citizen_bookings") || "[]");
+
+        const all = [...hardcoded, ...saved];
+
+        all.forEach(b => {
+          const li = document.createElement("li");
+          li.className = "list-group-item d-flex justify-content-between";
+          li.innerHTML = `
+            <div>
+              <strong>${b.doctor.name}</strong>
+              <div class="text-muted small">${b.date} • ${b.time}</div>
+            </div>
+<span class="spec-tag">${b.doctor.spec}</span>
+          `;
+          list.appendChild(li);
+        });
+      }
+
       document
         .getElementById("specialty")
         .addEventListener("change", renderDoctors);
@@ -462,9 +521,7 @@
           time: selectedSlot,
           createdAt: new Date().toISOString(),
         };
-        const arr = JSON.parse(
-          localStorage.getItem("citizen_bookings") || "[]"
-        );
+        const arr = JSON.parse(localStorage.getItem("citizen_bookings") || "[]");
         arr.push(booking);
         localStorage.setItem("citizen_bookings", JSON.stringify(arr));
         document.getElementById(
@@ -475,6 +532,7 @@
 
       renderDoctors();
       renderSlots();
+      loadBookings();   // <-- only on page load
     </script>
   </body>
 </html>

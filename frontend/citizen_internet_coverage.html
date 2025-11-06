@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Internet Coverage - SmartCity</title>
+
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -12,6 +13,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+
     <style>
       /* theme */
       :root {
@@ -20,6 +22,7 @@
         --sidebar-width: 260px;
         --text-dark: #03045e;
       }
+
       body {
         font-family: "Montserrat", sans-serif;
         background: linear-gradient(
@@ -29,13 +32,15 @@
           url("https://i.ibb.co/S4yxVvP2/img-smartcity.jpg") center/cover fixed;
         color: var(--text-dark);
       }
+
+      /* sidebar */
       .sidebar {
         position: fixed;
         top: 0;
         left: 0;
         height: 100vh;
         width: var(--sidebar-width);
-        
+
         background: linear-gradient(
           180deg,
           var(--primary-color),
@@ -47,19 +52,18 @@
 
         color: rgba(0, 3, 154, 0.866);
         overflow-y: auto;
-        transition: all 0.3s;
-        z-index: 1000;
         transition: margin-left 0.4s ease-in-out;
+        z-index: 1000;
       }
       .sidebar-header {
         padding: 20px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
-      /* // */
-      /* Enhanced Responsive Logo Styling */
+
+      /* responsive logo */
       .logo-img {
-        width: 200px; /* Bigger default size */
-        max-width: 60%; /* Prevents overflow on smaller viewports */
+        width: 200px;
+        max-width: 60%;
         height: auto;
         margin-bottom: 30px;
         border-radius: 15px;
@@ -68,79 +72,46 @@
         box-shadow: 0 8px 22px #03055e7a;
         background-color: #ffffffd0;
       }
-
-      /* Hover animation to match the elegant button style */
       .logo-img:hover {
         transform: scale(1.06);
         box-shadow: 0 10px 28px rgba(19, 63, 110, 0.568);
       }
 
-      /* Responsive adjustments for various screen sizes */
-      @media (max-width: 992px) {
-        .logo-img {
-          width: 170px;
-          margin-bottom: 25px;
-        }
-      }
-
-      @media (max-width: 768px) {
-        .logo-img {
-          width: 140px;
-          margin-bottom: 22px;
-        }
-      }
-
-      @media (max-width: 576px) {
-        .logo-img {
-          width: 110px;
-          margin-bottom: 18px;
-        }
-      }
-
-      /* // */
       .nav-link {
-        color: #03045E;
+        color: #03045e;
         padding: 12px 20px;
         border-radius: 10px;
-        transition: all 0.3s;
         display: flex;
         align-items: center;
+        transition: 0.3s;
       }
       .nav-link:hover {
         background-color: #0076b680;
         transform: translateX(5px);
-
         color: rgb(0, 5, 137);
       }
-       .nav-link.active {
+      .nav-link.active {
         background-color: #03045e;
-        color: #CAF0F8;
+        color: #caf0f8;
         font-weight: 600;
       }
-
       .nav-link i {
         margin-right: 10px;
-        width: 20px;
-        text-align: center;
       }
 
+      /* main */
       .main-content {
         margin-left: var(--sidebar-width);
         padding: 20px;
-        min-height: 100vh;
       }
 
-      /* sidebar ends */
       .welcome-banner {
-        background: linear-gradient(
-          135deg,
-          var(--primary-color),
-          var(--secondary-color)
-        );
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         border-radius: 15px;
         padding: 24px;
         box-shadow: 0 10px 25px #03055e76;
       }
+
       .card-glass {
         background: rgba(255, 255, 255, 0.6);
         border-radius: 18px;
@@ -148,6 +119,7 @@
         backdrop-filter: blur(10px);
         box-shadow: 0 4px 15px #03055e78;
       }
+
       @media (max-width: 768px) {
         .sidebar {
           margin-left: -260px;
@@ -161,189 +133,108 @@
       }
     </style>
   </head>
+
   <body>
+    <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
+      <div class="sidebar-header">
         <h3>
-            <img src="assets/07.png" alt="Smart City Logo" class="logo-img" />
-            SmartCity
+          <img src="assets/07.png" class="logo-img" />
+          SmartCity
         </h3>
         <small>CITIZEN</small>
+      </div>
+
+      <ul class="nav flex-column mt-3">
+        <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="my_complaints.html"><i class="fas fa-file-alt"></i> My Complaints</a></li>
+        <li class="nav-item"><a class="nav-link" href="submit_complaint.html"><i class="fas fa-plus-circle"></i> Submit Complaint</a></li>
+        <li class="nav-item"><a class="nav-link" href="my_vehicles.html"><i class="fas fa-car"></i> My Vehicles</a></li>
+        <li class="nav-item"><a class="nav-link" href="my-properties.html"><i class="fas fa-home"></i> My Properties</a></li>
+        <li class="nav-item"><a class="nav-link active" href="services.html"><i class="fas fa-concierge-bell"></i> Services</a></li>
+        <li class="nav-item"><a class="nav-link" href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+        <li class="nav-item"><a class="nav-link" href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="localStorage.clear(); location='login.html';"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+      </ul>
     </div>
-    
-    <ul class="nav flex-column mt-3">
-        <li class="nav-item">
-            <a class="nav-link" href="dashboard.html">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-        </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="my_complaints.html">
-                <i class="fas fa-file-alt"></i> My Complaints
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="submit_complaint.html">
-                <i class="fas fa-plus-circle"></i> Submit Complaint
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="my_vehicles.html">
-                <i class="fas fa-car"></i> My Vehicles
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="my-properties.html">
-                <i class="fas fa-home"></i> My Properties
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link active" href="services.html">
-                <i class="fas fa-concierge-bell"></i> Services
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="announcements.html">
-                <i class="fas fa-bullhorn"></i> Announcements
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="profile.html">
-                <i class="fas fa-user"></i> My Profile
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="#" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
-        </li>
-    </ul>
-</div>
-
+    <!-- MAIN CONTENT -->
     <div class="main-content">
-      <div
-        class="welcome-banner d-flex justify-content-between align-items-center flex-wrap mb-3"
-      >
+      <div class="welcome-banner d-flex justify-content-between align-items-center flex-wrap mb-3">
         <div>
           <h1 class="mb-1">Internet Coverage</h1>
-          <p class="opacity-75 mb-0">
-            Check public Wi-Fi coverage and report issues.
-          </p>
+          <p class="opacity-75 mb-0">Check public Wi-Fi coverage and redirect to complaint portal.</p>
         </div>
+
         <button class="btn btn-light mt-3 mt-md-0" onclick="toggleSidebar()">
           <i class="fas fa-bars me-2"></i>Menu
         </button>
       </div>
 
       <div class="row g-3">
+        <!-- LEFT: Coverage Check -->
         <div class="col-lg-5">
           <div class="card-glass h-100">
-            <h5 class="mb-2">
+            <h5>
               <i class="fa-solid fa-wifi me-2 text-primary"></i>Check Coverage
             </h5>
+
             <label class="form-label">Enter Address / Landmark</label>
-            <input
-              id="addr"
-              class="form-control mb-2"
-              placeholder="e.g., River Park, Ward 7"
-            />
+            <input id="addr" class="form-control mb-2" placeholder="e.g., River Park, Ward 7" />
+
             <button class="btn btn-primary" onclick="check()">Check</button>
+
             <hr />
+
             <div id="result" class="small text-muted">
               Coverage result will appear here.
             </div>
           </div>
         </div>
 
+        <!-- RIGHT: Redirect Instead of Form -->
         <div class="col-lg-7">
           <div class="card-glass h-100">
-            <h5 class="mb-2">
-              <i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i
-              >Report Connectivity Issue
+            <h5>
+              <i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i>
+              Report Connectivity Issue
             </h5>
-            <div class="row g-2">
-              <div class="col-md-6">
-                <label class="form-label">Location</label>
-                <input
-                  id="issueLoc"
-                  class="form-control"
-                  placeholder="Address / Landmark"
-                />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Issue Type</label>
-                <select id="issueType" class="form-select">
-                  <option>Slow Speed</option>
-                  <option>No Connectivity</option>
-                  <option>Frequent Drop</option>
-                  <option>Portal Login Problem</option>
-                </select>
-              </div>
-              <div class="col-12">
-                <label class="form-label">Description (optional)</label>
-                <textarea
-                  id="issueDesc"
-                  class="form-control"
-                  rows="3"
-                ></textarea>
-              </div>
-              <div class="col-12">
-                <button class="btn btn-danger mt-2" onclick="submitIssue()">
-                  <i class="fa-regular fa-paper-plane me-2"></i>Submit Issue
-                </button>
-                <div class="small text-success mt-2 d-none" id="issueOk">
-                  Issue submitted. Ticket ID: <span id="ticketId"></span>
-                </div>
-              </div>
-            </div>
+
+            <p class="opacity-75 small mb-3">
+              All network issues must be submitted through the official complaint portal.
+            </p>
+
+            <a href="submit_complaint.html" class="btn btn-danger">
+              <i class="fa-solid fa-paper-plane me-2"></i>
+              Go to Submit Complaint
+            </a>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
       function toggleSidebar() {
         document.getElementById("sidebar").classList.toggle("show");
       }
+
       function rand(n) {
         return Math.floor(Math.random() * n);
       }
+
       function check() {
         const a = document.getElementById("addr").value.trim();
-        if (!a) {
-          return alert("Enter a location");
-        }
-        // mock: 70% covered, 30% weak
+        if (!a) return alert("Enter a location");
+
         const covered = Math.random() > 0.3;
         const strength = ["Weak", "Fair", "Good", "Excellent"][rand(4)];
+
         document.getElementById("result").innerHTML = covered
           ? `<div class="alert alert-success mb-0"><strong>Covered:</strong> ${a}<br/>Signal: <b>${strength}</b></div>`
           : `<div class="alert alert-warning mb-0"><strong>Limited Coverage</strong> near ${a}. Try a different hotspot.</div>`;
-      }
-      function submitIssue() {
-        const issue = {
-          loc: issueLoc.value,
-          type: issueType.value,
-          desc: issueDesc.value,
-          ts: new Date().toISOString(),
-        };
-        const arr = JSON.parse(localStorage.getItem("internet_issues") || "[]");
-        arr.push(issue);
-        localStorage.setItem("internet_issues", JSON.stringify(arr));
-        const id = "WIFI-" + (1000 + rand(9000));
-        document.getElementById("ticketId").textContent = id;
-        document.getElementById("issueOk").classList.remove("d-none");
-        issueLoc.value = "";
-        issueDesc.value = "";
       }
     </script>
   </body>
