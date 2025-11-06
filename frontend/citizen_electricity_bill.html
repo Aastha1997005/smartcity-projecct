@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Electricity Bill - SmartCity</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      /* theme */
+      :root {
+        --primary-color: rgba(255, 255, 255, 0.6);
+        --secondary-color: rgba(255, 255, 255, 0.6);
+        --sidebar-width: 260px;
+        --text-dark: #03045e;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        background: linear-gradient(
+            rgba(255, 255, 255, 0.6),
+            rgba(255, 255, 255, 0.6)
+          ),
+          url("https://i.ibb.co/S4yxVvP2/img-smartcity.jpg") center/cover fixed;
+        color: var(--text-dark);
+      }
+     .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+        
+        background: linear-gradient(
+          180deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+
+        color: rgba(0, 3, 154, 0.866);
+        overflow-y: auto;
+        transition: all 0.3s;
+        z-index: 1000;
+        transition: margin-left 0.4s ease-in-out;
+      }
+      .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      /* // */
+      /* Enhanced Responsive Logo Styling */
+      .logo-img {
+        width: 200px; /* Bigger default size */
+        max-width: 60%; /* Prevents overflow on smaller viewports */
+        height: auto;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        object-fit: contain;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 8px 22px #03055e7a;
+        background-color: #ffffffd0;
+      }
+
+      /* Hover animation to match the elegant button style */
+      .logo-img:hover {
+        transform: scale(1.06);
+        box-shadow: 0 10px 28px rgba(19, 63, 110, 0.568);
+      }
+
+      /* Responsive adjustments for various screen sizes */
+      @media (max-width: 992px) {
+        .logo-img {
+          width: 170px;
+          margin-bottom: 25px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .logo-img {
+          width: 140px;
+          margin-bottom: 22px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .logo-img {
+          width: 110px;
+          margin-bottom: 18px;
+        }
+      }
+
+      /* // */
+      .nav-link {
+        color: #03045E;
+        padding: 12px 20px;
+        border-radius: 10px;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+      }
+      .nav-link:hover {
+        background-color: #0076b680;
+        transform: translateX(5px);
+
+        color: rgb(0, 5, 137);
+      }
+       .nav-link.active {
+        background-color: #03045e;
+        color: #CAF0F8;
+        font-weight: 600;
+      }
+
+      .nav-link i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+      }
+
+      .main-content {
+        margin-left: var(--sidebar-width);
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      /* sidebar ends */
+      .welcome-banner {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-radius: 15px;
+        padding: 24px;
+        box-shadow: 0 10px 25px #03055e76;
+      }
+      .card-glass {
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 18px;
+        padding: 16px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px #03055e78;
+      }
+      @media (max-width: 768px) {
+        .sidebar {
+          margin-left: -260px;
+        }
+        .sidebar.show {
+          margin-left: 0;
+        }
+        .main-content {
+          margin-left: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>
+            <img src="assets/07.png" alt="Smart City Logo" class="logo-img" />
+            SmartCity
+        </h3>
+        <small>CITIZEN</small>
+    </div>
+    
+    <ul class="nav flex-column mt-3">
+        <li class="nav-item">
+            <a class="nav-link" href="dashboard.html">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="my_complaints.html">
+                <i class="fas fa-file-alt"></i> My Complaints
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="submit_complaint.html">
+                <i class="fas fa-plus-circle"></i> Submit Complaint
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="my_vehicles.html">
+                <i class="fas fa-car"></i> My Vehicles
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="my-properties.html">
+                <i class="fas fa-home"></i> My Properties
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link active" href="services.html">
+                <i class="fas fa-concierge-bell"></i> Services
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="announcements.html">
+                <i class="fas fa-bullhorn"></i> Announcements
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="profile.html">
+                <i class="fas fa-user"></i> My Profile
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="#" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+    <div class="main-content">
+      <div
+        class="welcome-banner d-flex justify-content-between align-items-center flex-wrap mb-3"
+      >
+        <div>
+          <h1 class="mb-1">Electricity Bill</h1>
+          <p class="opacity-75 mb-0">View current bill and pay securely.</p>
+        </div>
+        <button class="btn btn-light mt-3 mt-md-0" onclick="toggleSidebar()">
+          <i class="fas fa-bars me-2"></i>Menu
+        </button>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="card-glass h-100">
+            <h5 class="mb-2">
+              <i class="fa-solid fa-bolt me-2 text-warning"></i>Bill Summary
+            </h5>
+            <div id="billCard"></div>
+            <button id="payBtn" class="btn btn-warning mt-3">
+              <i class="fa-solid fa-credit-card me-2"></i>Pay Now
+            </button>
+            <div class="small text-success mt-2 d-none" id="paidOk">
+              Payment successful. Receipt #: <span id="rcpt"></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card-glass h-100">
+            <h5 class="mb-2">
+              <i class="fa-solid fa-gauge-high me-2 text-warning"></i>Usage
+              (Last 6 months)
+            </h5>
+            <div class="row g-2" id="usageRow"></div>
+            <div class="small text-muted mt-2">
+              Tip: Reduce peak hour usage to save on surcharges.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("show");
+      }
+      const bill = {
+        consumerNo: "SC-EL-1245789",
+        name: "Suhani Vataliya",
+        addr: "Ward 7, River View",
+        period: "Oct 2025",
+        units: 286,
+        rate: 7.5,
+        fixed: 120,
+        tax: 0.05,
+      };
+      bill.amount = bill.units * bill.rate + bill.fixed;
+      bill.total = Math.round(bill.amount * (1 + bill.tax));
+
+      function render() {
+        document.getElementById("billCard").innerHTML = `
+    <ul class="list-group">
+      <li class="list-group-item d-flex justify-content-between"><span>Consumer No</span><strong>${bill.consumerNo}</strong></li>
+      <li class="list-group-item d-flex justify-content-between"><span>Name</span><strong>${bill.name}</strong></li>
+      <li class="list-group-item d-flex justify-content-between"><span>Address</span><strong>${bill.addr}</strong></li>
+      <li class="list-group-item d-flex justify-content-between"><span>Billing Period</span><strong>${bill.period}</strong></li>
+      <li class="list-group-item d-flex justify-content-between"><span>Units</span><strong>${bill.units} kWh</strong></li>
+      <li class="list-group-item d-flex justify-content-between"><span>Subtotal</span><strong>₹${bill.amount}</strong></li>
+      <li class="list-group-item d-flex justify-content-between"><span>Tax</span><strong>5%</strong></li>
+      <li class="list-group-item d-flex justify-content-between"><span>Total Due</span><strong class="text-danger">₹${bill.total}</strong></li>
+    </ul>`;
+        // mock usage
+        const row = document.getElementById("usageRow");
+        const months = ["May", "Jun", "Jul", "Aug", "Sep", "Oct"];
+        row.innerHTML = "";
+        months.forEach((m, i) => {
+          const u = Math.round(220 + Math.random() * 120);
+          const col = document.createElement("div");
+          col.className = "col-4";
+          col.innerHTML = `<div class="border rounded-3 p-2 text-center"><div class="small">${m}</div><div class="fw-bold">${u}</div><div class="small">kWh</div></div>`;
+          row.appendChild(col);
+        });
+      }
+      render();
+
+      document.getElementById("payBtn").onclick = () => {
+        const payments = JSON.parse(
+          localStorage.getItem("elec_payments") || "[]"
+        );
+        const receipt = "EL-" + (100000 + Math.floor(Math.random() * 900000));
+        payments.push({
+          total: bill.total,
+          ts: new Date().toISOString(),
+          receipt,
+        });
+        localStorage.setItem("elec_payments", JSON.stringify(payments));
+        document.getElementById("rcpt").textContent = receipt;
+        document.getElementById("paidOk").classList.remove("d-none");
+      };
+    </script>
+  </body>
+</html>
