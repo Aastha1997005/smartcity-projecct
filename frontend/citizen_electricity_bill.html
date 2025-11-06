@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Electricity Bill - SmartCity</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --primary-color: rgba(255, 255, 255, 0.6);
+        --secondary-color: rgba(255, 255, 255, 0.6);
+        --sidebar-width: 260px;
+        --text-dark: #03045e;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        background: linear-gradient(
+            rgba(255, 255, 255, 0.6),
+            rgba(255, 255, 255, 0.6)
+          ),
+          url("https://i.ibb.co/S4yxVvP2/img-smartcity.jpg") center/cover fixed;
+        color: var(--text-dark);
+      }
+
+      /* Sidebar */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+        background: linear-gradient(
+          180deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+        overflow-y: auto;
+        transition: margin-left 0.4s ease-in-out;
+        z-index: 1000;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .logo-img {
+        width: 200px;
+        max-width: 60%;
+        height: auto;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        box-shadow: 0 8px 22px #03055e7a;
+        background-color: #ffffffd0;
+        transition: 0.3s;
+      }
+
+      .logo-img:hover {
+        transform: scale(1.06);
+        box-shadow: 0 10px 28px rgba(19, 63, 110, 0.5);
+      }
+
+      .nav-link {
+        color: #03045e;
+        padding: 12px 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        transition: 0.3s;
+      }
+
+      .nav-link i {
+        margin-right: 10px;
+      }
+
+      .nav-link:hover {
+        background-color: #0076b680;
+        transform: translateX(5px);
+        color: rgb(0, 5, 137);
+      }
+
+      .nav-link.active {
+        background-color: #03045e;
+        color: #caf0f8;
+      }
+
+      /* Main */
+      .main-content {
+        margin-left: var(--sidebar-width);
+        padding: 20px;
+      }
+
+      .welcome-banner {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-radius: 15px;
+        padding: 24px;
+        box-shadow: 0 10px 25px #03055e76;
+      }
+
+      /* Modern Bill Card */
+      .bill-card {
+        background: rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 8px 25px rgba(3, 5, 94, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+      }
+
+      .bill-title {
+        font-weight: 700;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .bill-title i {
+        margin-right: 10px;
+        color: #f4a100;
+      }
+
+      .bill-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.15);
+      }
+
+      .bill-row:last-child {
+        border-bottom: none;
+      }
+
+      .total-amount {
+        color: #d00000;
+        font-weight: 700;
+        font-size: 18px;
+      }
+
+      .pay-btn {
+        background: #ffb703;
+        color: #000;
+        font-weight: 600;
+        padding: 10px 22px;
+        border-radius: 10px;
+        border: none;
+        transition: 0.3s;
+        margin-top: 15px;
+      }
+
+      .pay-btn:hover {
+        background: #fb8500;
+        transform: translateY(-2px);
+      }
+
+      /* Responsive Sidebar */
+      @media (max-width: 768px) {
+        .sidebar {
+          margin-left: -260px;
+        }
+        .sidebar.show {
+          margin-left: 0;
+        }
+        .main-content {
+          margin-left: 0;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h3>
+          <img src="assets/07.png" class="logo-img" />
+          SmartCity
+        </h3>
+        <small>CITIZEN</small>
+      </div>
+
+      <ul class="nav flex-column mt-3">
+        <li class="nav-item">
+          <a class="nav-link" href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="my_complaints.html"
+            ><i class="fas fa-file-alt"></i> My Complaints</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="submit_complaint.html"
+            ><i class="fas fa-plus-circle"></i> Submit Complaint</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="my_vehicles.html"
+            ><i class="fas fa-car"></i> My Vehicles</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="my-properties.html"
+            ><i class="fas fa-home"></i> My Properties</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="services.html"
+            ><i class="fas fa-concierge-bell"></i> Services</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="announcements.html"
+            ><i class="fas fa-bullhorn"></i> Announcements</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="profile.html"
+            ><i class="fas fa-user"></i> My Profile</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" onclick="logout()"
+            ><i class="fas fa-sign-out-alt"></i> Logout</a
+          >
+        </li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div
+        class="welcome-banner d-flex justify-content-between align-items-center flex-wrap mb-3"
+      >
+        <div>
+          <h1 class="mb-1">Electricity Bill</h1>
+          <p class="opacity-75 mb-0">View current bill and pay securely.</p>
+        </div>
+        <button class="btn btn-light" onclick="toggleSidebar()">
+          <i class="fas fa-bars me-2"></i>Menu
+        </button>
+      </div>
+
+      <div class="col-lg-8 mx-auto">
+        <div class="bill-card">
+          <div class="bill-title">
+            <i class="fa-solid fa-file-invoice"></i> Bill Summary
+          </div>
+
+          <div class="bill-row"><span>Consumer No</span><strong id="bc1"></strong></div>
+          <div class="bill-row"><span>Name</span><strong id="bc2"></strong></div>
+          <div class="bill-row"><span>Address</span><strong id="bc3"></strong></div>
+          <div class="bill-row"><span>Billing Period</span><strong id="bc4"></strong></div>
+          <div class="bill-row"><span>Units</span><strong id="bc5"></strong></div>
+          <div class="bill-row"><span>Subtotal</span><strong id="bc6"></strong></div>
+          <div class="bill-row"><span>Tax</span><strong id="bc7"></strong></div>
+          <div class="bill-row">
+            <span>Total Due</span>
+            <strong class="total-amount" id="bc8"></strong>
+          </div>
+
+          <button id="payBtn" class="pay-btn">
+            <i class="fa-solid fa-credit-card me-2"></i> Pay Now
+          </button>
+
+          <div class="small text-success mt-2 d-none" id="paidOk">
+            Payment successful. Receipt #: <span id="rcpt"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS -->
+    <script>
+      function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("show");
+      }
+
+      const bill = {
+        consumerNo: "SC-EL-1245789",
+        name: "Suhani Vataliya",
+        addr: "Ward 7, River View",
+        period: "Oct 2025",
+        units: 286,
+        rate: 7.5,
+        fixed: 120,
+        tax: 0.05,
+      };
+
+      bill.amount = bill.units * bill.rate + bill.fixed;
+      bill.total = Math.round(bill.amount * (1 + bill.tax));
+
+      function render() {
+        bc1.textContent = bill.consumerNo;
+        bc2.textContent = bill.name;
+        bc3.textContent = bill.addr;
+        bc4.textContent = bill.period;
+        bc5.textContent = bill.units + " kWh";
+        bc6.textContent = "₹" + bill.amount;
+        bc7.textContent = "5%";
+        bc8.textContent = "₹" + bill.total;
+      }
+      render();
+
+      payBtn.onclick = () => {
+        const payments = JSON.parse(
+          localStorage.getItem("elec_payments") || "[]"
+        );
+        const receipt =
+          "EL-" + (100000 + Math.floor(Math.random() * 900000));
+
+        payments.push({
+          total: bill.total,
+          ts: new Date().toISOString(),
+          receipt,
+        });
+
+        localStorage.setItem("elec_payments", JSON.stringify(payments));
+
+        document.getElementById("rcpt").textContent = receipt;
+        document.getElementById("paidOk").classList.remove("d-none");
+      };
+    </script>
+  </body>
+</html>
