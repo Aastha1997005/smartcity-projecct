@@ -397,30 +397,9 @@ background:
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td class="fw-semibold">John Doe</td>
-                                    <td>Community Hall</td>
-                                    <td>2024-01-20</td>
-                                    <td>10:00 AM</td>
-                                    <td><span class="badge bg-success">Confirmed</span></td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td class="fw-semibold">Jane Smith</td>
-                                    <td>Sports Complex</td>
-                                    <td>2024-01-21</td>
-                                    <td>2:00 PM</td>
-                                    <td><span class="badge bg-warning text-dark">Pending</span></td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td class="fw-semibold">Bob Johnson</td>
-                                    <td>Meeting Room</td>
-                                    <td>2024-01-22</td>
-                                    <td>9:00 AM</td>
-                                    <td><span class="badge bg-success">Confirmed</span></td>
+                            <tbody id="bookings-tbody">
+                                <tr id="bookings-loading-row">
+                                  <td colspan="6" class="text-center py-4">Loading bookings…</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -439,6 +418,71 @@ background:
           window.location.href = "login.html";
         }
       }
+
+      (function renderBookings(){
+        const tbody = document.getElementById('bookings-tbody');
+        const loadingRow = document.getElementById('bookings-loading-row');
+        const API_BASE = window.API_BASE || 'http://127.0.0.1:5000/api';
+
+        async function fetchBookings(){
+          try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+              tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4">You are not logged in. Please <a href="login.html">log in</a> to view bookings.</td></tr>`;
+              return;
+            }
+
+            const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+            const res = await fetch(`${API_BASE}/bookings`, { headers });
+            if (!res.ok) {
+              if (res.status === 401) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-warning py-4">Unauthorized — your session may have expired. Please <a href="login.html">log in</a> again.</td></tr>`;
+                return;
+              }
+              const txt = await res.text();
+              throw new Error(`Failed to fetch bookings: ${res.status} ${txt}`);
+            }
+            const data = await res.json();
+            const list = data.bookings || [];
+            // clear tbody
+            tbody.innerHTML = '';
+            if (list.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No bookings found</td></tr>';
+              return;
+            }
+
+            for (const b of list) {
+              const tr = document.createElement('tr');
+              const date = b.booking_start ? (new Date(b.booking_start)).toLocaleDateString() : '';
+              const time = b.booking_start ? (new Date(b.booking_start)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+              const statusBadge = (() => {
+                const s = (b.status || '').toLowerCase();
+                if (s === 'confirmed' || s === 'completed') return '<span class="badge bg-success">Confirmed</span>';
+                if (s === 'pending' || s === 'upcoming' || s === 'scheduled') return '<span class="badge bg-warning text-dark">Pending</span>';
+                if (s === 'cancelled' || s === 'rejected') return '<span class="badge bg-danger">Cancelled</span>';
+                return `<span class="badge bg-secondary">${b.status || 'unknown'}</span>`;
+              })();
+
+              tr.innerHTML = `
+                <td>${b.booking_id}</td>
+                <td class="fw-semibold">${b.citizen_name || (b.first_name ? (b.first_name + ' ' + (b.last_name||'')) : '')}</td>
+                <td>${b.service_name || b.service_name_cache || ''}</td>
+                <td>${date}</td>
+                <td>${time}</td>
+                <td>${statusBadge}</td>
+              `;
+              tbody.appendChild(tr);
+            }
+          } catch (err) {
+            console.error(err);
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Error loading bookings: ${err.message}</td></tr>`;
+          }
+        }
+
+        fetchBookings();
+      })();
     </script>
 </body>
 </html>

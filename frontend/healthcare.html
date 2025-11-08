@@ -416,7 +416,7 @@ background:
       }
     </script>
     <script>
-        const API_BASE = '/api';
+  const API_BASE = window.API_BASE || 'http://127.0.0.1:5000/api';
         async function loadFacilities() {
             const listEl = document.getElementById('facilityList');
             try {
