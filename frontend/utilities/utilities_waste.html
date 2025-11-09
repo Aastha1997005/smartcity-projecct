@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Waste Management - SmartCity</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --primary-color: rgba(255, 255, 255, 0.6);
+      --secondary-color: rgba(255, 255, 255, 0.6);
+      --sidebar-width: 260px;
+      --text-dark: #03045E;
+    }
+
+    body {
+      font-family: "Montserrat", sans-serif;
+      background:
+        linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)),
+        url('https://i.ibb.co/S4yxVvP2/img-smartcity.jpg') center center / cover no-repeat fixed;
+      margin: 0;
+      color: var(--text-dark);
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: var(--sidebar-width);
+      background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+      border-top-right-radius: 20px;
+      border-bottom-right-radius: 20px;
+      color: #03045E;
+      box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+      overflow-y: auto;
+    }
+
+    .nav-link {
+      color: #03045E;
+      padding: 12px 20px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s;
+    }
+
+    .nav-link:hover {
+      background-color: #0076b680;
+      transform: translateX(5px);
+    }
+
+    .nav-link.active {
+      background-color: #03045E;
+      color: #CAF0F8;
+    }
+
+    .main-content {
+      margin-left: var(--sidebar-width);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      border-radius: 15px;
+      padding: 25px;
+      color: #03045E;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 25px #03055e76;
+    }
+
+    .stats-card {
+      background: rgba(255,255,255,0.7);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 15px #03055e60;
+      transition: all 0.3s ease;
+    }
+
+    .stats-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px #03055e75;
+    }
+
+    .table-container {
+      background: rgba(255,255,255,0.7);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 15px #03055e5f;
+    }
+
+    table thead {
+      background-color: #03045E;
+      color: white;
+    }
+
+    .progress {
+      height: 10px;
+      border-radius: 10px;
+    }
+
+    .modal-content {
+      border-radius: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="p-4 text-center border-bottom">
+      <img src="../assets/07.png" class="img-fluid mb-3 rounded shadow-sm" width="150" />
+      <h4>SmartCity</h4>
+      <small>WASTE MANAGEMENT</small>
+    </div>
+
+    <ul class="nav flex-column mt-3">
+      <li class="nav-item"><a href="utilities_dashboard.html" class="nav-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a></li>
+      <li class="nav-item"><a href="utilities_water.html" class="nav-link"><i class="fas fa-faucet"></i> Water Supply</a></li>
+      <li class="nav-item"><a href="utilities_electricity.html" class="nav-link"><i class="fas fa-bolt"></i> Electricity</a></li>
+      <li class="nav-item"><a href="utilities_public_lights.html" class="nav-link"><i class="fas fa-lightbulb"></i> Public Lights</a></li>
+      <li class="nav-item"><a href="utilities_waste.html" class="nav-link active"><i class="fas fa-trash"></i> Waste Management</a></li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="welcome-banner">
+      <h2><i class="fas fa-trash me-2 text-success"></i> Waste Management Overview</h2>
+      <p class="opacity-75 mb-0">Track smart bins, fill levels, and collection schedules.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-4">
+        <div class="stats-card">
+          <h5>Total Bins</h5>
+          <h3 id="totalBins">--</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stats-card">
+          <h5>Needing Collection</h5>
+          <h3 id="needingCollection">--</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stats-card">
+          <h5>Average Fill Level</h5>
+          <h3 id="avgFillLevel">--</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <h5 class="mb-3"><i class="fas fa-table me-2 text-success"></i>Smart Bin Overview</h5>
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Bin ID</th>
+            <th>Zone</th>
+            <th>Fill Level</th>
+            <th>Collection Schedule</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="wasteTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="binDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title"><i class="fas fa-trash me-2"></i> Smart Bin Details</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modalBodyContent">
+          <p>Loading details...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const fakeBins = [
+      { id: 1, bin_id: "B-001", zone_name: "Zone A", fill_level: 45, collection_schedule: "Daily", status: "Normal" },
+      { id: 2, bin_id: "B-002", zone_name: "Zone B", fill_level: 82, collection_schedule: "Alternate Days", status: "Needs Collection" },
+      { id: 3, bin_id: "B-003", zone_name: "Zone C", fill_level: 90, collection_schedule: "Weekly", status: "Critical" },
+      { id: 4, bin_id: "B-004", zone_name: "Zone A", fill_level: 63, collection_schedule: "Daily", status: "Normal" }
+    ];
+
+    function renderBins(data) {
+      const body = document.getElementById("wasteTableBody");
+      body.innerHTML = "";
+      data.forEach((item, index) => {
+        const color = item.fill_level >= 80 ? "bg-danger" : item.fill_level >= 60 ? "bg-warning" : "bg-success";
+        const progress = `
+          <div class="progress">
+            <div class="progress-bar ${color}" style="width: ${item.fill_level}%"></div>
+          </div>
+        `;
+        body.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${item.bin_id}</td>
+            <td>${item.zone_name}</td>
+            <td>${progress} <small>${item.fill_level}%</small></td>
+            <td>${item.collection_schedule}</td>
+            <td><span class="badge ${color}">${item.status}</span></td>
+            <td><button class="btn btn-sm btn-success" onclick="showDetails(${item.id})"><i class="fas fa-eye"></i> View</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function showDetails(id) {
+      const modal = new bootstrap.Modal(document.getElementById('binDetailModal'));
+      const bin = fakeBins.find(b => b.id === id);
+      const modalBody = document.getElementById('modalBodyContent');
+      modalBody.innerHTML = `
+        <h5>${bin.bin_id} - ${bin.zone_name}</h5>
+        <p><strong>Fill Level:</strong> ${bin.fill_level}%</p>
+        <p><strong>Status:</strong> ${bin.status}</p>
+        <p><strong>Collection Schedule:</strong> ${bin.collection_schedule}</p>
+      `;
+      modal.show();
+    }
+
+    function updateStats() {
+      const total = fakeBins.length;
+      const needingCollection = fakeBins.filter(b => b.fill_level >= 80).length;
+      const avg = (fakeBins.reduce((a, b) => a + b.fill_level, 0) / total).toFixed(1);
+
+      document.getElementById("totalBins").textContent = total;
+      document.getElementById("needingCollection").textContent = needingCollection;
+      document.getElementById("avgFillLevel").textContent = avg + "%";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderBins(fakeBins);
+      updateStats();
+    });
+  </script>
+</body>
+</html>

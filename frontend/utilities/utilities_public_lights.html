@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Public Lighting - SmartCity</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --primary-color: rgba(255, 255, 255, 0.6);
+      --secondary-color: rgba(255, 255, 255, 0.6);
+      --sidebar-width: 260px;
+      --text-dark: #03045E;
+    }
+
+    body {
+      font-family: "Montserrat", sans-serif;
+      background:
+        linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)),
+        url('https://i.ibb.co/S4yxVvP2/img-smartcity.jpg') center center / cover no-repeat fixed;
+      margin: 0;
+      color: var(--text-dark);
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: var(--sidebar-width);
+      background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+      border-top-right-radius: 20px;
+      border-bottom-right-radius: 20px;
+      color: #03045E;
+      box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+      overflow-y: auto;
+    }
+
+    .nav-link {
+      color: #03045E;
+      padding: 12px 20px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s;
+    }
+
+    .nav-link:hover {
+      background-color: #0076b680;
+      transform: translateX(5px);
+    }
+
+    .nav-link.active {
+      background-color: #03045E;
+      color: #CAF0F8;
+    }
+
+    .main-content {
+      margin-left: var(--sidebar-width);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      border-radius: 15px;
+      padding: 25px;
+      color: #03045E;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 25px #03055e76;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .table-container {
+      background: rgba(255,255,255,0.7);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 15px #03055e5f;
+    }
+
+    table thead {
+      background-color: #03045E;
+      color: white;
+    }
+
+    .badge {
+      font-size: 0.8rem;
+      padding: 6px 10px;
+    }
+
+    .modal-content {
+      border-radius: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="p-4 text-center border-bottom">
+      <img src="../assets/07.png" class="img-fluid mb-3 rounded shadow-sm" width="150" />
+      <h4>SmartCity</h4>
+      <small>PUBLIC LIGHTING</small>
+    </div>
+
+    <ul class="nav flex-column mt-3">
+      <li class="nav-item"><a href="utilities_dashboard.html" class="nav-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a></li>
+      <li class="nav-item"><a href="utilities_water.html" class="nav-link"><i class="fas fa-faucet"></i> Water Supply</a></li>
+      <li class="nav-item"><a href="utilities_electricity.html" class="nav-link"><i class="fas fa-bolt"></i> Electricity</a></li>
+      <li class="nav-item"><a href="utilities_public_lights.html" class="nav-link active"><i class="fas fa-lightbulb"></i> Public Lights</a></li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="welcome-banner">
+      <h2><i class="fas fa-lightbulb me-2 text-warning"></i> Public Lighting Overview</h2>
+      <p class="opacity-75 mb-0">Track street lights, status, and maintenance tasks across all zones.</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <select id="statusFilter" class="form-select w-auto">
+        <option value="">All Statuses</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+        <option value="Under Maintenance">Under Maintenance</option>
+        <option value="Faulty">Faulty</option>
+      </select>
+
+      <select id="zoneFilter" class="form-select w-auto">
+        <option value="">All Zones</option>
+        <option value="A">Zone A</option>
+        <option value="B">Zone B</option>
+        <option value="C">Zone C</option>
+      </select>
+
+      <button class="btn btn-primary" onclick="applyFilters()"><i class="fas fa-filter"></i> Filter</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <h5 class="mb-3"><i class="fas fa-table me-2 text-warning"></i>Public Lights List</h5>
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Light ID</th>
+            <th>Zone</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Last Maintenance</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="lightTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="lightDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title"><i class="fas fa-lightbulb me-2"></i> Light Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modalBodyContent">
+          <p>Loading details...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const fakeLights = [
+      { id: 1, light_id: "L-001", zone: "A", location: "Main Road", status: "Active", last_maintenance: "2025-10-20" },
+      { id: 2, light_id: "L-002", zone: "B", location: "Market Street", status: "Under Maintenance", last_maintenance: "2025-10-29" },
+      { id: 3, light_id: "L-003", zone: "C", location: "Near Park", status: "Faulty", last_maintenance: "2025-11-01" },
+      { id: 4, light_id: "L-004", zone: "A", location: "Station Road", status: "Active", last_maintenance: "2025-09-15" }
+    ];
+
+    const fakeMaintenance = {
+      1: [{ task: "Bulb Replacement", date: "2025-10-20", status: "Completed" }],
+      2: [{ task: "Wire Fault Fix", date: "2025-10-29", status: "Ongoing" }],
+      3: [{ task: "Light Repair", date: "2025-11-01", status: "Pending" }],
+      4: [{ task: "Routine Check", date: "2025-09-15", status: "Completed" }]
+    };
+
+    function renderLights(data) {
+      const body = document.getElementById("lightTableBody");
+      body.innerHTML = "";
+      data.forEach((item, index) => {
+        const color = item.status === "Active" ? "bg-success" :
+                      item.status === "Faulty" ? "bg-danger" :
+                      item.status === "Under Maintenance" ? "bg-warning text-dark" : "bg-secondary";
+        body.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${item.light_id}</td>
+            <td>${item.zone}</td>
+            <td>${item.location}</td>
+            <td><span class="badge ${color}">${item.status}</span></td>
+            <td>${item.last_maintenance}</td>
+            <td><button class="btn btn-sm btn-warning" onclick="showDetails(${item.id})"><i class="fas fa-eye"></i> View</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function applyFilters() {
+      const status = document.getElementById("statusFilter").value;
+      const zone = document.getElementById("zoneFilter").value;
+
+      const filtered = fakeLights.filter(light => 
+        (status ? light.status === status : true) &&
+        (zone ? light.zone === zone : true)
+      );
+
+      renderLights(filtered);
+    }
+
+    function showDetails(id) {
+      const modal = new bootstrap.Modal(document.getElementById('lightDetailModal'));
+      const light = fakeLights.find(l => l.id === id);
+      const tasks = fakeMaintenance[id] || [];
+      const modalBody = document.getElementById('modalBodyContent');
+
+      let html = `
+        <h5>${light.light_id} - ${light.location}</h5>
+        <p><strong>Zone:</strong> ${light.zone}</p>
+        <p><strong>Status:</strong> ${light.status}</p>
+        <p><strong>Last Maintenance:</strong> ${light.last_maintenance}</p>
+        <h6 class="mt-4">Maintenance History:</h6>
+        <ul class="list-group">
+          ${tasks.map(t => `<li class="list-group-item">Task: ${t.task} | Date: ${t.date} | Status: ${t.status}</li>`).join('')}
+        </ul>
+      `;
+      modalBody.innerHTML = html;
+      modal.show();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderLights(fakeLights);
+    });
+  </script>
+</body>
+</html>
