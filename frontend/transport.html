@@ -319,8 +319,8 @@ background:
       /* // */
     </style>
 </head>
-<body>
-    <!-- Sidebar -->
+              <tbody>
+                <tr><td colspan="6" class="text-center p-4">Loading...</td></tr>
     <nav id="sidebar" class="sidebar">
         <div class="sidebar-header">
             <h3>
@@ -358,7 +358,7 @@ background:
                 <a class="nav-link" href="bookings.html"><i class="fas fa-calendar-alt"></i> Bookings</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a>
+                <a class="nav-link" href="announcements-admin.html"><i class="fas fa-bullhorn"></i> Announcements</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="add-citizen.html"><i class="fas fa-user-plus"></i> Add Citizen</a>
@@ -391,52 +391,72 @@ background:
                                     <th>ID</th>
                                     <th>Route</th>
                                     <th>Type</th>
-                                    <th>Capacity</th>
-                                    <th>Driver</th>
+                                    <th>Rate</th>
+                                    <th>Timings</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td class="fw-semibold">Route A</td>
-                                    <td>Bus</td>
-                                    <td>50</td>
-                                    <td>Mike Wilson</td>
-                                    <td><span class="badge bg-success">Active</span></td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td class="fw-semibold">Route B</td>
-                                    <td>Bus</td>
-                                    <td>45</td>
-                                    <td>Sarah Johnson</td>
-                                    <td><span class="badge bg-success">Active</span></td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td class="fw-semibold">Route C</td>
-                                    <td>Metro</td>
-                                    <td>200</td>
-                                    <td>N/A</td>
-                                    <td><span class="badge bg-secondary">Maintenance</span></td>
-                                </tr>
-                            </tbody>
+              <tbody>
+                <tr><td colspan="6" class="text-center p-4">Loading...</td></tr>
+              </tbody>
                         </table>
                     </div>
                 </div>
             </div>
         </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="app.js"></script>
     <script>
-      function logout() {
-        if (confirm("Are you sure you want to logout?")) {
-          localStorage.clear();
-          window.location.href = "login.html";
+      const API_BASE = window.API_BASE || 'http://127.0.0.1:5000/api';
+      function logout() { if (confirm('Logout?')) { localStorage.clear(); window.location.href = 'login.html'; } }
+
+      async function loadTransport() {
+        const tbody = document.querySelector('table tbody');
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4">Loading...</td></tr>';
+        try {
+          const token = localStorage.getItem('token');
+          const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+          const res = await fetch(`${API_BASE}/services/grouped`, { headers });
+          if (!res.ok) throw new Error('Failed to fetch services');
+          const data = await res.json();
+          // normalize: data may be object keyed by category
+          let services = [];
+          if (Array.isArray(data)) services = data;
+          else if (data.transport) services = data.transport;
+          else services = Object.values(data).flat();
+
+          if (!services || services.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted p-4">No transport services found.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = '';
+          services.forEach(s => {
+            // only include transport category
+            if (s.category_name && s.category_name.toLowerCase() !== 'transport') return;
+            const tr = document.createElement('tr');
+            const cost = s.cost ? `₹${Number(s.cost).toFixed(2)}` : '';
+            const hours = s.operating_hours || s.operatingHours || '';
+            const status = s.availability_status || s.status || 'Active';
+            tr.innerHTML = `
+              <td>${s.service_id || s.id || ''}</td>
+              <td class="fw-semibold">${s.service_name || s.name || ''}</td>
+              <td>${s.provider_name || s.provider || ''}</td>
+              <td>${cost}</td>
+              <td>${hours}</td>
+              <td><span class="badge ${status.toLowerCase().includes('active') ? 'bg-success' : 'bg-secondary'}">${status}</span></td>
+            `;
+            tbody.appendChild(tr);
+          });
+        } catch (err) {
+          console.error('loadTransport error', err);
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger p-4">Failed to load transport services.</td></tr>`;
         }
       }
+
+      document.addEventListener('DOMContentLoaded', loadTransport);
     </script>
+  </body>
+</html>
 </body>
 </html>

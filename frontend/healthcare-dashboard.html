@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hospital Management System</title>
+<link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- // -->
+    <link
+      rel="stylesheet"
+      href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css"
+    />
+    <!-- Optional: solid or bold versions -->
+    <link
+      rel="stylesheet"
+      href="https://cdn-uicons.flaticon.com/uicons-solid-rounded/css/uicons-solid-rounded.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn-uicons.flaticon.com/uicons-bold-rounded/css/uicons-bold-rounded.css"
+    />
+    <!-- // -->
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+<style>
+      :root {
+        --primary-color: rgba(255, 255, 255, 0.6); /* Deep clean blue */
+        --secondary-color: rgba(255, 255, 255, 0.6); /* Accent blue */
+        --sidebar-width: 260px;
+        --bg-light: #f5f8ff;
+        --text-dark: #03045E;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+background:
+    /* 1. NEW: Semi-transparent white background color */
+            linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)),
+            /* Subtle dark overlay for readability */
+            
+                /* Your provided image link */
+            url('https://i.ibb.co/S4yxVvP2/img-smartcity.jpg ') center center / cover no-repeat fixed;
+            background-color: rgba(237, 236, 236, 0.94); 
+            color: var(--text-dark);
+        margin: 0;
+        padding: 0;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+        
+        background: linear-gradient(
+          180deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+
+        color: rgba(0, 3, 154, 0.866);
+        overflow-y: auto;
+        transition: all 0.3s;
+        z-index: 1000;
+        transition: margin-left 0.4s ease-in-out;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .nav-link {
+        color: #03045E;
+        padding: 12px 20px;
+        border-radius: 10px;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+      }
+
+      .nav-link:hover {
+        background-color: #0076b680;
+        transform: translateX(5px);
+
+        color: rgb(0, 5, 137);
+      }
+
+      .nav-link.active {
+        background-color: #03045e;
+        color: #CAF0F8;
+        font-weight: 600;
+      }
+
+      .nav-link i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+      }
+
+      .main-content {
+        margin-left: var(--sidebar-width);
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      .welcome-banner {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-radius: 15px;
+        padding: 30px;
+        color: #03045E;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px #03055e76;
+      }
+
+      .stats-card {
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 18px;
+        padding: 25px;
+        backdrop-filter: blur(10px);
+
+        box-shadow: 0 4px 15px #03055e78;
+        transition: all 0.3s ease;
+        border-left: 4px solid;
+        color: #03045E;
+      }
+
+      .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px #03055e70;
+      }
+
+      .stats-card.blue {
+        border-left-color: blue;
+      }
+      .stats-card.green {
+        border-left-color: green;
+      }
+      .stats-card.purple {
+        border-left-color: darkblue;
+      }
+      .stats-card.orange {
+        border-left-color: orange;
+      }
+
+      .card {
+        background:rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
+        border: none;
+        transition: all 0.3s ease;
+
+        border-radius: 18px;
+        box-shadow: 0 4px 15px #03055e67;
+        color: #03045E;
+      }
+
+      .quick-action-btn {
+        display: flex;
+        align-items: center;
+        padding: 14px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 12px;
+        transition: all 0.3s;
+        text-decoration: none;
+        color: #374151;
+        margin-bottom: 10px;
+        color: var(--text-dark);
+        background: #ffffff89;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+      }
+
+      .quick-action-btn:hover {
+        background: var(--bg-light);
+        transform: translateY(-3px);
+        border-color: #03045E;
+        color: #03045E;
+      }
+
+      .activity-item {
+        padding: 12px;
+        border-left: 3px solid;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        background-color: #ffffffba;
+        color: #03045E;
+      }
+
+      .activity-item.pending {
+        border-left-color: #fbbf24;
+      }
+      .activity-item.confirmed {
+        border-left-color: #3b82f6;
+      }
+      .activity-item.completed {
+        border-left-color: #10b981;
+      }
+
+      .announcement-card {
+        border-left: 4px solid var(--primary-color);
+        padding: 16px;
+        background: #ffffff89;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        transition: 0.3s;
+        color: #03045E;
+      }
+      .announcement-card:hover {
+        background: #e8f0ff;
+      }
+
+      .city-metric {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background-color: #ffffffb4;
+        border-radius: 10px;
+      }
+
+      .metric-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-right: 15px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      }
+
+      .btn-primary,
+      .btn-light {
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 10px 18px;
+        transition: all 0.3s;
+      }
+
+      .btn-primary {
+        background: var(--primary-color);
+        border: none;
+      }
+
+      .btn-primary:hover {
+        background: var(--secondary-color);
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          margin-left: calc(-1 * var(--sidebar-width));
+        }
+        .sidebar.show {
+          margin-left: 0;
+        }
+        .main-content {
+          margin-left: 0;
+        }
+      }
+
+      /* // */
+      /* Enhanced Responsive Logo Styling */
+      .logo-img {
+        width: 200px; /* Bigger default size */
+        max-width: 60%; /* Prevents overflow on smaller viewports */
+        height: auto;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        object-fit: contain;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 8px 22px #03055e7a;
+        background-color: #ffffffd0;
+      }
+
+      /* Hover animation to match the elegant button style */
+      .logo-img:hover {
+        transform: scale(1.06);
+        box-shadow: 0 10px 28px rgba(19, 63, 110, 0.568);
+      }
+
+      /* Responsive adjustments for various screen sizes */
+      @media (max-width: 992px) {
+        .logo-img {
+          width: 170px;
+          margin-bottom: 25px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .logo-img {
+          width: 140px;
+          margin-bottom: 22px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .logo-img {
+          width: 110px;
+          margin-bottom: 18px;
+        }
+      }
+
+      /* // */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>
+          <img src="assets/07.png" alt="Smart City Logo" class="logo-img" />
+          SmartCity
+        </h3>
+        <small id="userRole">ADMIN</small>
+      </div>
+
+      <ul class="nav flex-column mt-3">
+        <li class="nav-item">
+          <a class="nav-link active tab-button" href="#" data-tab="dashboard"
+            ><i class="fas fa-home"></i> Dashboard</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link tab-button" href="#" data-tab="doctors"
+            ><i class="fas fa-user-md"></i> Doctors</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link tab-button" href="#" data-tab="appointments"
+            ><i class="fas fa-calendar-check"></i> Appointments</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" onclick="logout()"
+            ><i class="fas fa-sign-out-alt"></i> Logout</a
+          >
+        </li>
+      </ul>
+  </div>
+
+  <div class="main-content">
+    <!-- Dashboard -->
+    <div id="dashboard" class="tab-content active">
+      <div class="welcome-banner">
+        <h1>Welcome back, Admin!</h1>
+        <p>Here's your healthcare facility dashboard</p>
+        <span class="verified-badge">✓ Verified Hospital</span>
+        <span class="member-badge">🏥 Premium Facility</span>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-6 col-lg-3">
+          <div class="stats-card blue">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="text-muted mb-0">Total Doctors</h6>
+              <span style="font-size: 2em;">👨‍⚕️</span>
+            </div>
+            <h2 class="mb-1" id="doctorCount">0</h2>
+            <small class="text-muted">Active medical staff</small>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="stats-card green">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="text-muted mb-0">Current Patients</h6>
+              <span style="font-size: 2em;">🏥</span>
+            </div>
+            <h2 class="mb-1" id="patientCount">0</h2>
+            <small class="text-muted">Under treatment</small>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="stats-card purple">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="text-muted mb-0">Appointments</h6>
+              <span style="font-size: 2em;">📅</span>
+            </div>
+            <h2 class="mb-1" id="appointmentCount">0</h2>
+            <small class="text-muted">Today's schedule</small>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="stats-card orange">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="text-muted mb-0">Available Beds</h6>
+              <span style="font-size: 2em;">🛏️</span>
+            </div>
+            <h2 class="mb-1" id="bedCount">0</h2>
+            <small class="text-muted">Ready for admission</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Doctors -->
+    <div id="doctors" class="tab-content">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title mb-4">Doctors Management</h5>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <input type="text" id="searchName" class="form-control flex-grow-1" placeholder="Search by name...">
+            <select id="filterSpecialization" class="form-select w-auto">
+              <option value="">All Specializations</option>
+            </select>
+            <button class="btn btn-primary" onclick="addNewDoctor()">Add New Doctor</button>
+          </div>
+        </div>
+      </div>
+      <div class="row g-4" id="doctorsGrid"></div>
+    </div>
+
+    <!-- Appointments -->
+    <div id="appointments" class="tab-content">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title mb-4">Appointments</h5>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <input type="date" id="dateFilter" class="form-control flex-grow-1">
+            <select id="statusFilter" class="form-select w-auto">
+              <option value="">All Status</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <button class="btn btn-primary" onclick="newAppointment()">New Appointment</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" id="appointmentsList"></div>
+    </div>
+  </div>
+
+  <!-- Add Doctor Modal -->
+  <div class="modal fade" id="addDoctorModal" tabindex="-1" aria-labelledby="addDoctorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addDoctorModalLabel">Add New Doctor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="newDoctorName" class="form-label">Doctor's Name</label>
+            <input type="text" class="form-control" id="newDoctorName" placeholder="Doctor's Name">
+          </div>
+          <div class="mb-3">
+            <label for="newDoctorSpecialization" class="form-label">Specialization</label>
+            <select class="form-select" id="newDoctorSpecialization">
+              <option value="">Select Specialization</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="saveNewDoctor()">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Appointment Modal -->
+  <div class="modal fade" id="addAppointmentModal" tabindex="-1" aria-labelledby="addAppointmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addAppointmentModalLabel">New Appointment</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="patientName" class="form-label">Patient Name</label>
+            <input type="text" class="form-control" id="patientName" placeholder="Patient Name">
+          </div>
+          <div class="mb-3">
+            <label for="appointmentDoctor" class="form-label">Doctor</label>
+            <select class="form-select" id="appointmentDoctor">
+              <option value="">Select Doctor</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="appointmentDateTime" class="form-label">Date and Time</label>
+            <input type="datetime-local" class="form-control" id="appointmentDateTime">
+          </div>
+          <div class="mb-3">
+            <label for="appointmentDetails" class="form-label">Details</label>
+            <input type="text" class="form-control" id="appointmentDetails" placeholder="Appointment Details">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="saveAppointment()">Schedule</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Sidebar Tab Switching
+      const tabButtons = document.querySelectorAll('.tab-button');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
+          button.classList.add('active');
+          document.getElementById(button.dataset.tab).classList.add('active');
+        });
+      });
+
+      // Hardcoded Data
+      const dashboardData = {
+        totalDoctors: 8,
+        currentPatients: 42,
+        todayAppointments: 15,
+        availableBeds: 12
+      };
+
+      const doctorsData = [
+        { doctor_id: 1, name: "Dr. Arjun Mehta", specialization: "Cardiologist" },
+        { doctor_id: 2, name: "Dr. Nisha Sharma", specialization: "Neurologist" },
+        { doctor_id: 3, name: "Dr. Rakesh Patel", specialization: "Orthopedic" },
+        { doctor_id: 4, name: "Dr. Priya Iyer", specialization: "Pediatrician" },
+        { doctor_id: 5, name: "Dr. Saurabh Jain", specialization: "Dermatologist" },
+        { doctor_id: 6, name: "Dr. Leena Desai", specialization: "Gynecologist" },
+        { doctor_id: 7, name: "Dr. Vinay Rao", specialization: "Oncologist" },
+        { doctor_id: 8, name: "Dr. Reema Shah", specialization: "Psychiatrist" }
+      ];
+
+      const appointmentsData = [
+        { patient_name: "Amit Kumar", booking_start: "2025-11-05T09:00:00", status: "upcoming", details: "Routine check-up" },
+        { patient_name: "Sneha Patel", booking_start: "2025-11-04T14:00:00", status: "completed", details: "Skin treatment follow-up" },
+        { patient_name: "Raj Singh", booking_start: "2025-11-05T11:00:00", status: "upcoming", details: "X-ray review" },
+        { patient_name: "Neha Gupta", booking_start: "2025-11-03T10:00:00", status: "cancelled", details: "Cancelled by patient" }
+      ];
+
+      // Update Dashboard
+      function updateDashboardStats() {
+        document.getElementById('doctorCount').textContent = dashboardData.totalDoctors;
+        document.getElementById('patientCount').textContent = dashboardData.currentPatients;
+        document.getElementById('appointmentCount').textContent = dashboardData.todayAppointments;
+        document.getElementById('bedCount').textContent = dashboardData.availableBeds;
+      }
+
+      // Load Doctors
+      function loadDoctors() {
+        const grid = document.getElementById('doctorsGrid');
+        const search = document.getElementById('searchName').value.toLowerCase();
+        const specializationFilter = document.getElementById('filterSpecialization').value;
+
+        let filtered = doctorsData.filter(doc =>
+          doc.name.toLowerCase().includes(search) &&
+          (specializationFilter === "" || doc.specialization === specializationFilter)
+        );
+
+        grid.innerHTML = '';
+        if (filtered.length === 0) {
+          grid.innerHTML = '<p class="text-center text-muted col-12">No doctors found.</p>';
+          return;
+        }
+        filtered.forEach(doctor => {
+          const card = `
+            <div class="col-md-6 col-lg-4 mb-4">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h5 class="card-title">${doctor.name}</h5>
+                  <h6 class="card-subtitle mb-2 text-muted">${doctor.specialization}</h6>
+                  <p class="card-text">
+                    <span class="badge bg-info text-dark">${doctor.specialization}</span>
+                  </p>
+                  <button class="btn btn-sm btn-primary me-2" onclick="alert('Editing ${doctor.name}')">Edit</button>
+                  <button class="btn btn-sm btn-danger" onclick="alert('Removed ${doctor.name}')">Remove</button>
+                </div>
+              </div>
+            </div>`;
+          grid.innerHTML += card;
+        });
+      }
+
+      // Fill specialization filter
+      const specSet = new Set(doctorsData.map(d => d.specialization));
+      const specSelect = document.getElementById('filterSpecialization');
+      specSet.forEach(spec => {
+        const option = document.createElement('option');
+        option.value = spec;
+        option.textContent = spec;
+        specSelect.appendChild(option);
+      });
+
+      // Load Appointments
+      function loadAppointments() {
+        const date = document.getElementById('dateFilter').value;
+        const status = document.getElementById('statusFilter').value;
+        const list = document.getElementById('appointmentsList');
+
+        let filtered = appointmentsData.filter(a =>
+          (status === "" || a.status === status) &&
+          (date === "" || a.booking_start.startsWith(date))
+        );
+
+        list.innerHTML = '';
+        if (filtered.length === 0) {
+          list.innerHTML = '<div class="card-body"><p class="text-center text-muted">No appointments found.</p></div>';
+          return;
+        }
+        filtered.forEach(apt => {
+          const statusClass = apt.status === 'upcoming' ? 'info' : apt.status === 'completed' ? 'success' : 'danger';
+          const card = `
+            <div class="card-body border-bottom">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-1">${apt.patient_name}</h6>
+                  <small class="text-muted"><i class="fas fa-clock me-1"></i>${new Date(apt.booking_start).toLocaleString()}</small>
+                </div>
+                <span class="badge bg-${statusClass}">${apt.status}</span>
+              </div>
+              <p class="mb-0 mt-2 small">${apt.details}</p>
+            </div>`;
+          list.innerHTML += card;
+        });
+      }
+
+      // Update doctors and dashboard data
+      function updateDoctorData(doctor) {
+        const index = doctorsData.findIndex(doc => doc.doctor_id === doctor.doctor_id);
+        if (index !== -1) {
+          doctorsData[index] = doctor;
+        } else {
+          doctorsData.push(doctor);
+        }
+        loadDoctors();
+        updateDashboardStats();
+      }
+
+      var addDoctorModal;
+      window.addNewDoctor = function() {
+        addDoctorModal = new bootstrap.Modal(document.getElementById('addDoctorModal'), {});
+        const specSelect = document.getElementById('newDoctorSpecialization');
+        
+        // Clear previous inputs
+        document.getElementById('newDoctorName').value = '';
+        specSelect.value = '';
+        
+        // Populate specialization options if empty
+        if(specSelect.options.length <= 1) {
+          specSet.forEach(spec => {
+            const option = document.createElement('option');
+            option.value = spec;
+            option.textContent = spec;
+            specSelect.appendChild(option);
+          });
+        }
+        
+        addDoctorModal.show();
+      }
+
+      window.closeModal = function() {
+        if (addDoctorModal) {
+          addDoctorModal.hide();
+        }
+      }
+
+      window.saveNewDoctor = function() {
+        const name = document.getElementById('newDoctorName').value;
+        const specialization = document.getElementById('newDoctorSpecialization').value;
+        
+        if (!name || !specialization) {
+          alert('Please fill in all fields');
+          return;
+        }
+
+        const newDoctor = {
+          doctor_id: doctorsData.length + 1,
+          name: name,
+          specialization: specialization
+        };
+
+        doctorsData.push(newDoctor);
+        closeModal();
+        loadDoctors();
+        updateDashboardStats();
+      }
+
+      var addAppointmentModal;
+      window.newAppointment = function() {
+        addAppointmentModal = new bootstrap.Modal(document.getElementById('addAppointmentModal'), {});
+        const doctorSelect = document.getElementById('appointmentDoctor');
+        
+        // Clear previous inputs
+        document.getElementById('patientName').value = '';
+        document.getElementById('appointmentDateTime').value = '';
+        document.getElementById('appointmentDetails').value = '';
+        
+        // Clear and repopulate doctors dropdown
+        doctorSelect.innerHTML = '<option value="">Select Doctor</option>';
+        doctorsData.forEach(doc => {
+          const option = document.createElement('option');
+          option.value = doc.doctor_id;
+          option.textContent = `${doc.name} (${doc.specialization})`;
+          doctorSelect.appendChild(option);
+        });
+        
+        addAppointmentModal.show();
+      }
+
+      window.closeAppointmentModal = function() {
+        if (addAppointmentModal) {
+          addAppointmentModal.hide();
+        }
+      }
+
+      window.saveAppointment = function() {
+        const patientName = document.getElementById('patientName').value;
+        const appointmentDate = document.getElementById('appointmentDateTime').value;
+        const details = document.getElementById('appointmentDetails').value;
+        
+        if (!patientName || !appointmentDate || !details) {
+          alert('Please fill in all fields');
+          return;
+        }
+
+        const newAppointment = {
+          patient_name: patientName,
+          booking_start: appointmentDate,
+          status: "upcoming",
+          details: details
+        };
+
+        appointmentsData.push(newAppointment);
+        closeAppointmentModal();
+        loadAppointments();
+        dashboardData.todayAppointments++;
+        updateDashboardStats();
+      }
+
+      // Initial load
+      updateDashboardStats();
+      loadDoctors();
+      loadAppointments();
+
+      // Event listeners
+      document.getElementById('searchName').addEventListener('input', loadDoctors);
+      document.getElementById('filterSpecialization').addEventListener('change', loadDoctors);
+      document.getElementById('dateFilter').addEventListener('change', loadAppointments);
+      document.getElementById('statusFilter').addEventListener('change', loadAppointments);
+    });
+  </script>
+</body>
+</html>

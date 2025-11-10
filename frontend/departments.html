@@ -358,7 +358,7 @@ background:
                 <a class="nav-link" href="bookings.html"><i class="fas fa-calendar-alt"></i> Bookings</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a>
+                <a class="nav-link" href="announcements-admin.html"><i class="fas fa-bullhorn"></i> Announcements</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="add-citizen.html"><i class="fas fa-user-plus"></i> Add Citizen</a>
@@ -387,61 +387,106 @@ background:
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Department</th>
-                                    <th>Department Head</th>
-                                    <th>Employees</th>
-                                    <th>Budget</th>
-                                </tr>
-                            </thead>
+              <thead>
+                <tr>
+                  <th>Department</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
                             <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td class="fw-semibold">Transport Department</td>
-                                    <td>Michael Chen</td>
-                                    <td>25</td>
-                                    <td>$250,000</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td class="fw-semibold">Healthcare Department</td>
-                                    <td>Dr. Sarah Johnson</td>
-                                    <td>45</td>
-                                    <td>$500,000</td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td class="fw-semibold">Utilities Department</td>
-                                    <td>Robert Williams</td>
-                                    <td>30</td>
-                                    <td>$300,000</td>
-                                </tr>
-                                <tr>
-                                    <td>4</td>
-                                    <td class="fw-semibold">IT Department</td>
-                                    <td>Emma Davis</td>
-                                    <td>15</td>
-                                    <td>$150,000</td>
+                                <tr id="loadingRow">
+                                  <td colspan="5" class="text-center p-4">Loading departments...</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+                      <div class="card mt-3" id="deptDetailsCard" style="display:none;">
+                        <div class="card-header"><h5 id="deptDetailsTitle">Department</h5></div>
+                        <div class="card-body">
+                          <div id="deptServices" class="mb-3"></div>
+                          <h6>Submit Request</h6>
+                          <form id="deptRequestForm">
+                            <div class="mb-2">
+                              <label class="form-label">Description</label>
+                              <textarea id="reqDesc" class="form-control" required></textarea>
+                            </div>
+                            <div class="d-flex gap-2">
+                              <button class="btn btn-primary" type="submit">Send Request</button>
+                              <button class="btn btn-secondary" type="button" onclick="document.getElementById('deptDetailsCard').style.display='none'">Close</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="app.js"></script>
     <script>
-      function logout() {
-        if (confirm("Are you sure you want to logout?")) {
-          localStorage.clear();
-          window.location.href = "login.html";
+      const API_BASE = window.API_BASE || 'http://127.0.0.1:5000/api';
+      async function safeFetch(path, opts = {}) {
+        const token = localStorage.getItem('token');
+        const headers = opts.headers || {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        opts.headers = headers;
+        const res = await fetch(API_BASE + path, opts);
+        if (!res.ok) {
+          const txt = await res.text().catch(()=>'');
+          const err = new Error(`${res.status} ${res.statusText} ${txt}`);
+          err.status = res.status;
+          throw err;
+        }
+        return res.json();
+      }
+
+      async function listDepartments() {
+        const tbody = document.querySelector('tbody');
+        try {
+          const depts = await safeFetch('/departments');
+          tbody.innerHTML = '';
+          for (const d of depts) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td class="fw-semibold">${d}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary me-2" onclick="showDept('${d}')">View</button>
+                <button class="btn btn-sm btn-primary" onclick="showDept('${d}')">Request</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          }
+        } catch (err) {
+          console.error('Failed to list departments', err);
+          document.querySelector('tbody').innerHTML = `<tr><td colspan="5" class="text-danger text-center p-4">Failed to load departments</td></tr>`;
         }
       }
+
+      async function showDept(dept) {
+        try {
+          const data = await safeFetch(`/${dept}/services`);
+          document.getElementById('deptDetailsCard').style.display = 'block';
+          document.getElementById('deptDetailsTitle').innerText = dept;
+          const servicesDiv = document.getElementById('deptServices');
+          servicesDiv.innerHTML = '<strong>Services:</strong><ul>' + (data.services || []).map(s => `<li>${s}</li>`).join('') + '</ul>';
+          document.getElementById('deptRequestForm').onsubmit = async function(e) {
+            e.preventDefault();
+            try {
+              const desc = document.getElementById('reqDesc').value;
+              const res = await safeFetch(`/${dept}/request`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: desc }) });
+              alert('Request created: ' + res.task_id);
+              document.getElementById('deptDetailsCard').style.display = 'none';
+            } catch (err) { alert('Request failed: ' + err.message); }
+          };
+        } catch (err) {
+          alert('Failed to load department services: ' + err.message);
+        }
+      }
+
+      function logout() { if (confirm('Logout?')) { localStorage.clear(); window.location.href = 'login.html'; } }
+
+      document.addEventListener('DOMContentLoaded', listDepartments);
     </script>
 </body>
 </html>

@@ -359,7 +359,7 @@ background:
                 <a class="nav-link" href="bookings.html"><i class="fas fa-calendar-alt"></i> Bookings</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a>
+                <a class="nav-link" href="announcements-admin.html"><i class="fas fa-bullhorn"></i> Announcements</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="add-citizen.html"><i class="fas fa-user-plus"></i> Add Citizen</a>
@@ -386,6 +386,15 @@ background:
                     <h5 class="mb-0">Maintenance Requests</h5>
                 </div>
                 <div class="card-body p-0">
+                    <div class="p-3">
+                      <label for="deptSelect" class="form-label">Department</label>
+                      <select id="deptSelect" class="form-select" style="max-width:300px;"> 
+                        <option value="public-works">public-works</option>
+                        <option value="roads">roads</option>
+                        <option value="lighting">lighting</option>
+                        <option value="parks">parks</option>
+                      </select>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
                             <thead>
@@ -398,31 +407,31 @@ background:
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="maintenance-tbody">
+                              <tr id="maintenance-loading-row"><td colspan="6" class="text-center py-4">Loading maintenance tasks…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Infrastructure Assets</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
                                 <tr>
-                                    <td>1</td>
-                                    <td class="fw-semibold">Main Street</td>
-                                    <td>Road Repair</td>
-                                    <td><span class="badge bg-danger">High</span></td>
-                                    <td>2024-01-15</td>
-                                    <td>In Progress</td>
+                                    <th>Asset ID</th>
+                                    <th>Type</th>
+                                    <th>Zone</th>
+                                    <th>Details</th>
                                 </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td class="fw-semibold">Park Avenue</td>
-                                    <td>Street Light</td>
-                                    <td><span class="badge bg-warning text-dark">Medium</span></td>
-                                    <td>2024-01-14</td>
-                                    <td>Pending</td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td class="fw-semibold">City Hall</td>
-                                    <td>HVAC System</td>
-                                    <td><span class="badge bg-secondary">Low</span></td>
-                                    <td>2024-01-13</td>
-                                    <td>Completed</td>
-                                </tr>
+                            </thead>
+                            <tbody id="infrastructure-tbody">
+                              <tr><td colspan="4" class="text-center py-4">Loading assets…</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -440,6 +449,79 @@ background:
           window.location.href = "login.html";
         }
       }
+      (function wireMaintenance(){
+        const API_BASE = window.API_BASE || 'http://127.0.0.1:5000/api';
+        const maintenanceTbody = document.getElementById('maintenance-tbody');
+        const infraTbody = document.getElementById('infrastructure-tbody');
+        const deptSelect = document.getElementById('deptSelect');
+
+        async function fetchInfrastructure(){
+          try {
+            const res = await fetch(`${API_BASE}/infrastructure`);
+            if (!res.ok) throw new Error('Failed to load infrastructure');
+            const assets = await res.json();
+            infraTbody.innerHTML = '';
+            if (!assets || assets.length === 0) {
+              infraTbody.innerHTML = '<tr><td colspan="4" class="text-center py-3">No assets found</td></tr>';
+              return;
+            }
+            for (const a of assets) {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `<td>${a.asset_id}</td><td>${a.type || a.asset_type || ''}</td><td>${a.zone_id || ''}</td><td>${a.details || ''}</td>`;
+              infraTbody.appendChild(tr);
+            }
+          } catch (err) {
+            console.error(err);
+            infraTbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-3">Error loading assets: ${err.message}</td></tr>`;
+          }
+        }
+
+        async function fetchMaintenance(){
+          try {
+            const token = localStorage.getItem('token');
+            const dept = deptSelect.value;
+            if (!token) {
+              maintenanceTbody.innerHTML = `<tr><td colspan="6" class="text-center py-4">Please <a href="login.html">log in</a> to view maintenance tasks.</td></tr>`;
+              return;
+            }
+            const res = await fetch(`${API_BASE}/maintenance/tasks/${dept}`, { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!res.ok) {
+              if (res.status === 401) {
+                maintenanceTbody.innerHTML = `<tr><td colspan="6" class="text-center text-warning py-4">Unauthorized — please <a href="login.html">log in</a> again.</td></tr>`;
+                return;
+              }
+              throw new Error('Failed to load maintenance tasks');
+            }
+            const tasks = await res.json();
+            maintenanceTbody.innerHTML = '';
+            if (!tasks || tasks.length === 0) {
+              maintenanceTbody.innerHTML = '<tr><td colspan="6" class="text-center py-3">No tasks found for this department</td></tr>';
+              return;
+            }
+            for (const t of tasks) {
+              const tr = document.createElement('tr');
+              const date = t.scheduled_date ? (new Date(t.scheduled_date)).toLocaleDateString() : (t.created_at ? (new Date(t.created_at)).toLocaleDateString() : '');
+              const priorityBadge = (p => p === 'high' ? '<span class="badge bg-danger">High</span>' : p === 'medium' ? '<span class="badge bg-warning text-dark">Medium</span>' : '<span class="badge bg-secondary">Low</span>')(t.priority || t.priority_level || 'medium');
+              tr.innerHTML = `
+                <td>${t.task_id || t.id || ''}</td>
+                <td class="fw-semibold">${t.asset_id || t.location || t.address || ''}</td>
+                <td>${t.task_type || t.title || ''}</td>
+                <td>${priorityBadge}</td>
+                <td>${date}</td>
+                <td>${t.status || ''}</td>
+              `;
+              maintenanceTbody.appendChild(tr);
+            }
+          } catch (err) {
+            console.error(err);
+            maintenanceTbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Error loading tasks: ${err.message}</td></tr>`;
+          }
+        }
+
+        deptSelect.addEventListener('change', fetchMaintenance);
+        fetchInfrastructure();
+        fetchMaintenance();
+      })();
     </script>
 </body>
 </html>

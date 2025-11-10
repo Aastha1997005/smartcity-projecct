@@ -47,24 +47,7 @@ function initializeSearch() {
 
 // Form handling
 function initializeForms() {
-    // Announcement form
-    const announcementForm = document.getElementById('announcementForm');
-    if (announcementForm) {
-        announcementForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const title = document.getElementById('title').value;
-            const message = document.getElementById('message').value;
-            
-            // Show success message
-            showToast('Announcement sent successfully!', 'success');
-            
-            // Reset form
-            announcementForm.reset();
-            
-            console.log('Announcement sent:', { title, message });
-        });
-    }
+    // Announcement form handling moved to page-specific code (announcements-admin.html)
     
     // Citizen form
     const citizenForm = document.getElementById('citizenForm');

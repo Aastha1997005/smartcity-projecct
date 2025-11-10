@@ -7,13 +7,24 @@ router.get("/", async (req, res) => {
     const [rows] = await db.query("SELECT * FROM Healthcare");
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Healthcare detail error for hospital', req.params.hospital_id, err);
+    // write debug dump to file for offline inspection
+    try {
+      const fs = require('fs');
+      const dump = `TIME: ${new Date().toISOString()}\nHOSPITAL_ID: ${req.params.hospital_id}\nERROR: ${err.stack || err.message}\n`;
+      fs.appendFileSync('./tmp_healthcare_errors.log', dump);
+    } catch (fsErr) {
+      console.error('Failed to write healthcare debug file', fsErr);
+    }
+    const safeStack = err && err.stack ? err.stack.split('\n').slice(0,5) : undefined;
+    res.status(500).json({ error: err.message, stack: safeStack });
   }
 });
 
 // Get healthcare by ID
 router.get("/:hospital_id", async (req, res) => {
   try {
+  console.log('GET /api/healthcare/:hospital_id called with', req.params.hospital_id);
     const hospitalId = req.params.hospital_id;
     const [rows] = await db.query(
       "SELECT * FROM Healthcare WHERE hospital_id = ?",
@@ -24,30 +35,44 @@ router.get("/:hospital_id", async (req, res) => {
     const hospital = rows[0];
 
     // Fetch doctors that work in this hospital, include optional columns if present
-    const [cols] = await db.query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Doctors' AND COLUMN_NAME IN ('capacity','type')");
-    const colNames = (cols || []).map(c => c.COLUMN_NAME.toLowerCase());
-    const selectCols = ['d.doctor_id', 'd.name', 'd.specialisation'];
-    if (colNames.includes('capacity')) selectCols.push('d.capacity');
-    if (colNames.includes('type')) selectCols.push('d.type');
+    let doctors = [];
+    try {
+      const [cols] = await db.query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Doctors' AND COLUMN_NAME IN ('capacity','type')");
+      const colNames = (cols || []).map(c => c.COLUMN_NAME.toLowerCase());
+      const selectCols = ['d.doctor_id', 'd.name', 'd.specialisation'];
+      if (colNames.includes('capacity')) selectCols.push('d.capacity');
+      if (colNames.includes('type')) selectCols.push('d.type');
 
-    const doctorSql = `SELECT ${selectCols.join(', ')} FROM works_in w JOIN Doctors d ON w.doctor_id = d.doctor_id WHERE w.hospital_id = ?`;
-    const [doctors] = await db.query(doctorSql, [hospitalId]);
+      const doctorSql = `SELECT ${selectCols.join(', ')} FROM works_in w JOIN Doctors d ON w.doctor_id = d.doctor_id WHERE w.hospital_id = ?`;
+      const [drows] = await db.query(doctorSql, [hospitalId]);
+      doctors = drows || [];
+    } catch (subErr) {
+      console.error('Healthcare doctors subquery error for hospital', hospitalId, subErr);
+      doctors = [];
+    }
 
     // Fetch recent bookings made by citizens for this hospital/service (Service_Booking.service_id == hospital_id)
     // Join to Citizen and Users to show citizen name and email when available
-    const bookingSql = `
-      SELECT b.booking_id, b.citizen_id, b.booking_start, b.booking_end, b.status, b.details, b.priority, b.provider_id, b.service_name_cache, b.service_category_cache, b.created_at,
-             c.first_name AS citizen_first_name, c.last_name AS citizen_last_name, u.email AS citizen_email,
-             sp.name AS provider_name, d.name AS doctor_name
-      FROM Service_Booking b
-      LEFT JOIN Citizen c ON b.citizen_id = c.citizen_id
-      LEFT JOIN Users u ON u.linked_id = c.citizen_id
-      LEFT JOIN Service_Provider sp ON b.provider_id = sp.provider_id
-      LEFT JOIN Doctors d ON b.provider_id = d.doctor_id
-      WHERE b.service_id = ?
-      ORDER BY b.booking_start DESC
-    `;
-    const [bookings] = await db.query(bookingSql, [hospitalId]);
+    let bookings = [];
+    try {
+      const bookingSql = `
+        SELECT b.booking_id, b.citizen_id, b.booking_start, b.booking_end, b.status, b.details, b.priority, b.provider_id, b.service_name_cache, b.service_category_cache, b.created_at,
+               c.first_name AS citizen_first_name, c.last_name AS citizen_last_name, u.email AS citizen_email,
+               sp.name AS provider_name, d.name AS doctor_name
+        FROM Service_Booking b
+        LEFT JOIN Citizen c ON b.citizen_id = c.citizen_id
+        LEFT JOIN Users u ON u.linked_id = c.citizen_id
+        LEFT JOIN Service_Provider sp ON b.provider_id = sp.provider_id
+        LEFT JOIN Doctors d ON b.provider_id = d.doctor_id
+        WHERE b.service_id = ?
+        ORDER BY b.booking_start DESC
+      `;
+      const [brows] = await db.query(bookingSql, [hospitalId]);
+      bookings = brows || [];
+    } catch (subErr) {
+      console.error('Healthcare bookings subquery error for hospital', hospitalId, subErr);
+      bookings = [];
+    }
 
     res.json({ healthcare: hospital, doctors: doctors || [], bookings: bookings || [] });
   } catch (err) {

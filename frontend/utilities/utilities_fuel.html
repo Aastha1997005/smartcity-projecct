@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fuel Utilities - SmartCity</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --primary-color: rgba(255, 255, 255, 0.6);
+      --secondary-color: rgba(255, 255, 255, 0.6);
+      --sidebar-width: 260px;
+      --text-dark: #03045E;
+    }
+
+    body {
+      font-family: "Montserrat", sans-serif;
+      background:
+        linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)),
+        url('https://i.ibb.co/S4yxVvP2/img-smartcity.jpg') center center / cover no-repeat fixed;
+      margin: 0;
+      color: var(--text-dark);
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: var(--sidebar-width);
+      background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+      border-top-right-radius: 20px;
+      border-bottom-right-radius: 20px;
+      color: #03045E;
+      box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+      overflow-y: auto;
+    }
+
+    .nav-link {
+      color: #03045E;
+      padding: 12px 20px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s;
+    }
+
+    .nav-link:hover {
+      background-color: #0076b680;
+      transform: translateX(5px);
+    }
+
+    .nav-link.active {
+      background-color: #03045E;
+      color: #CAF0F8;
+    }
+
+    .main-content {
+      margin-left: var(--sidebar-width);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      border-radius: 15px;
+      padding: 25px;
+      color: #03045E;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 25px #03055e76;
+    }
+
+    .stats-card {
+      background: rgba(255,255,255,0.7);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 15px #03055e60;
+      transition: all 0.3s ease;
+    }
+
+    .stats-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px #03055e75;
+    }
+
+    .table-container {
+      background: rgba(255,255,255,0.7);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 15px #03055e5f;
+    }
+
+    table thead {
+      background-color: #03045E;
+      color: white;
+    }
+
+    .modal-content {
+      border-radius: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="p-4 text-center border-bottom">
+      <img src="../assets/07.png" class="img-fluid mb-3 rounded shadow-sm" width="150" />
+      <h4>SmartCity</h4>
+      <small>FUEL UTILITIES</small>
+    </div>
+
+    <ul class="nav flex-column mt-3">
+      <li class="nav-item"><a href="utilities_dashboard.html" class="nav-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a></li>
+      <li class="nav-item"><a href="utilities_water.html" class="nav-link"><i class="fas fa-faucet"></i> Water Supply</a></li>
+      <li class="nav-item"><a href="utilities_electricity.html" class="nav-link"><i class="fas fa-bolt"></i> Electricity</a></li>
+      <li class="nav-item"><a href="utilities_public_lights.html" class="nav-link"><i class="fas fa-lightbulb"></i> Public Lights</a></li>
+      <li class="nav-item"><a href="utilities_waste.html" class="nav-link"><i class="fas fa-trash"></i> Waste Management</a></li>
+      <li class="nav-item"><a href="utilities_internet.html" class="nav-link"><i class="fas fa-wifi"></i> Internet</a></li>
+      <li class="nav-item"><a href="utilities_fuel.html" class="nav-link active"><i class="fas fa-gas-pump"></i> Fuel</a></li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="welcome-banner">
+      <h2><i class="fas fa-gas-pump me-2 text-danger"></i> Fuel Utilities Overview</h2>
+      <p class="opacity-75 mb-0">Monitor citywide fuel stations, supply units, and operations.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-4">
+        <div class="stats-card">
+          <h5>Total Fuel Stations</h5>
+          <h3 id="totalStations">--</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stats-card">
+          <h5>Active Stations</h5>
+          <h3 id="activeStations">--</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stats-card">
+          <h5>Average Capacity</h5>
+          <h3 id="avgCapacity">--</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <h5 class="mb-3"><i class="fas fa-table me-2 text-danger"></i>Fuel Utility Stations</h5>
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Station Name</th>
+            <th>Fuel Type</th>
+            <th>Capacity (Litres)</th>
+            <th>Status</th>
+            <th>Issue Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="fuelTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="fuelDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title"><i class="fas fa-gas-pump me-2"></i> Fuel Station Details</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modalBodyContent">
+          <p>Loading details...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const fakeFuelData = [
+      { id: 1, station_name: "Indore Central Fuel", type: "Petrol", capacity: 12000, status: "Active", issue_date: "2024-03-01" },
+      { id: 2, station_name: "Bhawarkua Diesel Point", type: "Diesel", capacity: 9000, status: "Maintenance", issue_date: "2024-05-20" },
+      { id: 3, station_name: "SuperGas Hub", type: "CNG", capacity: 8000, status: "Active", issue_date: "2024-07-10" },
+      { id: 4, station_name: "EcoFuel Center", type: "Petrol", capacity: 11000, status: "Inactive", issue_date: "2024-08-12" }
+    ];
+
+    function renderFuelTable() {
+      const body = document.getElementById("fuelTableBody");
+      body.innerHTML = "";
+      fakeFuelData.forEach((item, index) => {
+        const color = item.status === "Active" ? "bg-success" :
+                      item.status === "Maintenance" ? "bg-warning text-dark" : "bg-danger";
+        body.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${item.station_name}</td>
+            <td>${item.type}</td>
+            <td>${item.capacity}</td>
+            <td><span class="badge ${color}">${item.status}</span></td>
+            <td>${item.issue_date}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="showDetails(${item.id})"><i class="fas fa-eye"></i> View</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function showDetails(id) {
+      const modal = new bootstrap.Modal(document.getElementById('fuelDetailModal'));
+      const fuel = fakeFuelData.find(f => f.id === id);
+      const modalBody = document.getElementById('modalBodyContent');
+      modalBody.innerHTML = `
+        <h5>${fuel.station_name}</h5>
+        <p><strong>Fuel Type:</strong> ${fuel.type}</p>
+        <p><strong>Capacity:</strong> ${fuel.capacity} Litres</p>
+        <p><strong>Status:</strong> ${fuel.status}</p>
+        <p><strong>Issue Date:</strong> ${fuel.issue_date}</p>
+      `;
+      modal.show();
+    }
+
+    function updateStats() {
+      const total = fakeFuelData.length;
+      const active = fakeFuelData.filter(f => f.status === "Active").length;
+      const avg = (fakeFuelData.reduce((a, b) => a + b.capacity, 0) / total).toFixed(0);
+
+      document.getElementById("totalStations").textContent = total;
+      document.getElementById("activeStations").textContent = active;
+      document.getElementById("avgCapacity").textContent = avg + " L";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderFuelTable();
+      updateStats();
+    });
+  </script>
+</body>
+</html>

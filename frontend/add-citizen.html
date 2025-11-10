@@ -347,7 +347,7 @@ background:
                 <a class="nav-link" href="admin.html"><i class="fas fa-home"></i> Dashboard</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="citizens.html"><i class="fas fa-users"></i> Citizens</a>
+                <a class="nav-link" href="citizen.html"><i class="fas fa-users"></i> Citizens</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="transport.html"><i class="fas fa-bus"></i> Transport</a>
@@ -362,7 +362,7 @@ background:
                 <a class="nav-link" href="healthcare.html"><i class="fas fa-hospital"></i> Healthcare</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="Allcomplaints.html"><i class="fas fa-exclamation-circle"></i> Complaints</a>
+                <a class="nav-link" href="complaints.html"><i class="fas fa-exclamation-circle"></i> Complaints</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="maintenance.html"><i class="fas fa-wrench"></i> Maintenance</a>
@@ -371,7 +371,7 @@ background:
                 <a class="nav-link" href="bookings.html"><i class="fas fa-calendar-alt"></i> Bookings</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a>
+                <a class="nav-link" href="announcements-admin.html"><i class="fas fa-bullhorn"></i> Announcements</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link active" href="add-citizen.html"><i class="fas fa-user-plus"></i> Add Citizen</a>
@@ -400,38 +400,148 @@ background:
                             <h5 class="mb-0">Citizen Information</h5>
                         </div>
                         <div class="card-body">
-                            <form id="citizenForm">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label for="name" class="form-label">Full Name</label>
-                                        <input type="text" class="form-control" id="name" placeholder="Enter full name" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="email" class="form-label">Email</label>
-                                        <input type="email" class="form-control" id="email" placeholder="Enter email address" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="phone" class="form-label">Phone Number</label>
-                                        <input type="tel" class="form-control" id="phone" placeholder="Enter phone number" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="address" class="form-label">Address</label>
-                                        <input type="text" class="form-control" id="address" placeholder="Enter street address" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="city" class="form-label">City</label>
-                                        <input type="text" class="form-control" id="city" placeholder="Enter city" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="zipCode" class="form-label">ZIP Code</label>
-                                        <input type="text" class="form-control" id="zipCode" placeholder="Enter ZIP code" required>
-                                    </div>
-                                </div>
-                                <div class="d-flex gap-3 mt-4">
-                                    <button type="submit" class="btn btn-outline-primary flex-fill">Add Citizen</button>
-                                    <a href="citizens.html" class="btn btn-outline-secondary flex-fill">Cancel</a>
-                                </div>
-                            </form>
+              <form id="citizenForm">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="first_name" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="first_name" placeholder="First name" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="last_name" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="last_name" placeholder="Last name" required>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="street" class="form-label">Street</label>
+                    <input type="text" class="form-control" id="street" placeholder="Street address">
+                  </div>
+                  <div class="col-md-6">
+                    <label for="area" class="form-label">Area</label>
+                    <input type="text" class="form-control" id="area" placeholder="Area/Neighborhood">
+                  </div>
+
+                  <div class="col-md-4">
+                    <label for="city" class="form-label">City</label>
+                    <input type="text" class="form-control" id="city" placeholder="City">
+                  </div>
+                  <div class="col-md-4">
+                    <label for="pincode" class="form-label">Pincode</label>
+                    <input type="text" class="form-control" id="pincode" placeholder="6-digit pincode">
+                  </div>
+                  <div class="col-md-4">
+                    <label for="house_id" class="form-label">House ID (optional)</label>
+                    <input type="text" class="form-control" id="house_id" placeholder="House ID">
+                  </div>
+
+                  <div class="col-md-4">
+                    <label for="gender" class="form-label">Gender</label>
+                    <select id="gender" class="form-select">
+                      <option value="">Prefer not to say</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label for="dob" class="form-label">Date of Birth</label>
+                    <input type="date" class="form-control" id="dob">
+                  </div>
+                  <div class="col-md-4">
+                    <label for="email" class="form-label">Email (optional)</label>
+                    <input type="email" class="form-control" id="email" placeholder="Email address">
+                  </div>
+                  <div class="col-md-4">
+                    <label for="password" class="form-label">Password (optional)</label>
+                    <input type="text" class="form-control" id="password" placeholder="Leave blank to auto-generate">
+                  </div>
+                </div>
+                <div class="d-flex gap-3 mt-4">
+                  <button type="submit" class="btn btn-outline-primary flex-fill">Add Citizen</button>
+                  <a href="citizen.html" class="btn btn-outline-secondary flex-fill">Cancel</a>
+                </div>
+              </form>
+              <script>
+                (function(){
+                  const API_BASE = window.API_BASE || 'http://127.0.0.1:5000/api';
+
+                  // Small explanatory note for admins
+                  const noteEl = document.createElement('div');
+                  noteEl.className = 'mb-3 text-muted';
+                  noteEl.innerText = 'Note: if you provide an email address, a user account will also be created and credentials will be emailed to that address.';
+                  const form = document.getElementById('citizenForm');
+                  form.insertBefore(noteEl, form.firstChild);
+
+                  document.getElementById('citizenForm').addEventListener('submit', async function(e){
+                    e.preventDefault();
+                      const payload = {
+                      first_name: document.getElementById('first_name').value.trim(),
+                      last_name: document.getElementById('last_name').value.trim(),
+                      street: document.getElementById('street').value.trim() || null,
+                      area: document.getElementById('area').value.trim() || null,
+                      city: document.getElementById('city').value.trim() || null,
+                      pincode: document.getElementById('pincode').value.trim() || null,
+                      gender: document.getElementById('gender').value || null,
+                      dob: document.getElementById('dob').value || null,
+                      house_id: document.getElementById('house_id').value || null,
+                      email: document.getElementById('email').value || null,
+                      password: document.getElementById('password').value || null
+                    };
+                    try {
+                      const headers = { 'Content-Type': 'application/json' };
+                      const token = localStorage.getItem('token');
+                      if (token) headers['Authorization'] = 'Bearer ' + token;
+
+                      const res = await fetch(`${API_BASE}/citizens`, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify(payload)
+                      });
+                      if (!res.ok) {
+                        const err = await res.json().catch(()=>({ error: res.statusText }));
+                        throw new Error(err.error || 'Failed to create citizen');
+                      }
+                      const body = await res.json().catch(()=>({}));
+
+                      // success
+                      window.smartCityAdmin.showToast('Citizen added', 'success');
+
+                      // If backend returns the generated password, display it prominently so admin can record it
+                      if (body && body.generated_password) {
+                        // show a longer-lasting toast
+                        window.smartCityAdmin.showToast('Generated password created for the user', 'info');
+                        // populate and show Bootstrap modal with the generated password and a copy button
+                        const pwdTextEl = document.getElementById('genPasswordText');
+                        const pwdHiddenInput = document.getElementById('genPasswordHidden');
+                        if (pwdTextEl) pwdTextEl.innerText = body.generated_password;
+                        if (pwdHiddenInput) pwdHiddenInput.value = body.generated_password;
+                        try {
+                          const modalEl = document.getElementById('generatedPasswordModal');
+                          if (modalEl) {
+                            const modal = new bootstrap.Modal(modalEl);
+                            modal.show();
+                          }
+                        } catch (e) {
+                          // fallback to clipboard confirm if modal fails
+                          if (confirm('A password was generated for the user. Copy it to clipboard now?')) {
+                            try { navigator.clipboard.writeText(body.generated_password); alert('Copied'); } catch(e) { /* ignore */ }
+                          }
+                        }
+                      }
+
+                      // show email sent status if backend reports it
+                      if (body && body.email_sent) {
+                        window.smartCityAdmin.showToast('Credentials emailed to ' + (body.email || payload.email), 'success');
+                      } else if (body && body.email) {
+                        window.smartCityAdmin.showToast('Could not send credentials email to ' + body.email + '. Please verify SMTP settings or copy the password manually.', 'info');
+                      }
+
+                      setTimeout(()=> window.location.href = 'citizen.html', 900);
+                    } catch (err) {
+                      window.smartCityAdmin.showToast(err.message || 'Failed', 'info');
+                    }
+                  });
+                })();
+              </script>
                         </div>
                     </div>
                 </div>
@@ -441,6 +551,28 @@ background:
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="app.js"></script>
+    <!-- Generated password modal -->
+    <div class="modal fade" id="generatedPasswordModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Generated Password</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p class="small text-muted">Copy and provide this password to the user (or it was emailed to them).</p>
+            <div class="input-group mb-2">
+              <input type="text" id="genPasswordText" class="form-control" readonly>
+              <button class="btn btn-outline-secondary" id="copyGenPasswordBtn">Copy</button>
+            </div>
+            <input type="hidden" id="genPasswordHidden">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <script>
       function logout() {
         if (confirm("Are you sure you want to logout?")) {
@@ -448,6 +580,18 @@ background:
           window.location.href = "login.html";
         }
       }
+      // copy generated password button
+      document.addEventListener('DOMContentLoaded', function(){
+        const copyBtn = document.getElementById('copyGenPasswordBtn');
+        if (copyBtn) {
+          copyBtn.addEventListener('click', function(){
+            const val = document.getElementById('genPasswordHidden') && document.getElementById('genPasswordHidden').value;
+            if (val) {
+              try { navigator.clipboard.writeText(val); alert('Password copied to clipboard'); } catch(e) { alert('Copy failed'); }
+            }
+          });
+        }
+      });
     </script>
 </body>
 </html>
