@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Water Utilities - SmartCity</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --primary-color: rgba(255, 255, 255, 0.6);
+      --secondary-color: rgba(255, 255, 255, 0.6);
+      --sidebar-width: 260px;
+      --text-dark: #03045E;
+    }
+
+    body {
+      font-family: "Montserrat", sans-serif;
+      background:
+        linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)),
+        url('https://i.ibb.co/S4yxVvP2/img-smartcity.jpg') center center / cover no-repeat fixed;
+      margin: 0;
+      color: var(--text-dark);
+    }
+
+    /* Sidebar */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+        background: linear-gradient(
+          180deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+        color: rgba(0, 3, 154, 0.866);
+        overflow-y: auto;
+        transition: margin-left 0.4s ease-in-out;
+        z-index: 1000;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .logo-img {
+        width: 200px;
+        max-width: 60%;
+        height: auto;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        object-fit: contain;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 8px 22px #03055e7a;
+        background-color: #ffffffd0;
+      }
+
+      .logo-img:hover {
+        transform: scale(1.06);
+        box-shadow: 0 10px 28px rgba(19, 63, 110, 0.568);
+      }
+
+      .nav-link {
+        color: #03045e;
+        padding: 12px 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s;
+      }
+
+      .nav-link:hover {
+        background-color: #0076b680;
+        transform: translateX(5px);
+        color: rgb(0, 5, 137);
+      }
+
+      .nav-link.active {
+        background-color: #03045e;
+        color: #caf0f8;
+        font-weight: 600;
+      }
+
+      .nav-link i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+      }
+
+    .main-content {
+      margin-left: var(--sidebar-width);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      border-radius: 15px;
+      padding: 25px;
+      color: #03045E;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 25px #03055e76;
+    }
+
+    .stats-card {
+      background: rgba(255,255,255,0.7);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 15px #03055e60;
+      transition: all 0.3s ease;
+    }
+
+    .stats-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px #03055e75;
+    }
+
+    .table-container {
+      background: rgba(255,255,255,0.7);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 15px #03055e5f;
+    }
+
+    table thead {
+      background-color: #03045E;
+      color: white;
+    }
+
+    .modal-content {
+      border-radius: 12px;
+    }
+
+    .badge {
+      font-size: 0.8rem;
+      padding: 6px 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <img src="../assets/07.png" alt="Smart City Logo" class="logo-img" />
+        <h4>SmartCity</h4>
+        <small id="userRole">Utilities</small>
+      </div>
+
+      <ul class="nav flex-column mt-3">
+        <li class="nav-item">
+          <a href="utilities_dashboard.html" class="nav-link"
+            ><i class="fas fa-bolt"></i> Dashboard</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_water.html" class="nav-link active"
+            ><i class="fas fa-faucet"></i> Water Supply</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_electricity.html" class="nav-link"
+            ><i class="fas fa-plug"></i> Electricity</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_public_lights.html" class="nav-link"
+            ><i class="fas fa-lightbulb"></i> Public Lighting</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_waste.html" class="nav-link"
+            ><i class="fas fa-trash"></i> Waste Management</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_internet.html" class="nav-link"
+            ><i class="fas fa-wifi"></i> Internet</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_fuel.html" class="nav-link"
+            ><i class="fas fa-gas-pump"></i> Fuel</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_infrastructure.html" class="nav-link"
+            ><i class="fas fa-building"></i> Infrastructure</a
+          >
+        </li>
+      </ul>
+    </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="welcome-banner">
+      <h2><i class="fas fa-faucet me-2 text-primary"></i> Water Utilities Overview</h2>
+      <p class="opacity-75 mb-0">Monitor pipelines, quality levels, and water sources.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-4">
+        <div class="stats-card">
+          <h5>Total Services</h5>
+          <h3 id="totalWater">--</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stats-card">
+          <h5>Total Pipelines</h5>
+          <h3 id="totalPipes">--</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stats-card">
+          <h5>Average Quality</h5>
+          <h3 id="avgQuality">--</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <h5 class="mb-3"><i class="fas fa-table me-2 text-primary"></i>Water Services List</h5>
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Service Name</th>
+            <th>Source</th>
+            <th>Quality Level</th>
+            <th>Pipelines</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="waterTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="waterDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title"><i class="fas fa-tint me-2"></i> Water Service Details</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modalBodyContent">
+          <p>Loading details...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const fakeWaterData = [
+      { id: 1, service_name: "Central Water Supply", source: "Narmada", quality_level: "High", pipeline_count: 5, availability_status: "Available", unit: "KL" },
+      { id: 2, service_name: "East Zone Water", source: "Tank A", quality_level: "Moderate", pipeline_count: 3, availability_status: "Intermittent", unit: "KL" },
+      { id: 3, service_name: "West Water Plant", source: "Underground", quality_level: "Good", pipeline_count: 4, availability_status: "Available", unit: "KL" }
+    ];
+
+    const fakePipelineData = {
+      1: [
+        { id: "P-101", length: "2.4 km", zone: "A", condition: "Good" },
+        { id: "P-102", length: "3.1 km", zone: "B", condition: "Excellent" }
+      ],
+      2: [
+        { id: "P-202", length: "1.8 km", zone: "E", condition: "Moderate" },
+        { id: "P-203", length: "2.5 km", zone: "D", condition: "Good" }
+      ],
+      3: [
+        { id: "P-303", length: "2.2 km", zone: "W", condition: "Good" }
+      ]
+    };
+
+    function renderTable() {
+      const body = document.getElementById("waterTableBody");
+      body.innerHTML = "";
+      fakeWaterData.forEach((item, index) => {
+        body.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${item.service_name}</td>
+            <td>${item.source}</td>
+            <td>${item.quality_level}</td>
+            <td>${item.pipeline_count}</td>
+            <td><span class="badge ${item.availability_status === 'Available' ? 'bg-success' : 'bg-warning'}">${item.availability_status}</span></td>
+            <td><button class="btn btn-sm btn-primary" onclick="showDetails(${item.id})"><i class="fas fa-eye"></i> View</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function showDetails(id) {
+      const modal = new bootstrap.Modal(document.getElementById('waterDetailModal'));
+      const data = fakeWaterData.find(d => d.id === id);
+      const pipelines = fakePipelineData[id] || [];
+      const modalBody = document.getElementById('modalBodyContent');
+
+      let html = `
+        <h5>${data.service_name}</h5>
+        <p><strong>Source:</strong> ${data.source}</p>
+        <p><strong>Quality Level:</strong> ${data.quality_level}</p>
+        <p><strong>Availability:</strong> ${data.availability_status}</p>
+        <h6 class="mt-4">Pipelines:</h6>
+        <ul class="list-group">
+          ${pipelines.map(p => `<li class="list-group-item">ID: ${p.id} | Length: ${p.length} | Zone: ${p.zone} | Condition: ${p.condition}</li>`).join('')}
+        </ul>
+      `;
+      modalBody.innerHTML = html;
+      modal.show();
+    }
+
+    function updateStats() {
+      document.getElementById("totalWater").textContent = fakeWaterData.length;
+      document.getElementById("totalPipes").textContent = fakeWaterData.reduce((a, b) => a + b.pipeline_count, 0);
+      const levels = { High: 3, Good: 2, Moderate: 1 };
+      const avg = (fakeWaterData.reduce((a, b) => a + (levels[b.quality_level] || 0), 0) / fakeWaterData.length).toFixed(1);
+      document.getElementById("avgQuality").textContent = avg + " / 3";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderTable();
+      updateStats();
+    });
+  </script>
+</body>
+</html>
