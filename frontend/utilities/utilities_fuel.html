@@ -25,38 +25,75 @@
       color: var(--text-dark);
     }
 
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100vh;
-      width: var(--sidebar-width);
-      background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
-      border-top-right-radius: 20px;
-      border-bottom-right-radius: 20px;
-      color: #03045E;
-      box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
-      overflow-y: auto;
-    }
+    /* Sidebar */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+        background: linear-gradient(
+          180deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+        color: rgba(0, 3, 154, 0.866);
+        overflow-y: auto;
+        transition: margin-left 0.4s ease-in-out;
+        z-index: 1000;
+      }
 
-    .nav-link {
-      color: #03045E;
-      padding: 12px 20px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      transition: all 0.3s;
-    }
+      .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
 
-    .nav-link:hover {
-      background-color: #0076b680;
-      transform: translateX(5px);
-    }
+      .logo-img {
+        width: 200px;
+        max-width: 60%;
+        height: auto;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        object-fit: contain;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 8px 22px #03055e7a;
+        background-color: #ffffffd0;
+      }
 
-    .nav-link.active {
-      background-color: #03045E;
-      color: #CAF0F8;
-    }
+      .logo-img:hover {
+        transform: scale(1.06);
+        box-shadow: 0 10px 28px rgba(19, 63, 110, 0.568);
+      }
+
+      .nav-link {
+        color: #03045e;
+        padding: 12px 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s;
+      }
+
+      .nav-link:hover {
+        background-color: #0076b680;
+        transform: translateX(5px);
+        color: rgb(0, 5, 137);
+      }
+
+      .nav-link.active {
+        background-color: #03045e;
+        color: #caf0f8;
+        font-weight: 600;
+      }
+
+      .nav-link i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+      }
 
     .main-content {
       margin-left: var(--sidebar-width);
@@ -107,23 +144,56 @@
 
 <body>
   <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="p-4 text-center border-bottom">
-      <img src="../assets/07.png" class="img-fluid mb-3 rounded shadow-sm" width="150" />
-      <h4>SmartCity</h4>
-      <small>FUEL UTILITIES</small>
-    </div>
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <img src="../assets/07.png" alt="Smart City Logo" class="logo-img" />
+        <h4>SmartCity</h4>
+        <small id="userRole">Utilities</small>
+      </div>
 
-    <ul class="nav flex-column mt-3">
-      <li class="nav-item"><a href="utilities_dashboard.html" class="nav-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a></li>
-      <li class="nav-item"><a href="utilities_water.html" class="nav-link"><i class="fas fa-faucet"></i> Water Supply</a></li>
-      <li class="nav-item"><a href="utilities_electricity.html" class="nav-link"><i class="fas fa-bolt"></i> Electricity</a></li>
-      <li class="nav-item"><a href="utilities_public_lights.html" class="nav-link"><i class="fas fa-lightbulb"></i> Public Lights</a></li>
-      <li class="nav-item"><a href="utilities_waste.html" class="nav-link"><i class="fas fa-trash"></i> Waste Management</a></li>
-      <li class="nav-item"><a href="utilities_internet.html" class="nav-link"><i class="fas fa-wifi"></i> Internet</a></li>
-      <li class="nav-item"><a href="utilities_fuel.html" class="nav-link active"><i class="fas fa-gas-pump"></i> Fuel</a></li>
-    </ul>
-  </div>
+      <ul class="nav flex-column mt-3">
+        <li class="nav-item">
+          <a href="utilities_dashboard.html" class="nav-link"
+            ><i class="fas fa-bolt"></i> Dashboard</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_water.html" class="nav-link"
+            ><i class="fas fa-faucet"></i> Water Supply</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_electricity.html" class="nav-link"
+            ><i class="fas fa-plug"></i> Electricity</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_public_lights.html" class="nav-link"
+            ><i class="fas fa-lightbulb"></i> Public Lighting</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_waste.html" class="nav-link"
+            ><i class="fas fa-trash"></i> Waste Management</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_internet.html" class="nav-link"
+            ><i class="fas fa-wifi"></i> Internet</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_fuel.html" class="nav-link active"
+            ><i class="fas fa-gas-pump"></i> Fuel</a
+          >
+        </li>
+        <li class="nav-item">
+          <a href="utilities_infrastructure.html" class="nav-link"
+            ><i class="fas fa-building"></i> Infrastructure</a
+          >
+        </li>
+      </ul>
+    </div>
 
   <!-- Main Content -->
   <div class="main-content">
