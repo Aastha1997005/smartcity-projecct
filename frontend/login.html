@@ -469,7 +469,9 @@
                             window.location.href = 'admin.html';
                         } else if (role === 'healthcare') {
                             window.location.href = 'healthcare.html';
-                        } else if (['transport','utility','internet'].includes(role)) {
+                        } else if (role === 'transport') {
+                            window.location.href = 'transport-main-dashboard.html';
+                        } else if (['utility','internet'].includes(role)) {
                             // provider landing page - optionally include role as query
                             window.location.href = `provider.html?role=${encodeURIComponent(role)}`;
                         } else {
