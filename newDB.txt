@@ -419,6 +419,23 @@ CREATE TABLE Complaints (
 );
 
 
+CREATE TABLE Maintenance_Task (
+    task_id INT AUTO_INCREMENT PRIMARY KEY,
+    asset_id INT,
+    task_type VARCHAR(100),
+    description TEXT,
+    scheduled_date DATE,
+    completion_date DATE,
+    status ENUM('Scheduled', 'In Progress', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
+    assigned_to INT, -- User ID of maintenance personnel
+    priority ENUM('low','medium','high') DEFAULT 'medium',
+    created_by INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL,
+    FOREIGN KEY (asset_id) REFERENCES Infrastructure(asset_id),
+    FOREIGN KEY (assigned_to) REFERENCES Users(user_id)
+);
+
 CREATE TABLE Users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,

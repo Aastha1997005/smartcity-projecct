@@ -7,7 +7,10 @@ const bodyParser = require("body-parser");
 
 
 const app = express();
-const PORT = 5000;
+const PORT = 5501; // Changed port to 5501 to match frontend expectation
+
+// Serve static files from the 'frontend' directory
+app.use(express.static('frontend'));
 
 // Swagger setup (must be after app is defined)
 const swaggerUi = require('swagger-ui-express');
@@ -54,8 +57,8 @@ const citizenRoutes = require("./routes/citizens");
 console.log("Loaded citizenRoutes");
 const vehicleRoutes = require("./routes/vehicles");
 console.log("Loaded vehicleRoutes");
-const utilityRoutes = require("./routes/utilities");
-console.log("Loaded utilityRoutes");
+const utilityRoutes = require("./routes/utilities_complete");
+console.log("Loaded utilityRoutes from utilities_complete.js");
 const healthcareRoutes = require("./routes/healthcare");
 console.log("Loaded healthcareRoutes");
 const serviceRoutes = require("./routes/services");

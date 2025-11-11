@@ -119,7 +119,7 @@
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="p-4 text-center border-bottom">
-      <img src="../assets/07.png" class="img-fluid mb-3 rounded shadow-sm" width="150" />
+      <img src="assets/07.png" class="img-fluid mb-3 rounded shadow-sm" width="150" />
       <h4>SmartCity</h4>
       <small>UTILITIES</small>
     </div>
@@ -220,51 +220,124 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
-    // Dummy data simulating /infrastructure/overview route
-    const summary = {
+    // API Configuration (matching your project structure)
+    const API_BASE = window.API_BASE || 'http://127.0.0.1:5000/api';
+
+    // Global variable to store data
+    let summary = {
       infrastructure: {
-        publicLights: 420,
-        pipelines: 215,
-        powerNodes: 128,
-        smartBins: 98,
-        sensors: 64,
+        lightCount: 0,
+        pipelineCount: 0,
+        powerNodeCount: 0,
+        binCount: 0,
+        sensorCount: 0,
+        networkCount: 0,
+        fuelStationCount: 0,
+        waterCount: 0
       }
     };
 
-    document.addEventListener("DOMContentLoaded", () => {
-      // Update dashboard counts
-      document.getElementById("waterCount").textContent = summary.infrastructure.pipelines + " Pipelines";
-      document.getElementById("electricCount").textContent = summary.infrastructure.powerNodes + " Power Nodes";
-      document.getElementById("lightsCount").textContent = summary.infrastructure.publicLights + " Lights";
-      document.getElementById("wasteCount").textContent = summary.infrastructure.smartBins + " Smart Bins";
-      document.getElementById("internetCount").textContent = "6 Networks";
-      document.getElementById("fuelCount").textContent = "9 Stations";
-      document.getElementById("infraCount").textContent = summary.infrastructure.sensors + " Sensors";
+    // Safe fetch with error handling
+    async function safeFetch(path, opts = {}) {
+      const token = localStorage.getItem('token');
+      const headers = opts.headers || {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      opts.headers = headers;
+      
+      const res = await fetch(API_BASE + path, opts);
+      
+      if (!res.ok) {
+        let body = '';
+        try { body = await res.text(); } catch (e) {}
+        const err = new Error(`${res.status} ${res.statusText}` + (body ? ` - ${body}` : ''));
+        err.status = res.status;
+        throw err;
+      }
+      return res.json();
+    }
+
+    // Update dashboard with fetched data
+    function updateDashboard() {
+      // Update dashboard counts for utility cards
+      document.getElementById("waterCount").textContent = summary.infrastructure.waterCount + " Services";
+      document.getElementById("electricCount").textContent = summary.infrastructure.powerNodeCount + " Nodes";
+      document.getElementById("lightsCount").textContent = summary.infrastructure.lightCount + " Lights";
+      document.getElementById("wasteCount").textContent = summary.infrastructure.binCount + " Smart Bins";
+      document.getElementById("internetCount").textContent = summary.infrastructure.networkCount + " Services";
+      document.getElementById("fuelCount").textContent = summary.infrastructure.fuelStationCount + " Stations";
+      
+      // Calculate total infrastructure assets
+      const totalAssets = summary.infrastructure.lightCount + 
+                         summary.infrastructure.pipelineCount + 
+                         summary.infrastructure.powerNodeCount + 
+                         summary.infrastructure.binCount + 
+                         summary.infrastructure.sensorCount;
+      document.getElementById("infraCount").textContent = totalAssets + " Assets";
 
       // Render chart
       const ctx = document.getElementById("utilitiesChart").getContext("2d");
       new Chart(ctx, {
         type: "bar",
         data: {
-          labels: ["Lights", "Pipelines", "Power Nodes", "Smart Bins", "Sensors"],
+          labels: ["Water", "Electricity", "Lights", "Waste", "Internet", "Fuel"],
           datasets: [{
-            label: "Infrastructure Assets",
+            label: "Infrastructure & Services Count",
             data: [
-              summary.infrastructure.publicLights,
-              summary.infrastructure.pipelines,
-              summary.infrastructure.powerNodes,
-              summary.infrastructure.smartBins,
-              summary.infrastructure.sensors,
+              summary.infrastructure.waterCount,
+              summary.infrastructure.powerNodeCount,
+              summary.infrastructure.lightCount,
+              summary.infrastructure.binCount,
+              summary.infrastructure.networkCount,
+              summary.infrastructure.fuelStationCount
             ],
-            backgroundColor: ["#3b82f6", "#0ea5e9", "#facc15", "#f43f5e", "#22c55e"],
+            backgroundColor: ["#3b82f6", "#facc15", "#22c55e", "#f43f5e", "#0ea5e9", "#6b7280"],
             borderRadius: 8
           }]
         },
         options: {
-          scales: { y: { beginAtZero: true } },
-          plugins: { legend: { display: false } }
+          responsive: true,
+          scales: { 
+            y: { 
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            } 
+          },
+          plugins: { 
+            legend: { display: false },
+            title: {
+              display: true,
+              text: 'Utilities Overview',
+              font: { size: 16 }
+            }
+          }
         }
       });
+    }
+
+    // Load data from backend
+    async function loadUtilitiesData() {
+      try {
+        const data = await safeFetch('/utilities/infrastructure/overview');
+        console.log('Loaded utilities data:', data);
+        summary = data;
+        updateDashboard();
+      } catch (err) {
+        console.error('Error loading utilities data:', err);
+        // Show default values if API fails
+        updateDashboard();
+        
+        // Show error message to user if unauthorized
+        if (err.status === 401 || err.status === 403) {
+          alert('Unauthorized. Please login to view utilities data.');
+        }
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener("DOMContentLoaded", () => {
+      loadUtilitiesData();
     });
   </script>
 </body>

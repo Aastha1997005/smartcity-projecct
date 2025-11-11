@@ -114,7 +114,7 @@
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="p-4 text-center border-bottom">
-      <img src="../assets/07.png" class="img-fluid mb-3 rounded shadow-sm" width="150" />
+      <img src="assets/07.png" class="img-fluid mb-3 rounded shadow-sm" width="150" />
       <h4>SmartCity</h4>
       <small>INFRASTRUCTURE</small>
     </div>
@@ -140,11 +140,12 @@
 
     <!-- Stats -->
     <div class="row g-4 mb-4">
-      <div class="col-md-2 col-sm-4"><div class="stats-card"><h6>Public Lights</h6><h3 id="lightCount">--</h3></div></div>
-      <div class="col-md-2 col-sm-4"><div class="stats-card"><h6>Pipelines</h6><h3 id="pipelineCount">--</h3></div></div>
-      <div class="col-md-2 col-sm-4"><div class="stats-card"><h6>Power Nodes</h6><h3 id="nodeCount">--</h3></div></div>
-      <div class="col-md-2 col-sm-4"><div class="stats-card"><h6>Smart Bins</h6><h3 id="binCount">--</h3></div></div>
-      <div class="col-md-2 col-sm-4"><div class="stats-card"><h6>Sensors</h6><h3 id="sensorCount">--</h3></div></div>
+      <div class="col-lg-2 col-md-4 col-6"><div class="stats-card"><h6>Public Lights</h6><h3 id="lightCount">--</h3></div></div>
+      <div class="col-lg-2 col-md-4 col-6"><div class="stats-card"><h6>Pipelines</h6><h3 id="pipelineCount">--</h3></div></div>
+      <div class="col-lg-2 col-md-4 col-6"><div class="stats-card"><h6>Power Nodes</h6><h3 id="nodeCount">--</h3></div></div>
+      <div class="col-lg-2 col-md-4 col-6"><div class="stats-card"><h6>Smart Bins</h6><h3 id="binCount">--</h3></div></div>
+      <div class="col-lg-2 col-md-4 col-6"><div class="stats-card"><h6>Sensors</h6><h3 id="sensorCount">--</h3></div></div>
+      <div class="col-lg-2 col-md-4 col-6"><div class="stats-card"><h6>Networks</h6><h3 id="networkCount">--</h3></div></div>
     </div>
 
     <!-- Maintenance & Alerts -->
@@ -169,7 +170,7 @@
       <table class="table table-hover align-middle">
         <thead>
           <tr>
-            <th>#</th>
+            <th>ID</th>
             <th>Zone Name</th>
             <th>Public Lights</th>
             <th>Pipelines</th>
@@ -201,83 +202,141 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    const infrastructureStats = {
-      infrastructure: { publicLights: 450, pipelines: 230, powerNodes: 95, smartBins: 180, sensors: 120 },
-      maintenance: [
-        { status: "Completed", count: 120 },
-        { status: "Pending", count: 15 },
-        { status: "In Progress", count: 7 }
-      ],
-      alerts: [
-        { severity: "Low", count: 5 },
-        { severity: "Medium", count: 3 },
-        { severity: "High", count: 2 }
-      ]
-    };
+    const API_BASE = window.API_BASE || 'http://127.0.0.1:5000/api';
 
-    const zoneInfrastructure = [
-      { id: 1, zone_name: "Zone A", lights: 150, pipes: 60, nodes: 20, bins: 40 },
-      { id: 2, zone_name: "Zone B", lights: 130, pipes: 80, nodes: 25, bins: 50 },
-      { id: 3, zone_name: "Zone C", lights: 170, pipes: 90, nodes: 30, bins: 60 }
-    ];
-
-    function loadInfrastructureStats() {
-      const i = infrastructureStats.infrastructure;
-      document.getElementById("lightCount").textContent = i.publicLights;
-      document.getElementById("pipelineCount").textContent = i.pipelines;
-      document.getElementById("nodeCount").textContent = i.powerNodes;
-      document.getElementById("binCount").textContent = i.smartBins;
-      document.getElementById("sensorCount").textContent = i.sensors;
-
-      const mList = document.getElementById("maintenanceList");
-      infrastructureStats.maintenance.forEach(m => {
-        mList.innerHTML += `<li class="list-group-item d-flex justify-content-between"><span>${m.status}</span><span class="badge bg-primary">${m.count}</span></li>`;
-      });
-
-      const aList = document.getElementById("alertList");
-      infrastructureStats.alerts.forEach(a => {
-        const color = a.severity === "High" ? "bg-danger" : a.severity === "Medium" ? "bg-warning text-dark" : "bg-success";
-        aList.innerHTML += `<li class="list-group-item d-flex justify-content-between"><span>${a.severity}</span><span class="badge ${color}">${a.count}</span></li>`;
-      });
+    async function safeFetch(path, opts = {}) {
+      const token = localStorage.getItem('token');
+      const headers = opts.headers || {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      opts.headers = headers;
+      
+      const res = await fetch(API_BASE + path, opts);
+      
+      if (!res.ok) {
+        let body = '';
+        try { body = await res.text(); } catch (e) {}
+        const err = new Error(`${res.status} ${res.statusText}` + (body ? ` - ${body}` : ''));
+        err.status = res.status;
+        throw err;
+      }
+      return res.json();
     }
 
-    function renderZones() {
+    function renderOverview(data) {
+      const i = data.infrastructure;
+      document.getElementById("lightCount").textContent = i.lightCount || 0;
+      document.getElementById("pipelineCount").textContent = i.pipelineCount || 0;
+      document.getElementById("nodeCount").textContent = i.powerNodeCount || 0;
+      document.getElementById("binCount").textContent = i.binCount || 0;
+      document.getElementById("sensorCount").textContent = i.sensorCount || 0;
+      document.getElementById("networkCount").textContent = i.networkCount || 0;
+
+      const mList = document.getElementById("maintenanceList");
+      mList.innerHTML = '';
+      if (data.maintenance && data.maintenance.length > 0) {
+        data.maintenance.forEach(m => {
+          mList.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center"><span>${m.status}</span><span class="badge bg-primary rounded-pill">${m.count}</span></li>`;
+        });
+      } else {
+        mList.innerHTML = '<li class="list-group-item">No maintenance tasks found.</li>';
+      }
+
+      const aList = document.getElementById("alertList");
+      aList.innerHTML = '';
+      if (data.alerts && data.alerts.length > 0) {
+        data.alerts.forEach(a => {
+          const color = a.severity === "critical" ? "bg-danger" : a.severity === "warning" ? "bg-warning text-dark" : "bg-success";
+          aList.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center"><span>${a.severity}</span><span class="badge ${color} rounded-pill">${a.count}</span></li>`;
+        });
+      } else {
+        aList.innerHTML = '<li class="list-group-item">No active alerts.</li>';
+      }
+    }
+
+    function renderZones(zones) {
       const body = document.getElementById("zoneTableBody");
       body.innerHTML = "";
-      zoneInfrastructure.forEach((z, index) => {
+      if (!zones || zones.length === 0) {
+        body.innerHTML = '<tr><td colspan="7" class="text-center">No zones found.</td></tr>';
+        return;
+      }
+      zones.forEach(zone => {
+        const stats = zone.statistics || {};
         body.innerHTML += `
           <tr>
-            <td>${index + 1}</td>
-            <td>${z.zone_name}</td>
-            <td>${z.lights}</td>
-            <td>${z.pipes}</td>
-            <td>${z.nodes}</td>
-            <td>${z.bins}</td>
-            <td><button class="btn btn-sm btn-secondary" onclick="showDetails(${z.id})"><i class="fas fa-eye"></i> View</button></td>
+            <td>${zone.zone_id}</td>
+            <td>${zone.zone_name}</td>
+            <td>${stats.publicLights || 0}</td>
+            <td>${stats.pipelines || 0}</td>
+            <td>${stats.powerNodes || 0}</td>
+            <td>${stats.smartBins || 0}</td>
+            <td><button class="btn btn-sm btn-secondary" onclick="showDetails(${zone.zone_id})"><i class="fas fa-eye"></i> View</button></td>
           </tr>
         `;
       });
     }
 
-    function showDetails(id) {
-      const zone = zoneInfrastructure.find(z => z.id === id);
+    async function showDetails(zoneId) {
       const modal = new bootstrap.Modal(document.getElementById("zoneDetailModal"));
       const modalBody = document.getElementById("modalBodyContent");
-      modalBody.innerHTML = `
-        <h5>${zone.zone_name}</h5>
-        <ul class="list-group">
-          <li class="list-group-item"><strong>Public Lights:</strong> ${zone.lights}</li>
-          <li class="list-group-item"><strong>Pipelines:</strong> ${zone.pipes}</li>
-          <li class="list-group-item"><strong>Power Nodes:</strong> ${zone.nodes}</li>
-          <li class="list-group-item"><strong>Smart Bins:</strong> ${zone.bins}</li>
-        </ul>
-      `;
+      modalBody.innerHTML = '<p>Loading zone details...</p>';
       modal.show();
+
+      try {
+        const data = await safeFetch(`/zones/${zoneId}`);
+        const stats = data.statistics || {};
+        let html = `
+          <h5>${data.zone.zone_name} (${data.zone.type})</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Population & Housing</h6>
+              <ul class="list-group">
+                <li class="list-group-item"><strong>Houses:</strong> ${stats.totalHouses || 0}</li>
+                <li class="list-group-item"><strong>Citizens:</strong> ${stats.totalCitizens || 0}</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h6>Infrastructure Health</h6>
+              <ul class="list-group">
+                <li class="list-group-item"><strong>Total Assets:</strong> ${stats.totalInfrastructure || 0}</li>
+                <li class="list-group-item"><strong>Active Alerts:</strong> ${stats.alerts ? stats.alerts.total : 0}</li>
+                <li class="list-group-item"><strong>Active Maintenance:</strong> ${stats.maintenance ? (stats.maintenance.scheduled + stats.maintenance.inProgress) : 0}</li>
+              </ul>
+            </div>
+          </div>
+          <h6 class="mt-3">Asset Details</h6>
+          <p>
+            <span class="badge bg-primary me-1">Lights: ${stats.publicLights ? stats.publicLights.total : 0}</span>
+            <span class="badge bg-info me-1">Smart Bins: ${stats.smartBins ? stats.smartBins.total : 0}</span>
+            <span class="badge bg-secondary me-1">Sensors: ${stats.sensors ? stats.sensors.total : 0}</span>
+          </p>
+        `;
+        modalBody.innerHTML = html;
+      } catch (err) {
+        console.error(`Error loading details for zone ID ${zoneId}:`, err);
+        modalBody.innerHTML = `<p class="text-danger">Error loading zone details. Please try again later.</p>`;
+      }
+    }
+
+    async function loadInfrastructureData() {
+      try {
+        const overviewData = await safeFetch('/utilities/infrastructure/overview');
+        renderOverview(overviewData);
+      } catch (err) {
+        console.error('Error loading infrastructure overview:', err);
+      }
+
+      try {
+        const zonesData = await safeFetch('/zones?include_stats=true');
+        renderZones(zonesData);
+      } catch (err) {
+        console.error('Error loading zones data:', err);
+        document.getElementById("zoneTableBody").innerHTML = `<tr><td colspan="7" class="text-center text-danger">Failed to load zones data. ${err.message}</td></tr>`;
+      }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      loadInfrastructureStats();
-      renderZones();
+      loadInfrastructureData();
     });
   </script>
 </body>

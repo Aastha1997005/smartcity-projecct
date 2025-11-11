@@ -72,6 +72,22 @@ router.get("/", async (req, res) => {
            WHERE i.zone_id = ?`,
           [zone.zone_id]
         );
+
+        // Count pipelines
+        const [[pipelineCount]] = await db.query(
+          `SELECT COUNT(*) as count FROM Pipeline p
+           JOIN Infrastructure i ON p.pipeline_id = i.asset_id 
+           WHERE i.zone_id = ?`,
+          [zone.zone_id]
+        );
+
+        // Count power nodes
+        const [[powerNodeCount]] = await db.query(
+          `SELECT COUNT(*) as count FROM Powernodes pn
+           JOIN Infrastructure i ON pn.node_id = i.asset_id 
+           WHERE i.zone_id = ?`,
+          [zone.zone_id]
+        );
         
         // Get waste management info
         const [[wasteInfo]] = await db.query(
@@ -87,6 +103,8 @@ router.get("/", async (req, res) => {
           publicLights: lightCount.count,
           smartBins: binCount.count,
           sensors: sensorCount.count,
+          pipelines: pipelineCount.count,
+          powerNodes: powerNodeCount.count,
           hasWasteManagement: !!wasteInfo
         };
       }

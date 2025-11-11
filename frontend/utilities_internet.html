@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fuel Utilities - SmartCity</title>
+  <title>Internet Connectivity - SmartCity</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -99,6 +99,11 @@
       color: white;
     }
 
+    .badge {
+      font-size: 0.8rem;
+      padding: 6px 10px;
+    }
+
     .modal-content {
       border-radius: 12px;
     }
@@ -111,7 +116,7 @@
     <div class="p-4 text-center border-bottom">
       <img src="../assets/07.png" class="img-fluid mb-3 rounded shadow-sm" width="150" />
       <h4>SmartCity</h4>
-      <small>FUEL UTILITIES</small>
+      <small>INTERNET SERVICES</small>
     </div>
 
     <ul class="nav flex-column mt-3">
@@ -120,66 +125,65 @@
       <li class="nav-item"><a href="utilities_electricity.html" class="nav-link"><i class="fas fa-bolt"></i> Electricity</a></li>
       <li class="nav-item"><a href="utilities_public_lights.html" class="nav-link"><i class="fas fa-lightbulb"></i> Public Lights</a></li>
       <li class="nav-item"><a href="utilities_waste.html" class="nav-link"><i class="fas fa-trash"></i> Waste Management</a></li>
-      <li class="nav-item"><a href="utilities_internet.html" class="nav-link"><i class="fas fa-wifi"></i> Internet</a></li>
-      <li class="nav-item"><a href="utilities_fuel.html" class="nav-link active"><i class="fas fa-gas-pump"></i> Fuel</a></li>
+      <li class="nav-item"><a href="utilities_internet.html" class="nav-link active"><i class="fas fa-wifi"></i> Internet</a></li>
     </ul>
   </div>
 
   <!-- Main Content -->
   <div class="main-content">
     <div class="welcome-banner">
-      <h2><i class="fas fa-gas-pump me-2 text-danger"></i> Fuel Utilities Overview</h2>
-      <p class="opacity-75 mb-0">Monitor citywide fuel stations, supply units, and operations.</p>
+      <h2><i class="fas fa-wifi me-2 text-primary"></i> Internet Connectivity Overview</h2>
+      <p class="opacity-75 mb-0">Monitor broadband and wireless services across all city zones.</p>
     </div>
 
     <!-- Stats -->
     <div class="row g-4 mb-4">
       <div class="col-md-4">
         <div class="stats-card">
-          <h5>Total Fuel Stations</h5>
-          <h3 id="totalStations">--</h3>
+          <h5>Total Providers</h5>
+          <h3 id="totalProviders">--</h3>
         </div>
       </div>
       <div class="col-md-4">
         <div class="stats-card">
-          <h5>Active Stations</h5>
-          <h3 id="activeStations">--</h3>
+          <h5>Average Speed</h5>
+          <h3 id="avgSpeed">--</h3>
         </div>
       </div>
       <div class="col-md-4">
         <div class="stats-card">
-          <h5>Average Capacity</h5>
-          <h3 id="avgCapacity">--</h3>
+          <h5>Average Uptime</h5>
+          <h3 id="avgUptime">--</h3>
         </div>
       </div>
     </div>
 
     <!-- Table -->
     <div class="table-container">
-      <h5 class="mb-3"><i class="fas fa-table me-2 text-danger"></i>Fuel Utility Stations</h5>
+      <h5 class="mb-3"><i class="fas fa-table me-2 text-primary"></i>Internet Service Providers</h5>
       <table class="table table-hover align-middle">
         <thead>
           <tr>
             <th>#</th>
-            <th>Station Name</th>
-            <th>Fuel Type</th>
-            <th>Capacity (Litres)</th>
+            <th>Provider Name</th>
+            <th>Zone</th>
+            <th>Speed (Mbps)</th>
+            <th>Uptime (%)</th>
             <th>Status</th>
-            <th>Issue Date</th>
             <th>Action</th>
           </tr>
         </thead>
-        <tbody id="fuelTableBody"></tbody>
+        <tbody id="internetTableBody"></tbody>
       </table>
     </div>
   </div>
 
   <!-- Modal -->
-  <div class="modal fade" id="fuelDetailModal" tabindex="-1">
+  <div class="modal fade" id="internetDetailModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
-        <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title"><i class="fas fa-gas-pump me-2"></i> Fuel Station Details</h5>
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title"><i class="fas fa-wifi me-2"></i> Internet Service Details</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body" id="modalBodyContent">
@@ -192,60 +196,103 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    const fakeFuelData = [
-      { id: 1, station_name: "Indore Central Fuel", type: "Petrol", capacity: 12000, status: "Active", issue_date: "2024-03-01" },
-      { id: 2, station_name: "Bhawarkua Diesel Point", type: "Diesel", capacity: 9000, status: "Maintenance", issue_date: "2024-05-20" },
-      { id: 3, station_name: "SuperGas Hub", type: "CNG", capacity: 8000, status: "Active", issue_date: "2024-07-10" },
-      { id: 4, station_name: "EcoFuel Center", type: "Petrol", capacity: 11000, status: "Inactive", issue_date: "2024-08-12" }
-    ];
+    const API_URL = "/api/utilities";
+    let internetServices = [];
 
-    function renderFuelTable() {
-      const body = document.getElementById("fuelTableBody");
+    async function fetchInternetServices() {
+      try {
+        const response = await fetch(`${API_URL}/internet`);
+        if (!response.ok) {
+          // Log the actual status and statusText to the console
+          console.error(`Server responded with status ${response.status}: ${response.statusText}`);
+          throw new Error('Failed to fetch internet services');
+        }
+        
+        internetServices = await response.json();
+        renderTable();
+        updateStats();
+      } catch (error) {
+        console.error('Error fetching internet data:', error);
+        document.getElementById("internetTableBody").innerHTML = `<tr><td colspan="7" class="text-center">Error loading data.</td></tr>`;
+      }
+    }
+
+    function renderTable() {
+      const body = document.getElementById("internetTableBody");
       body.innerHTML = "";
-      fakeFuelData.forEach((item, index) => {
-        const color = item.status === "Active" ? "bg-success" :
-                      item.status === "Maintenance" ? "bg-warning text-dark" : "bg-danger";
+
+      if (internetServices.length === 0) {
+        body.innerHTML = `<tr><td colspan="7" class="text-center">No internet services found.</td></tr>`;
+        return;
+      }
+
+      internetServices.forEach((item, index) => {
+        const color = item.availability_status === "Active" ? "bg-success" :
+                      item.availability_status === "Maintenance" ? "bg-warning text-dark" : "bg-danger";
+        
         body.innerHTML += `
           <tr>
             <td>${index + 1}</td>
-            <td>${item.station_name}</td>
-            <td>${item.type}</td>
-            <td>${item.capacity}</td>
-            <td><span class="badge ${color}">${item.status}</span></td>
-            <td>${item.issue_date}</td>
-            <td><button class="btn btn-sm btn-danger" onclick="showDetails(${item.id})"><i class="fas fa-eye"></i> View</button></td>
+            <td>${item.provider_name || 'N/A'}</td>
+            <td>${item.zone || 'N/A'}</td>
+            <td>${item.speed_mbps || 'N/A'}</td>
+            <td>${item.uptime_percentage || 'N/A'}</td>
+            <td><span class="badge ${color}">${item.availability_status || 'N/A'}</span></td>
+            <td><button class="btn btn-sm btn-primary" onclick="showDetails(${item.internet_id})"><i class="fas fa-eye"></i> View</button></td>
           </tr>
         `;
       });
     }
 
-    function showDetails(id) {
-      const modal = new bootstrap.Modal(document.getElementById('fuelDetailModal'));
-      const fuel = fakeFuelData.find(f => f.id === id);
+    async function showDetails(id) {
+      const modal = new bootstrap.Modal(document.getElementById('internetDetailModal'));
       const modalBody = document.getElementById('modalBodyContent');
-      modalBody.innerHTML = `
-        <h5>${fuel.station_name}</h5>
-        <p><strong>Fuel Type:</strong> ${fuel.type}</p>
-        <p><strong>Capacity:</strong> ${fuel.capacity} Litres</p>
-        <p><strong>Status:</strong> ${fuel.status}</p>
-        <p><strong>Issue Date:</strong> ${fuel.issue_date}</p>
-      `;
+      modalBody.innerHTML = '<p>Loading details...</p>';
       modal.show();
+
+      try {
+        const response = await fetch(`${API_URL}/internet/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch details');
+        
+        const { internet } = await response.json();
+        
+        const html = `
+          <h5>${internet.provider_name}</h5>
+          <p><strong>Service Name:</strong> ${internet.service_name || 'N/A'}</p>
+          <p><strong>Type:</strong> ${internet.type || 'N/A'}</p>
+          <p><strong>Speed:</strong> ${internet.speed_mbps} Mbps</p>
+          <p><strong>Uptime:</strong> ${internet.uptime_percentage}%</p>
+          <p><strong>Status:</strong> ${internet.availability_status}</p>
+          <p><strong>Operating Hours:</strong> ${internet.operating_hours || 'N/A'}</p>
+          <p><strong>Unit:</strong> ${internet.unit || 'N/A'}</p>
+          <p><strong>Issue Date:</strong> ${new Date(internet.issue_date).toLocaleDateString()}</p>
+        `;
+        modalBody.innerHTML = html;
+      } catch (error) {
+        console.error('Error fetching details:', error);
+        modalBody.innerHTML = '<p>Could not load details. Please try again.</p>';
+      }
     }
 
     function updateStats() {
-      const total = fakeFuelData.length;
-      const active = fakeFuelData.filter(f => f.status === "Active").length;
-      const avg = (fakeFuelData.reduce((a, b) => a + b.capacity, 0) / total).toFixed(0);
+      const total = internetServices.length;
+      if (total === 0) {
+        document.getElementById("totalProviders").textContent = 0;
+        document.getElementById("avgSpeed").textContent = "0 Mbps";
+        document.getElementById("avgUptime").textContent = "0%";
+        return;
+      }
 
-      document.getElementById("totalStations").textContent = total;
-      document.getElementById("activeStations").textContent = active;
-      document.getElementById("avgCapacity").textContent = avg + " L";
+      const avgSpeed = (internetServices.reduce((a, b) => a + (parseFloat(b.speed_mbps) || 0), 0) / total).toFixed(1);
+      const avgUptime = (internetServices.reduce((a, b) => a + (parseFloat(b.uptime_percentage) || 0), 0) / total).toFixed(2);
+
+      document.getElementById("totalProviders").textContent = total;
+      document.getElementById("avgSpeed").textContent = `${avgSpeed} Mbps`;
+      document.getElementById("avgUptime").textContent = `${avgUptime}%`;
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      renderFuelTable();
-      updateStats();
+      fetchInternetServices();
     });
   </script>
 </body>

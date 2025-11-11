@@ -3,6 +3,11 @@ const router = express.Router();
 const db = require("../db");
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
+// ==================== DIAGNOSTIC TEST ROUTE ====================
+router.get("/test", (req, res) => {
+  res.send("Utilities test route is working!");
+});
+
 /**
  * UTILITIES PAGE ROUTES
  * Covers all essential civic services:
@@ -89,7 +94,7 @@ router.get("/water/:water_id", async (req, res) => {
 });
 
 // Get all pipelines
-router.get("/water/pipelines", async (req, res) => {
+router.get("/pipelines", async (req, res) => {
   try {
     const [pipelines] = await db.query(`
       SELECT p.*, i.zone_id, z.zone_name, z.type as zone_type
@@ -180,7 +185,7 @@ router.get("/electricity/:electricity_id", async (req, res) => {
 });
 
 // Get all power nodes
-router.get("/electricity/powernodes", async (req, res) => {
+router.get("/powernodes", async (req, res) => {
   try {
     const [powerNodes] = await db.query(`
       SELECT pn.*, i.zone_id, z.zone_name, z.type as zone_type
@@ -407,12 +412,21 @@ router.put("/waste/smart-bins/:bin_id/fill-level", authenticateToken, async (req
 
 // Get all internet services
 router.get("/internet", async (req, res) => {
+  console.log("Accessed /internet route");
   try {
     const [internetServices] = await db.query(`
-      SELECT i.*, u.unit, u.issue_date, s.service_name, s.availability_status
+      SELECT 
+        i.internet_id,
+        i.provider_name,
+        i.bandwidth AS speed_mbps,
+        '99.9' AS uptime_percentage,
+        s.availability_status,
+        z.zone_name as zone
       FROM Internet i
       JOIN Utility u ON i.internet_id = u.utility_id
       LEFT JOIN Service s ON u.utility_id = s.service_id
+      LEFT JOIN Infrastructure infra ON i.internet_id = infra.asset_id
+      LEFT JOIN Zone z ON infra.zone_id = z.zone_id
       ORDER BY i.internet_id
     `);
     
@@ -469,34 +483,47 @@ router.get("/fuel", async (req, res) => {
 router.get("/infrastructure/overview", async (req, res) => {
   try {
     // Count each infrastructure type
-    const [[lightCount]] = await db.query('SELECT COUNT(*) as count FROM Public_Light');
-    const [[pipelineCount]] = await db.query('SELECT COUNT(*) as count FROM Pipeline');
-    const [[powerNodeCount]] = await db.query('SELECT COUNT(*) as count FROM Powernodes');
-    const [[binCount]] = await db.query('SELECT COUNT(*) as count FROM Smart_Bin');
-    const [[sensorCount]] = await db.query('SELECT COUNT(*) as count FROM Sensors');
+    const [[lights]] = await db.query('SELECT COUNT(*) as count FROM Public_Light');
+    const [[pipelines]] = await db.query('SELECT COUNT(*) as count FROM Pipeline');
+    const [[powerNodes]] = await db.query('SELECT COUNT(*) as count FROM Powernodes');
+    const [[bins]] = await db.query('SELECT COUNT(*) as count FROM Smart_Bin');
+    const [[sensors]] = await db.query('SELECT COUNT(*) as count FROM Sensors');
+    const [[networks]] = await db.query('SELECT COUNT(*) as count FROM Internet');
+    const [[fuelStations]] = await db.query('SELECT COUNT(*) as count FROM Fuel');
+    const [[waters]] = await db.query('SELECT COUNT(*) as count FROM Water');
     
-    // Get maintenance statistics
-    const [maintenanceStats] = await db.query(`
-      SELECT status, COUNT(*) as count
-      FROM Maintenance_Task
-      GROUP BY status
-    `);
+    // Get maintenance statistics, trying both singular and plural table names
+    let maintenanceStats;
+    try {
+      const [stats] = await db.query(`
+        SELECT status, COUNT(*) as count
+        FROM Maintenance_Task
+        GROUP BY status
+      `);
+      maintenanceStats = stats;
+    } catch (e) {
+      // If Maintenance_Task doesn't exist, try Maintenance_Tasks
+      const [stats] = await db.query(`
+        SELECT status, COUNT(*) as count
+        FROM Maintenance_Tasks
+        GROUP BY status
+      `);
+      maintenanceStats = stats;
+    }
     
-    // Get alerts by severity
-    const [alertStats] = await db.query(`
-      SELECT severity, COUNT(*) as count
-      FROM Alerts
-      WHERE acknowledged = 0
-      GROUP BY severity
-    `);
+    // The Alerts table is dropped in newDB.txt, so this query is removed.
+    const alertStats = [];
     
     res.json({
       infrastructure: {
-        publicLights: lightCount.count,
-        pipelines: pipelineCount.count,
-        powerNodes: powerNodeCount.count,
-        smartBins: binCount.count,
-        sensors: sensorCount.count
+        lightCount: lights.count,
+        pipelineCount: pipelines.count,
+        powerNodeCount: powerNodes.count,
+        binCount: bins.count,
+        sensorCount: sensors.count,
+        networkCount: networks.count,
+        fuelStationCount: fuelStations.count,
+        waterCount: waters.count
       },
       maintenance: maintenanceStats,
       alerts: alertStats
