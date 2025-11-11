@@ -24,7 +24,7 @@ router.post('/tasks', authenticateToken, async (req, res) => {
 router.get('/tasks/:department', authenticateToken, async (req, res) => {
   const dept = req.params.department;
   try {
-    const [rows] = await db.query('SELECT * FROM Maintenance_Tasks WHERE department = ? ORDER BY created_at DESC', [dept]);
+    const [rows] = await db.query('SELECT * FROM Maintenance_Task WHERE department = ? ORDER BY created_at DESC', [dept]);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });

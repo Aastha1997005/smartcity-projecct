@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {db} = require("../db");
+const Joi = require('joi'); // Added Joi import
 
 
 // Get all houses
@@ -76,6 +77,10 @@ router.get("/:house_id/citizens", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+const addCitizenSchema = Joi.object({
+  citizen_id: Joi.number().integer().required(),
 });
 
 // Add a citizen to a house using lives_in table

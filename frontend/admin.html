@@ -590,8 +590,7 @@ background:
           li.innerHTML = `<div><strong>${h.name || h.name}</strong><br/><small>Capacity: ${h.capacity || 'N/A'} · Type: ${h.type || 'N/A'}</small></div><div><a href=\"healthcare.html?hospital_id=${h.hospital_id}\" class=\"btn btn-sm btn-primary\">Open</a></div>`;
           ul.appendChild(li);
         });
-        el.innerHTML = '';
-        el.appendChild(ul);
+        if(el) { el.innerHTML = ''; el.appendChild(ul); }
       }
 
       // Load grouped services
@@ -618,8 +617,7 @@ background:
           card.appendChild(list);
           container.appendChild(card);
         }
-        el.innerHTML = '';
-        el.appendChild(container);
+        if(el) { el.innerHTML = ''; el.appendChild(container); }
       }
 
       // Load announcements
@@ -636,11 +634,9 @@ background:
           const when = new Date(n.created_at || n.createdAt || Date.now()).toLocaleString();
           d.innerHTML = `<div><strong>${n.message || n.title || ''}</strong></div><div class=\"text-muted small\">${when}</div>`;
           frag.appendChild(d);
-        });
-        el.innerHTML = '';
-        el.appendChild(frag);
-      }
-
+                  });
+                  if(el) { el.innerHTML = ''; el.appendChild(frag); }
+                }
       // Load alerts summary (may require auth)
       async function loadAlerts(){
         const el = document.getElementById('alerts-summary');
@@ -664,140 +660,122 @@ background:
         }
       }
 
-        // Load admin dashboard summary stats (requires admin token)
-        (async function loadAdminStats(){
-          const elErr = document.getElementById('admin-debug');
-          const r = await safeFetch('/admin/dashboard/stats');
-          if (!r.ok) {
-            console.warn('admin dashboard stats not available for this user', r);
-            if (elErr) elErr.innerText += ' | admin-stats: unavailable';
-            // Fallback: try to gather best-effort public counts
-            try {
-              const [hcR, svcR, annR, alertsR] = await Promise.all([
-                safeFetch('/healthcare'),
-                safeFetch('/services/grouped'),
-                safeFetch('/announcements'),
-                safeFetch('/alerts/summary/active')
-              ]);
-              // citizens -> unavailable without admin; show healthcare count as proxy
-              document.getElementById('stat-citizens').innerText = hcR.ok ? (hcR.data.length || 0) : 'N/A';
-              // complaints likely unavailable; mark N/A
-              document.getElementById('stat-complaints').innerText = 'N/A';
-              // maintenance/infrastructure proxy
-              if (alertsR.ok && alertsR.data && (alertsR.data.total !== undefined)) {
-                document.getElementById('stat-maintenance').innerText = alertsR.data.total;
-              } else {
-                document.getElementById('stat-maintenance').innerText = 'N/A';
-              }
-              // bookings proxy: count total services
-              if (svcR.ok && svcR.data) {
-                const grouped = svcR.data;
-                const servicesCount = Object.keys(grouped).reduce((s, k) => s + (grouped[k] ? grouped[k].length : 0), 0);
-                document.getElementById('stat-bookings').innerText = servicesCount;
-                // quick stats
-                document.getElementById('quick-transport').innerText = (grouped.transport ? grouped.transport.length : 0) + ' Active';
-                document.getElementById('quick-internet').innerText = (grouped.internet ? grouped.internet.length : 0) + ' Active';
-                document.getElementById('quick-utilities').innerText = ((grouped.water?grouped.water.length:0) + (grouped.electricity?grouped.electricity.length:0)) + ' Active';
-                document.getElementById('quick-healthcare').innerText = (grouped.healthcare ? grouped.healthcare.length : (hcR.ok ? hcR.data.length : 0)) + ' Active';
-              } else {
-                document.getElementById('stat-bookings').innerText = 'N/A';
-              }
-            } catch (e) {
-              console.error('fallback admin stats error', e);
+      // Load admin dashboard summary stats (requires admin token)
+      async function loadAdminStats(){
+        const elErr = document.getElementById('admin-debug');
+        const r = await safeFetch('/admin/dashboard/stats');
+        if (!r.ok) {
+          console.warn('admin dashboard stats not available for this user', r);
+          if (elErr) elErr.innerText += ' | admin-stats: unavailable';
+          try {
+            const [hcR, svcR, annR, alertsR] = await Promise.all([
+              safeFetch('/healthcare'),
+              safeFetch('/services/grouped'),
+              safeFetch('/announcements'),
+              safeFetch('/alerts/summary/active')
+            ]);
+            document.getElementById('stat-citizens').innerText = hcR.ok ? (hcR.data.length || 0) : 'N/A';
+            document.getElementById('stat-complaints').innerText = 'N/A';
+            if (alertsR.ok && alertsR.data && (alertsR.data.total !== undefined)) {
+              document.getElementById('stat-maintenance').innerText = alertsR.data.total;
+            } else {
+              document.getElementById('stat-maintenance').innerText = 'N/A';
             }
-            return;
-          }
-          const data = r.data || {};
-          try {
-            const sum = data.summary || {};
-            document.getElementById('stat-citizens').innerText = sum.citizens || 0;
-            document.getElementById('stat-complaints').innerText = sum.complaints || 0;
-            document.getElementById('stat-maintenance').innerText = (data.infrastructure && data.infrastructure.length) ? data.infrastructure.length : (sum.infrastructure || 0);
-            // For bookings, use serviceStats total bookings if available; fallback to 0
-            const bookingsCount = (data.recentActivity && data.recentActivity.length) ? data.recentActivity.length : (sum.bookings || 0);
-            document.getElementById('stat-bookings').innerText = bookingsCount;
+            if (svcR.ok && svcR.data) {
+              const grouped = svcR.data;
+              const servicesCount = Object.keys(grouped).reduce((s, k) => s + (grouped[k] ? grouped[k].length : 0), 0);
+              document.getElementById('stat-bookings').innerText = servicesCount;
+              document.getElementById('quick-transport').innerText = (grouped.transport ? grouped.transport.length : 0) + ' Active';
+              document.getElementById('quick-internet').innerText = (grouped.internet ? grouped.internet.length : 0) + ' Active';
+              document.getElementById('quick-utilities').innerText = ((grouped.water?grouped.water.length:0) + (grouped.electricity?grouped.electricity.length:0)) + ' Active';
+              document.getElementById('quick-healthcare').innerText = (grouped.healthcare ? grouped.healthcare.length : (hcR.ok ? hcR.data.length : 0)) + ' Active';
+            } else {
+              document.getElementById('stat-bookings').innerText = 'N/A';
+            }
           } catch (e) {
-            console.error('populate admin stats error', e);
+            console.error('fallback admin stats error', e);
           }
-          // Load recent activity from admin stats if present
-          try {
-            const recent = data.recentActivity || [];
-            const activityEl = document.getElementById('recent-activity-list');
-            if (recent.length) {
-              activityEl.innerHTML = '';
-              recent.forEach(it => {
+          return;
+        }
+        const data = r.data || {};
+        try {
+          const sum = data.summary || {};
+          document.getElementById('stat-citizens').innerText = sum.citizens || 0;
+          document.getElementById('stat-complaints').innerText = sum.complaints || 0;
+          document.getElementById('stat-maintenance').innerText = (data.infrastructure && data.infrastructure.length) ? data.infrastructure.length : (sum.infrastructure || 0);
+          const bookingsCount = (data.recentActivity && data.recentActivity.length) ? data.recentActivity.length : (sum.bookings || 0);
+          document.getElementById('stat-bookings').innerText = bookingsCount;
+        } catch (e) {
+          console.error('populate admin stats error', e);
+        }
+        try {
+          const recent = data.recentActivity || [];
+          const activityEl = document.getElementById('recent-activity-list');
+          if (activityEl && recent.length) {
+            activityEl.innerHTML = '';
+            recent.forEach(it => {
+              const div = document.createElement('div');
+              div.className = 'activity-item';
+              const when = new Date(it.complaint_date || it.created_at || Date.now()).toLocaleString();
+              div.innerHTML = `<div class=\"d-flex justify-content-between\"><div>${(it.complaint_text||it.message||it.service_name||'Activity')}</div><small class=\"text-muted\">${when}</small></div>`;
+              activityEl.appendChild(div);
+            });
+          } else {
+            const a = await safeFetch('/announcements');
+            if (a.ok && a.data && a.data.length) {
+              if (activityEl) activityEl.innerHTML = '';
+              a.data.slice(0,8).forEach(n => {
                 const div = document.createElement('div');
                 div.className = 'activity-item';
-                const when = new Date(it.complaint_date || it.created_at || Date.now()).toLocaleString();
-                div.innerHTML = `<div class=\"d-flex justify-content-between\"><div>${(it.complaint_text||it.message||it.service_name||'Activity')}</div><small class=\"text-muted\">${when}</small></div>`;
-                activityEl.appendChild(div);
+                const when = new Date(n.created_at || Date.now()).toLocaleString();
+                div.innerHTML = `<div class=\"d-flex justify-content-between\"><div>${n.message || n.content || ''}</div><small class=\"text-muted\">${when}</small></div>`;
+                if (activityEl) activityEl.appendChild(div);
               });
             } else {
-              // fallback to announcements/notifications
-              const a = await safeFetch('/announcements');
-              if (a.ok && a.data && a.data.length) {
-                activityEl.innerHTML = '';
-                a.data.slice(0,8).forEach(n => {
-                  const div = document.createElement('div');
-                  div.className = 'activity-item';
-                  const when = new Date(n.created_at || Date.now()).toLocaleString();
-                  div.innerHTML = `<div class=\"d-flex justify-content-between\"><div>${n.message || n.content || ''}</div><small class=\"text-muted\">${when}</small></div>`;
-                  activityEl.appendChild(div);
-                });
-              } else {
-                // try to create a simple announcement for this user if allowed
-                try {
-                  const profileRes = await safeFetch('/profile');
-                  if (profileRes.ok && profileRes.data) {
-                    const role = profileRes.data.role || profileRes.data.user && profileRes.data.user.role;
-                    // roles allowed to create announcements: admin, transport, utility, healthcare, internet
-                    const allowed = ['admin','transport','utility','healthcare','internet'];
-                    if (allowed.includes(role)) {
-                      // create a personal announcement
-                      const userIdRes = await safeFetch('/profile');
-                      const createRes = await safeFetch('/announcements/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: `Welcome activity created for ${role}`, user_ids: [1] }) });
-                      // attempt to reload announcements
-                      const a2 = await safeFetch('/announcements');
-                      if (a2.ok && a2.data && a2.data.length) {
-                        activityEl.innerHTML = '';
-                        a2.data.slice(0,8).forEach(n => {
-                          const div = document.createElement('div');
-                          div.className = 'activity-item';
-                          const when = new Date(n.created_at || Date.now()).toLocaleString();
-                          div.innerHTML = `<div class=\"d-flex justify-content-between\"><div>${n.message || n.content || ''}</div><small class=\"text-muted\">${when}</small></div>`;
-                          activityEl.appendChild(div);
-                        });
-                        return;
-                      }
+              try {
+                const profileRes = await safeFetch('/profile');
+                if (profileRes.ok && profileRes.data) {
+                  const role = profileRes.data.role || profileRes.data.user && profileRes.data.user.role;
+                  const allowed = ['admin','transport','utility','healthcare','internet'];
+                  if (allowed.includes(role)) {
+                    const userIdRes = await safeFetch('/profile');
+                    const createRes = await safeFetch('/announcements/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: `Welcome activity created for ${role}`, user_ids: [1] }) });
+                    const a2 = await safeFetch('/announcements');
+                    if (a2.ok && a2.data && a2.data.length) {
+                      if (activityEl) activityEl.innerHTML = '';
+                      a2.data.slice(0,8).forEach(n => {
+                        const div = document.createElement('div');
+                        div.className = 'activity-item';
+                        const when = new Date(n.created_at || Date.now()).toLocaleString();
+                        div.innerHTML = `<div class=\"d-flex justify-content-between\"><div>${n.message || n.content || ''}</div><small class=\"text-muted\">${when}</small></div>`;
+                        if (activityEl) activityEl.appendChild(div);
+                      });
+                      return;
                     }
                   }
-                } catch(e) {
-                  console.error('attempt to create fallback announcement failed', e);
                 }
-                activityEl.innerText = 'No recent activity';
+              } catch(e) {
+                console.error('attempt to create fallback announcement failed', e);
               }
+              if (activityEl) activityEl.innerText = 'No recent activity';
             }
-          } catch(e) { console.error('load recent activity failed', e); }
+          }
+        } catch(e) { console.error('load recent activity failed', e); }
 
-          // Show Add Activity for admins (token present)
-          try {
-            if (token) {
-              const btn = document.getElementById('btn-add-activity');
-              btn.style.display = 'inline-block';
-              btn.addEventListener('click', async () => {
-                const msg = prompt('Enter announcement message');
-                if (!msg) return;
-                // send to all users as demo (server requires user_ids array)
-                // fetch sample users list (admin-only) or send to user 1 as demo
-                const userIds = [1];
-                const res = await safeFetch('/announcements/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, user_ids: userIds }) });
-                if (res.ok) alert('Announcement created'); else alert('Failed to create announcement');
-              });
-            }
-          } catch(e) { console.error('setup add activity failed', e); }
-        })();
-
-      })();
+        try {
+          if (token) {
+            const btn = document.getElementById('btn-add-activity');
+            btn.style.display = 'inline-block';
+            btn.addEventListener('click', async () => {
+              const msg = prompt('Enter announcement message');
+              if (!msg) return;
+              const userIds = [1];
+              const res = await safeFetch('/announcements/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, user_ids: userIds }) });
+              if (res.ok) alert('Announcement created'); else alert('Failed to create announcement');
+            });
+          }
+        } catch(e) { console.error('setup add activity failed', e); }
+      }
 
       // Dynamic Content Loader
       const dynamicContentArea = document.getElementById('dynamic-content-area');

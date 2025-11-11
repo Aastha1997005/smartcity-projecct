@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {db} = require("../db");
+const Joi = require('joi'); // Added Joi import
 
 // Get all smart bins
 router.get("/", async (req, res) => {
@@ -108,6 +109,10 @@ router.get("/:bin_id/waste-management", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+const manageWasteSchema = Joi.object({
+  managing_waste_id: Joi.number().integer().required(),
 });
 
 // Assign a waste management entity to a smart bin

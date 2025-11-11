@@ -3,6 +3,7 @@ const router = express.Router();
 const {db} = require("../db");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt"); // Added bcrypt import
 
 // Register user
 router.post("/register", async (req, res) => {
@@ -61,6 +62,7 @@ router.post("/register", async (req, res) => {
     console.error('Registration error:', err);
     res.status(500).json({ error: err.message });
   }
+}); // This closes the /register route
 // Complete profile endpoint
 router.post("/complete-profile", async (req, res) => {
   const { email, role } = req.body;
@@ -199,7 +201,6 @@ router.post("/complete-profile", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
 });
 
 // Login

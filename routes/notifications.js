@@ -24,7 +24,7 @@ router.post("/send", authenticateToken, authorizeRoles("admin", "transport", "ut
       // Only allow broadcast when the caller is an admin
       if (callerRole !== 'admin') return res.status(403).json({ error: 'Only admin may broadcast to all users' });
 
-      const [rows] = await db.query('SELECT user_id FROM Users');
+      const [rows] = await db.db.query('SELECT user_id FROM Users');
       recipients = (rows || []).map(r => r.user_id).filter(n => Number.isFinite(n));
     }
 
@@ -35,7 +35,7 @@ router.post("/send", authenticateToken, authorizeRoles("admin", "transport", "ut
 
     // Prepare bulk insert values
     const values = recipients.map(u => [u, message, 0]);
-    await db.query('INSERT INTO Notifications (user_id, message, is_read) VALUES ?', [values]);
+    await db.db.query('INSERT INTO Notifications (user_id, message, is_read) VALUES ?', [values]);
 
     res.json({ message: `Notification sent to ${recipients.length} users.` });
   } catch (err) {
@@ -53,7 +53,7 @@ router.get('/', authenticateToken, async (req, res) => {
     // Admins can request all notifications with ?all=true or for a specific user with ?user_id=ID
     if (req.query.all === 'true') {
       if (requesterRole !== 'admin') return res.status(403).json({ error: 'Only admin may request all notifications' });
-      const [rows] = await db.query('SELECT notification_id, user_id, message, is_read, created_at FROM Notifications ORDER BY created_at DESC LIMIT 1000');
+      const [rows] = await db.db.query('SELECT notification_id, user_id, message, is_read, created_at FROM Notifications ORDER BY created_at DESC LIMIT 1000');
       const mappedAll = (rows || []).map(r => ({ id: r.notification_id, title: '', content: r.message, is_read: !!r.is_read, created_at: r.created_at, user_id: r.user_id }));
       return res.json(mappedAll);
     }
@@ -63,13 +63,13 @@ router.get('/', authenticateToken, async (req, res) => {
       if (requesterRole !== 'admin') return res.status(403).json({ error: 'Only admin may request notifications for other users' });
       const targetId = parseInt(req.query.user_id);
       if (!Number.isFinite(targetId)) return res.status(400).json({ error: 'Invalid user_id' });
-      const [rows] = await db.query('SELECT notification_id, user_id, message, is_read, created_at FROM Notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 1000', [targetId]);
+      const [rows] = await db.db.query('SELECT notification_id, user_id, message, is_read, created_at FROM Notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 1000', [targetId]);
       const mapped = (rows || []).map(r => ({ id: r.notification_id, title: '', content: r.message, is_read: !!r.is_read, created_at: r.created_at }));
       return res.json(mapped);
     }
 
     // Default: return notifications for the authenticated user
-    const [rows] = await db.query('SELECT notification_id, user_id, message, is_read, created_at FROM Notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 100', [userId]);
+    const [rows] = await db.db.query('SELECT notification_id, user_id, message, is_read, created_at FROM Notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 100', [userId]);
     const mapped = (rows || []).map(r => ({ id: r.notification_id, title: '', content: r.message, is_read: !!r.is_read, created_at: r.created_at }));
     res.json(mapped);
   } catch (err) {

@@ -38,10 +38,9 @@ router.get('/', authenticateToken, authorizeRoles('admin', 'utility', 'transport
     sql += ' ORDER BY a.created_at DESC LIMIT ? OFFSET ?';
     params.push(parseInt(limit), parseInt(offset));
     
-    const [alerts] = await db.query(sql, params);
+    const [alerts] = await db.db.query(sql, params);
     
-    const [summary] = await db.query(`
-      SELECT severity, COUNT(*) as count
+    const [summary] = await db.db.query(`
       FROM Alerts
       WHERE acknowledged = 0
       GROUP BY severity
@@ -57,7 +56,7 @@ router.get('/', authenticateToken, authorizeRoles('admin', 'utility', 'transport
 // Get alerts by asset
 router.get('/asset/:asset_id', authenticateToken, async (req, res) => {
   try {
-    const [alerts] = await db.query(
+    const [alerts] = await db.db.query(
       'SELECT * FROM Alerts WHERE asset_id = ? ORDER BY created_at DESC',
       [req.params.asset_id]
     );
@@ -188,7 +187,7 @@ router.delete('/:alert_id', authenticateToken, authorizeRoles('admin'), async (r
 // Get alerts by asset
 router.get('/asset/:asset_id', authenticateToken, async (req, res) => {
   try {
-    const [alerts] = await db.query(
+    const [alerts] = await db.db.query(
       'SELECT * FROM Alerts WHERE asset_id = ? ORDER BY created_at DESC',
       [req.params.asset_id]
     );
