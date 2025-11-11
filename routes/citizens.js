@@ -6,6 +6,7 @@ const { authenticateToken, authorizeRoles } = require("../middleware/auth");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const fs = require('fs');
 
 // Get all dashboard data for a user (profile, vehicles, properties, bookings, complaints)
 router.get('/dashboard/:user_id', async (req, res) => {
@@ -207,6 +208,8 @@ router.post("/", async (req, res) => {
     let generatedPassword = null;
     let emailSent = false;
     let emailAddress = null;
+    let userCreated = false;
+    let userError = null;
     if (req.body.email) {
       try {
         const email = req.body.email;
@@ -218,7 +221,18 @@ router.post("/", async (req, res) => {
           generatedPassword = password;
         }
         const password_hash = await bcrypt.hash(password, 10);
-        await db.query(`INSERT INTO Users (email, password_hash, role, linked_id) VALUES (?, ?, ?, ?)`, [email, password_hash, 'citizen', newCitizenId]);
+        try {
+          const [ins] = await db.query(`INSERT INTO Users (email, password_hash, role, linked_id) VALUES (?, ?, ?, ?)`, [email, password_hash, 'citizen', newCitizenId]);
+          userCreated = true;
+        } catch (dbErr) {
+          userError = dbErr && dbErr.message ? dbErr.message : String(dbErr);
+          console.error('Users INSERT error for new citizen:', dbErr);
+          try {
+            fs.appendFileSync('./tmp_user_creation.log', new Date().toISOString() + ' - Users INSERT error: ' + (userError) + '\n');
+          } catch (fsErr) {
+            console.error('Failed to write tmp_user_creation.log:', fsErr);
+          }
+        }
 
         // send credentials email (best-effort)
         try {
@@ -244,7 +258,13 @@ router.post("/", async (req, res) => {
           // don't fail the whole request if email sending fails
         }
       } catch (userErr) {
+        userError = userErr && userErr.message ? userErr.message : String(userErr);
         console.error('Failed to create user account for new citizen:', userErr);
+        try {
+          fs.appendFileSync('./tmp_user_creation.log', new Date().toISOString() + ' - User creation outer error: ' + (userError) + '\n');
+        } catch (fsErr) {
+          console.error('Failed to write tmp_user_creation.log:', fsErr);
+        }
         // continue; citizen was created
       }
     }
@@ -253,12 +273,15 @@ router.post("/", async (req, res) => {
       const { logAuditAction } = require("../db");
       logAuditAction(req.user.id, "create", "Citizen", JSON.stringify({ first_name, last_name }));
     }
-    const responseBody = { message: "Citizen added", citizen_id: newCitizenId };
+  const responseBody = { message: "Citizen added", citizen_id: newCitizenId };
     if (generatedPassword) responseBody.generated_password = generatedPassword;
     if (emailAddress) {
       responseBody.email = emailAddress;
       responseBody.email_sent = !!emailSent;
     }
+  // Diagnostic flags to help debug missing Users rows in development
+  responseBody.user_created = !!userCreated;
+  if (userError) responseBody.user_error = userError;
     res.json(responseBody);
   } catch (err) {
     res.status(500).json({ error: err.message });
