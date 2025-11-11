@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {db} = require("../db");
-const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 
 // Register user
@@ -11,7 +11,7 @@ router.post("/register", async (req, res) => {
     return res.status(403).json({ error: 'Cannot register as admin.' });
   }
   const isEmail = v => typeof v === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  const allowedRoles = ['citizen','transport','waste_management','public_lights','water','electricity','internet','healthcare','utility'];
+  const allowedRoles = ['citizen','transport','waste_management','public_lights','water','electricity','healthcare','utility'];
   if (!isEmail(email)) return res.status(400).json({ error: 'Invalid email' });
   if (!password || password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
   if (!role || !allowedRoles.includes(role)) return res.status(400).json({ error: 'Invalid role' });
@@ -291,7 +291,8 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ error: "User not found" });
 
     const user = rows[0];
-  const valid = await bcrypt.compare(password, user.password_hash);
+    const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+    const valid = hashedPassword === user.password_hash;
     if (!valid) return res.status(401).json({ error: "Invalid password" });
 
     const jwtSecret = process.env.JWT_SECRET || 'your_jwt_secret';
@@ -300,7 +301,7 @@ router.post("/login", async (req, res) => {
       jwtSecret,
       { expiresIn: "1h" }
     );
-    res.json({ token, role: user.role });
+    res.json({ token, role: user.role, linked_id: user.linked_id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

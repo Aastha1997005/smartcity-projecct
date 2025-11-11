@@ -358,7 +358,6 @@
                                     <option value="transport">Transport</option>
                                     <option value="utility">Utility</option>
                                     <option value="healthcare">Healthcare</option>
-                                    <option value="internet">Internet</option>
                                 </select>
                             </div>
                             
@@ -459,6 +458,9 @@
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('userRole', data.role);
                     localStorage.setItem('userEmail', email);
+                    if (data.linked_id) {
+                        localStorage.setItem('linkedId', data.linked_id);
+                    }
                     
                     showAlert('Login successful! Redirecting...', 'success');
                     
@@ -473,9 +475,7 @@
                             window.location.href = 'transport-main-dashboard.html';
                         } else if (role === 'utility') {
                             window.location.href = 'utilities_dashboard.html';
-                        } else if (['internet'].includes(role)) {
-                            // provider landing page - optionally include role as query
-                            window.location.href = `provider.html?role=${encodeURIComponent(role)}`;
+
                         } else {
                             window.location.href = 'dashboard.html';
                         }

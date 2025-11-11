@@ -787,9 +787,11 @@ background:
           return;
         }
 
-        // This is a simplification. In a real app, you'd get the citizen_id from the logged-in user.
-        // For now, we'll hardcode a citizen_id for demonstration purposes.
-        const citizenId = 1; 
+        const citizenId = localStorage.getItem('linkedId');
+        if (!citizenId) {
+            alert('Citizen ID not found. Please log in again.');
+            return;
+        }
 
         // Assuming the first hospital is the one to book the appointment at
         const hospitalId = hospitalsData.length > 0 ? hospitalsData[0].hospital_id : null;

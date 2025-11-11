@@ -1,4 +1,7 @@
+drop database Smartcity_management_system;
+CREATE database IF NOT EXISTS Smartcity_management_system;
 USE Smartcity_management_system;
+
 
 CREATE TABLE Zone (
   zone_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -11,21 +14,8 @@ CREATE TABLE House (
   type VARCHAR(100),
   area VARCHAR(100),
   zone_id INT,
-  FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
+  FOREIGN KEY (zone_id) REFERENCES Zone(zone_id) ON DELETE CASCADE
 );
-
-ALTER TABLE House
-DROP FOREIGN KEY house_ibfk_1;
-
-ALTER TABLE House
-ADD CONSTRAINT house_ibfk_1
-FOREIGN KEY (zone_id)
-REFERENCES Zone(zone_id)
-ON DELETE CASCADE;
-
-
-
-
 
 CREATE TABLE Citizen (
   citizen_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -38,36 +28,15 @@ CREATE TABLE Citizen (
   gender VARCHAR(10),
   dob DATE,
   house_id INT,
-  FOREIGN KEY (house_id) REFERENCES House(house_id)
+  FOREIGN KEY (house_id) REFERENCES House(house_id) ON DELETE CASCADE
 );
-ALTER TABLE Citizen
-DROP FOREIGN KEY citizen_ibfk_1;
-
-ALTER TABLE Citizen
-ADD CONSTRAINT citizen_ibfk_1
-FOREIGN KEY (house_id)
-REFERENCES House(house_id)
-ON DELETE CASCADE;
-
-
 
 CREATE TABLE Citizen_Phone_Number (
   citizen_id INT,
   phone_number VARCHAR(20),
   PRIMARY KEY (citizen_id, phone_number),
-  FOREIGN KEY (citizen_id) REFERENCES Citizen(citizen_id)
+  FOREIGN KEY (citizen_id) REFERENCES Citizen(citizen_id) ON DELETE CASCADE
 );
-
-ALTER TABLE Citizen_Phone_Number
-DROP FOREIGN KEY citizen_phone_number_ibfk_1;
-
-ALTER TABLE Citizen_Phone_Number
-ADD CONSTRAINT fk_phone_citizen
-FOREIGN KEY (citizen_id)
-REFERENCES Citizen(citizen_id)
-ON DELETE CASCADE;
-
-
 
 CREATE TABLE Service_Provider (
   provider_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -75,12 +44,12 @@ CREATE TABLE Service_Provider (
   contact_no VARCHAR(20),
   service_type VARCHAR(100)
 );
+
 CREATE TABLE Doctors (
   doctor_id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   specialization VARCHAR(100)
 );
-
 
 CREATE TABLE Route (
     route_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -89,124 +58,53 @@ CREATE TABLE Route (
     distance_km DECIMAL(10, 2)
 );
 
-ALTER TABLE Route
-DROP COLUMN mode;
-
-ALTER TABLE Route
-RENAME COLUMN distance TO distance_km;
-
-
 CREATE TABLE Service (
     service_id INT AUTO_INCREMENT PRIMARY KEY,
     service_name VARCHAR(255),
     cost DECIMAL(10, 2),
     availability_status VARCHAR(50),
-    operating_hours VARCHAR(100)
+    operating_hours VARCHAR(100),
+    provider_id INT,
+    FOREIGN KEY (provider_id) REFERENCES Service_provider(provider_id)
 );
-
-ALTER TABLE Service ADD COLUMN provider_id INT;
-ALTER TABLE Service
-ADD FOREIGN KEY (provider_id) REFERENCES Service_provider(provider_id);
-
 
 CREATE TABLE Service_Phone_Number (
     service_id INT,
     phone_number VARCHAR(20),
     PRIMARY KEY (service_id, phone_number),
-    FOREIGN KEY (service_id) REFERENCES Service(service_id)
+    FOREIGN KEY (service_id) REFERENCES Service(service_id) ON DELETE CASCADE
 );
-
-ALTER TABLE Service_Phone_Number
-DROP FOREIGN KEY service_phone_number_ibfk_1;
-
-ALTER TABLE Service_Phone_Number
-ADD CONSTRAINT fk_service_phone
-FOREIGN KEY (service_id)
-REFERENCES Service(service_id)
-ON DELETE CASCADE;
-
-
 
 CREATE TABLE Service_Emails (
     service_id INT,
     email VARCHAR(255),
     PRIMARY KEY (service_id, email),
-    FOREIGN KEY (service_id) REFERENCES Service(service_id)
+    FOREIGN KEY (service_id) REFERENCES Service(service_id) ON DELETE CASCADE
 );
-
-ALTER TABLE Service_Emails
-DROP FOREIGN KEY service_emails_ibfk_1;
-
-ALTER TABLE Service_Emails
-ADD CONSTRAINT fk_service_emails
-FOREIGN KEY (service_id)
-REFERENCES Service(service_id)
-ON DELETE CASCADE;
-
 
 CREATE TABLE Utility (
     utility_id INT PRIMARY KEY, -- FK to Service
     unit VARCHAR(50),
     issue_date DATE,
-    FOREIGN KEY (utility_id) REFERENCES Service(service_id)
+    FOREIGN KEY (utility_id) REFERENCES Service(service_id) ON DELETE CASCADE
 );
-ALTER TABLE Utility
-DROP COLUMN   price_per_unit ;
-ALTER TABLE Utility
-DROP COLUMN consumption_amount;
-
-SHOW CREATE TABLE Utility;
-ALTER TABLE Utility
-DROP FOREIGN KEY utility_ibfk_1;
-
-ALTER TABLE Utility
-ADD CONSTRAINT fk_utility_service
-FOREIGN KEY (utility_id)
-REFERENCES Service(service_id)
-ON DELETE CASCADE;
-
 
 CREATE TABLE Healthcare (
     hospital_id INT PRIMARY KEY, -- FK to Service
     name VARCHAR(255),
     capacity INT,
     type VARCHAR(100),
-    FOREIGN KEY (hospital_id) REFERENCES Service(service_id)
+    FOREIGN KEY (hospital_id) REFERENCES Service(service_id) ON DELETE CASCADE
 );
-
-ALTER TABLE Healthcare
-DROP FOREIGN KEY healthcare_ibfk_1;
-
-ALTER TABLE Healthcare
-ADD CONSTRAINT fk_healthcare_service
-FOREIGN KEY (hospital_id)
-REFERENCES Service(service_id)
-ON DELETE CASCADE;
-
 
 CREATE TABLE Transport (
     transport_id INT PRIMARY KEY, -- FK to Service
     mode VARCHAR(100),
-    FOREIGN KEY (transport_id) REFERENCES Service(service_id)
+    FOREIGN KEY (transport_id) REFERENCES Service(service_id) ON DELETE CASCADE
 );
-
-ALTER TABLE Transport
-DROP COLUMN route_no;
-
-ALTER TABLE Transport
-DROP FOREIGN KEY transport_ibfk_1;
-
-ALTER TABLE Transport
-ADD CONSTRAINT fk_transport_service
-FOREIGN KEY (transport_id)
-REFERENCES Service(service_id)
-ON DELETE CASCADE;
-
-ALTER TABLE Transport
-ADD FOREIGN KEY (route_id)
-REFERENCES Service(service_id)
-ON DELETE CASCADE;
-
+-- REMOVED: ALTER TABLE Transport ADD FOREIGN KEY (route_id)... This was an error. 
+-- The `route_id` column does not exist on Transport, and this relationship is
+-- correctly handled by the `Transport_Schedule` and `operates_on` tables.
 
 CREATE TABLE Transport_Schedule (
     schedule_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -217,26 +115,48 @@ CREATE TABLE Transport_Schedule (
     frequency VARCHAR(100),
     days_of_operation VARCHAR(255),
     status VARCHAR(50),
-    FOREIGN KEY (transport_id) REFERENCES Transport(transport_id),
-    FOREIGN KEY (route_id) REFERENCES Route(route_id)
+    FOREIGN KEY (transport_id) REFERENCES Transport(transport_id) ON DELETE CASCADE,
+    FOREIGN KEY (route_id) REFERENCES Route(route_id) ON DELETE CASCADE
 );
 
-ALTER TABLE Transport_Schedule
-DROP FOREIGN KEY transport_schedule_ibfk_1,
-DROP FOREIGN KEY transport_schedule_ibfk_2;
+CREATE TABLE Infrastructure (
+    asset_id INT AUTO_INCREMENT PRIMARY KEY,
+    zone_id INT,
+    FOREIGN KEY (zone_id) REFERENCES Zone(zone_id) ON DELETE CASCADE
+);
 
-ALTER TABLE Transport_Schedule
-ADD CONSTRAINT fk_schedule_transport
-FOREIGN KEY (transport_id)
-REFERENCES Transport(transport_id)
-ON DELETE CASCADE,
-ADD CONSTRAINT fk_schedule_route
-FOREIGN KEY (route_id)
-REFERENCES Route(route_id)
-ON DELETE CASCADE;
+-- MOVED SENSORS BLOCK UP
+-- This 'is-a' relationship (Sensor *is an* Infrastructure asset)
+-- requires sensor_id to be a Primary Key but NOT auto-increment,
+-- as it must match an existing asset_id from Infrastructure.
+CREATE TABLE Sensors (
+    sensor_id INT PRIMARY KEY, -- REMOVED AUTO_INCREMENT
+    status VARCHAR(50),
+    location VARCHAR(255),
+    provider_id INT,
+    data_frequency VARCHAR(100),
+    last_calibrated DATE,
+    installation_date DATE,
+    FOREIGN KEY (sensor_id) REFERENCES Infrastructure(asset_id) ON DELETE CASCADE
+);
 
+CREATE TABLE Traffic_Sensors (
+    sensor_id INT PRIMARY KEY,
+    FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id) ON DELETE CASCADE
+);
 
+CREATE TABLE Air_Quality_Sensors (
+    sensor_id INT PRIMARY KEY,
+    FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id) ON DELETE CASCADE
+);
 
+CREATE TABLE Weather_Sensors (
+    sensor_id INT PRIMARY KEY,
+    FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id) ON DELETE CASCADE
+);
+
+-- MOVED READING TABLES HERE
+-- These tables must be created *after* the sensor tables they reference.
 CREATE TABLE Traffic_Sensor_Reading (
     sensor_id INT,
     time_stamp DATETIME,
@@ -244,16 +164,8 @@ CREATE TABLE Traffic_Sensor_Reading (
     congestion_level VARCHAR(50),
     vehicle_count INT,
     PRIMARY KEY (sensor_id, time_stamp),
-    FOREIGN KEY (sensor_id) REFERENCES Traffic_Sensors(sensor_id)
+    FOREIGN KEY (sensor_id) REFERENCES Traffic_Sensors(sensor_id) ON DELETE CASCADE
 );
-
-ALTER TABLE Traffic_Sensor_Reading
-DROP FOREIGN KEY Traffic_Sensor_Reading_ibfk_1;
-
-ALTER TABLE Traffic_Sensor_Reading
-ADD CONSTRAINT fk_sensor
-FOREIGN KEY (sensor_id) REFERENCES Traffic_Sensors(sensor_id)
-ON DELETE CASCADE;
 
 CREATE TABLE AQ_Reading (
     sensor_id INT,
@@ -264,16 +176,8 @@ CREATE TABLE AQ_Reading (
     aqindex INT,
     NO2_level DECIMAL(10,4),
     PRIMARY KEY (sensor_id, timestamp),
-    FOREIGN KEY (sensor_id) REFERENCES Air_Quality_Sensors(sensor_id)
+    FOREIGN KEY (sensor_id) REFERENCES Air_Quality_Sensors(sensor_id) ON DELETE CASCADE
 );
-
-ALTER TABLE AQ_Reading
-DROP FOREIGN KEY AQ_Reading_ibfk_1;
-ALTER TABLE AQ_Reading
-ADD CONSTRAINT fk_aq_sensor
-FOREIGN KEY (sensor_id) REFERENCES Air_Quality_Sensors(sensor_id)
-ON DELETE CASCADE;
-
 
 CREATE TABLE Weather_Reading (
     sensor_id INT,
@@ -284,96 +188,17 @@ CREATE TABLE Weather_Reading (
     rainfall DECIMAL(10,2),
     humidity DECIMAL(5,2),
     PRIMARY KEY (sensor_id, time_stamp),
-    FOREIGN KEY (sensor_id) REFERENCES Weather_Sensors(sensor_id)
+    FOREIGN KEY (sensor_id) REFERENCES Weather_Sensors(sensor_id) ON DELETE CASCADE
 );
-
-ALTER TABLE Weather_Reading
-DROP FOREIGN KEY Weather_Reading_ibfk_1;
-ALTER TABLE Weather_Reading
-ADD CONSTRAINT fk_weather_sensor
-FOREIGN KEY (sensor_id) REFERENCES Weather_Sensors(sensor_id)
-ON DELETE CASCADE;
-
-CREATE TABLE Infrastructure (
-    asset_id INT AUTO_INCREMENT PRIMARY KEY,
-    zone_id INT,
-    FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
-);
-
-ALTER TABLE Infrastructure
-DROP FOREIGN KEY Infrastructure_ibfk_1;
-ALTER TABLE Infrastructure
-ADD CONSTRAINT fk_infra_zone
-FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
-ON DELETE CASCADE;
-
-CREATE TABLE Sensors (
-    sensor_id INT AUTO_INCREMENT PRIMARY KEY,
-    status VARCHAR(50),
-    location VARCHAR(255),
-    provider_id INT,
-    data_frequency VARCHAR(100),
-    last_calibrated DATE,
-    installation_date DATE,
-    FOREIGN KEY (sensor_id) REFERENCES Infrastructure(asset_id)
-);
-
-CREATE TABLE Traffic_Sensors (
-    sensor_id INT PRIMARY KEY,
-    FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id)
-);
-
-CREATE TABLE Air_Quality_Sensors (
-    sensor_id INT PRIMARY KEY,
-    FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id)
-);
-
-CREATE TABLE Weather_Sensors (
-    sensor_id INT PRIMARY KEY,
-    FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id)
-);
-
-ALTER TABLE AQ_Reading
-DROP FOREIGN KEY AQ_Reading_ibfk_1;
-
-ALTER TABLE AQ_Reading
-ADD CONSTRAINT fk_aq_sensor
-FOREIGN KEY (sensor_id) REFERENCES Air_Quality_Sensors(sensor_id)
-ON DELETE CASCADE;
-
-ALTER TABLE Traffic_Sensor_Reading
-DROP FOREIGN KEY Traffic_Sensor_Reading_ibfk_1;
-
-ALTER TABLE Traffic_Sensor_Reading
-ADD CONSTRAINT fk_traffic_sensor
-FOREIGN KEY (sensor_id) REFERENCES Traffic_Sensors(sensor_id)
-ON DELETE CASCADE;
-
-ALTER TABLE Weather_Reading
-DROP FOREIGN KEY Weather_Reading_ibfk_1;
-
-ALTER TABLE Weather_Reading
-ADD CONSTRAINT fk_weather_sensor
-FOREIGN KEY (sensor_id) REFERENCES Weather_Sensors(sensor_id)
-ON DELETE CASCADE;
 
 CREATE TABLE Fuel (
-    fuel_id INT AUTO_INCREMENT PRIMARY KEY,
+    fuel_id INT PRIMARY KEY, -- Changed from AUTO_INCREMENT
     type VARCHAR(100),
     price_per_unit DECIMAL(10,4),
     provider_id VARCHAR(100),
     cost_per_month DECIMAL(10,2),
-    FOREIGN KEY (fuel_id) REFERENCES Utility(utility_id)
+    FOREIGN KEY (fuel_id) REFERENCES Utility(utility_id) ON DELETE CASCADE
 );
-ALTER TABLE Fuel
-DROP FOREIGN KEY Fuel_ibfk_1;
-ALTER TABLE Fuel
-ADD CONSTRAINT fk_fuel_utility
-FOREIGN KEY (fuel_id) REFERENCES Utility(utility_id)
-ON DELETE CASCADE;
-
-
-
 
 CREATE TABLE Vehicle (
     vehicle_no VARCHAR(20) PRIMARY KEY,
@@ -381,25 +206,9 @@ CREATE TABLE Vehicle (
     model VARCHAR(100),
     owner_citizen_id INT,
     consumes_fuel_id INT,
-    FOREIGN KEY (owner_citizen_id) REFERENCES Citizen(citizen_id),
-    FOREIGN KEY (consumes_fuel_id) REFERENCES Fuel(fuel_id)
+    FOREIGN KEY (owner_citizen_id) REFERENCES Citizen(citizen_id) ON DELETE CASCADE,
+    FOREIGN KEY (consumes_fuel_id) REFERENCES Fuel(fuel_id) ON DELETE CASCADE
 );
-ALTER TABLE Vehicle
-DROP FOREIGN KEY Vehicle_ibfk_2;
-
-ALTER TABLE Vehicle
-ADD CONSTRAINT fk_vehicle_fuel
-FOREIGN KEY (consumes_fuel_id) REFERENCES Fuel(fuel_id)
-ON DELETE CASCADE;
-
-ALTER TABLE Vehicle
-DROP FOREIGN KEY Vehicle_ibfk_1;
-
-ALTER TABLE Vehicle
-ADD CONSTRAINT fk_vehicle_citizen
-FOREIGN KEY (owner_citizen_id) REFERENCES Citizen(citizen_id)
-ON DELETE CASCADE;
-
 
 CREATE TABLE Complaints (
     complaint_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -418,7 +227,25 @@ CREATE TABLE Complaints (
     FOREIGN KEY (transport_id) REFERENCES Transport(transport_id) ON DELETE CASCADE
 );
 
+CREATE TABLE Users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM(
+        'admin', 
+        'citizen', 
+        'transport', 
+        'utility',
+        'healthcare'
+    ) NOT NULL,
+    linked_id INT, -- references actual entity (citizen_id, provider_id, doctor_id)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
+INSERT INTO Users (email, password_hash, role) VALUES ('admin@smartcity.com', SHA2('admin123', 256), 'admin');
+
+
+-- This is the correct, complete definition.
 CREATE TABLE Maintenance_Task (
     task_id INT AUTO_INCREMENT PRIMARY KEY,
     asset_id INT,
@@ -435,30 +262,9 @@ CREATE TABLE Maintenance_Task (
     FOREIGN KEY (asset_id) REFERENCES Infrastructure(asset_id),
     FOREIGN KEY (assigned_to) REFERENCES Users(user_id)
 );
+-- REMOVED: Duplicate, simpler Maintenance_Task definition and its ALTER table.
 
-CREATE TABLE Users (
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    role ENUM('citizen', 'admin', 'provider', 'doctor') NOT NULL,
-    linked_id INT, -- references actual entity (citizen_id, provider_id, doctor_id)
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-UPDATE Users SET role='admin' WHERE role='admin';
-UPDATE Users SET role='healthcare' WHERE role='doctor';
-UPDATE Users SET role='transport' WHERE role='provider'; -- if you want to remap
-
-ALTER TABLE Users
-MODIFY COLUMN role ENUM(
-    'admin', 
-    'citizen', 
-    'transport', 
-    'utility',
-    'healthcare',
-    'internet'
-) NOT NULL;
-
+-- ... Role update query ...
 UPDATE Users u
 JOIN Service_Provider p ON u.linked_id = p.provider_id
 SET u.role = CASE
@@ -469,14 +275,9 @@ SET u.role = CASE
     -- healthcare-related
     WHEN LOWER(p.service_type) LIKE '%health%' OR LOWER(p.service_type) LIKE '%hospital%' OR LOWER(p.service_type) LIKE '%health care%' OR LOWER(p.service_type) LIKE '%clinic%' OR LOWER(p.service_type) LIKE '%ambulance%' OR LOWER(p.service_type) LIKE '%doctor%' THEN 'healthcare'
     -- internet / telecom
-    WHEN LOWER(p.service_type) LIKE '%internet%' OR LOWER(p.service_type) LIKE '%telecom%' OR LOWER(p.service_type) LIKE '%wifi%' OR LOWER(p.service_type) LIKE '%broadband%' OR LOWER(p.service_type) LIKE '%isp%' THEN 'internet'
+    WHEN LOWER(p.service_type) LIKE '%internet%' OR LOWER(p.service_type) LIKE '%telecom%' OR LOWER(p.service_type) LIKE '%wifi%' OR LOWER(p.service_type) LIKE '%broadband%' OR LOWER(p.service_type) LIKE '%isp%' THEN 'utility'
     ELSE u.role END
 WHERE u.role IN ('provider') OR u.role IS NULL;
-
-
-
-ALTER TABLE Users 
-RENAME COLUMN username to email;
 
 CREATE TABLE owns (
     citizen_ID INT NOT NULL,
@@ -494,7 +295,6 @@ CREATE TABLE lives_in (
     FOREIGN KEY (citizen_id) REFERENCES Citizen(citizen_id)ON DELETE CASCADE
 );
 
-
 CREATE TABLE located_in (
     house_id INT NOT NULL,
     zone_id INT NOT NULL,
@@ -502,8 +302,6 @@ CREATE TABLE located_in (
     FOREIGN KEY (house_id) REFERENCES House(house_id) ON DELETE CASCADE,
     FOREIGN KEY (zone_id) REFERENCES Zone(zone_id) ON DELETE CASCADE
 );
-
-
 
 CREATE TABLE operates_on (
     transport_id INT NOT NULL,
@@ -514,14 +312,13 @@ CREATE TABLE operates_on (
 );
 
 CREATE TABLE operated_by(
-citizen_id INT NOT NULL,
-service_id INT NOT NULL,
-provider_id INT NOT NULL,
-FOREIGN KEY (citizen_id) references Citizen(citizen_id) ON DELETE CASCADE,
-FOREIGN KEY (service_id) references Service(service_id) ON DELETE CASCADE,
-FOREIGN KEY (provider_id) references Service_provider(provider_id) ON DELETE CASCADE
+    citizen_id INT NOT NULL,
+    service_id INT NOT NULL,
+    provider_id INT NOT NULL,
+    FOREIGN KEY (citizen_id) references Citizen(citizen_id) ON DELETE CASCADE,
+    FOREIGN KEY (service_id) references Service(service_id) ON DELETE CASCADE,
+    FOREIGN KEY (provider_id) references Service_provider(provider_id) ON DELETE CASCADE
 );
-
 
 CREATE TABLE for_ (
     schedule_id INT NOT NULL,
@@ -530,7 +327,6 @@ CREATE TABLE for_ (
     FOREIGN KEY (schedule_id) REFERENCES Transport_Schedule(schedule_id) ON DELETE CASCADE,
     FOREIGN KEY (route_id) REFERENCES route(route_id) ON DELETE CASCADE
 );
-
 
 CREATE TABLE works_in (
     doctor_id INT NOT NULL,
@@ -557,18 +353,8 @@ CREATE TABLE Water (
     distribution_area VARCHAR(255),
     quality_level VARCHAR(100),
     supply_hours VARCHAR(100),
-    FOREIGN KEY (water_id) REFERENCES Utility(utility_id)
+    FOREIGN KEY (water_id) REFERENCES Utility(utility_id) ON DELETE CASCADE
 );
-
-ALTER TABLE Water
-DROP FOREIGN KEY Water_ibfk_1;
-ALTER TABLE Water
-ADD CONSTRAINT fk_water_utility
-FOREIGN KEY (water_id) REFERENCES Utility(utility_id)
-ON DELETE CASCADE;
-
-
-
 
 CREATE TABLE Electricity (
     electricity_id INT PRIMARY KEY,
@@ -577,16 +363,8 @@ CREATE TABLE Electricity (
     distribution_area VARCHAR(255),
     source_type VARCHAR(100),
     traffic_rate DECIMAL(10,4),
-    FOREIGN KEY (electricity_id) REFERENCES Utility(utility_id)
+    FOREIGN KEY (electricity_id) REFERENCES Utility(utility_id) ON DELETE CASCADE
 );
-ALTER TABLE Electricity
-DROP FOREIGN KEY Electricity_ibfk_1;
-ALTER TABLE Electricity
-ADD CONSTRAINT fk_electricity_utility
-FOREIGN KEY (electricity_id) REFERENCES Utility(utility_id)
-ON DELETE CASCADE;
-
-
 
 CREATE TABLE Waste_Management (
     waste_id INT PRIMARY KEY,
@@ -594,25 +372,10 @@ CREATE TABLE Waste_Management (
     processing_method VARCHAR(255),
     type VARCHAR(100),
     zone_id INT,
-    FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
+    FOREIGN KEY (zone_id) REFERENCES Zone(zone_id),
+    FOREIGN KEY (waste_id) references Utility(utility_id) ON DELETE CASCADE
 );
-
-ALTER TABLE Waste_Management ADD FOREIGN KEY (waste_id) references Utility(utility_id) ON delete cascade;
-
-CREATE TABLE Infrastructure (
-    asset_id INT AUTO_INCREMENT PRIMARY KEY,
-    zone_id INT,
-    FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
-);
-ALTER TABLE Infrastructure
-DROP FOREIGN KEY fk_infra_zone;
-
-ALTER TABLE Infrastructure
-ADD FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
-ON DELETE CASCADE;
-
-
-
+-- REMOVED: Duplicate Infrastructure table
 
 CREATE TABLE Smart_Bin (
     bin_id INT PRIMARY KEY,
@@ -622,25 +385,9 @@ CREATE TABLE Smart_Bin (
     sensor_status VARCHAR(50),
     collection_schedule VARCHAR(255),
     managing_waste_id INT,
-    FOREIGN KEY (bin_id) REFERENCES Infrastructure(asset_id),
-    FOREIGN KEY (managing_waste_id) REFERENCES Waste_Management(waste_id)
+    FOREIGN KEY (bin_id) REFERENCES Infrastructure(asset_id) ON DELETE CASCADE,
+    FOREIGN KEY (managing_waste_id) REFERENCES Waste_Management(waste_id) ON DELETE CASCADE
 );
-
-ALTER TABLE Smart_Bin
-DROP FOREIGN KEY Smart_Bin_ibfk_1;
-
-ALTER TABLE Smart_Bin
-DROP FOREIGN KEY Smart_Bin_ibfk_2;
-
-ALTER TABLE Smart_Bin
-ADD FOREIGN KEY (bin_id) REFERENCES Infrastructure(asset_id)
-ON DELETE CASCADE;
-
-ALTER TABLE Smart_Bin
-ADD FOREIGN KEY (managing_waste_id) REFERENCES Waste_Management(waste_id)
-ON DELETE CASCADE;
-
-
 
 CREATE TABLE Public_Light (
     light_id INT PRIMARY KEY,
@@ -649,29 +396,16 @@ CREATE TABLE Public_Light (
     type VARCHAR(100),
     installation_date DATE,
     power_rating VARCHAR(50),
-    FOREIGN KEY (light_id) REFERENCES Infrastructure(asset_id)
+    FOREIGN KEY (light_id) REFERENCES Infrastructure(asset_id) ON DELETE CASCADE
 );
-ALTER TABLE Public_Light
-DROP FOREIGN KEY Public_Light_ibfk_1;
-ALTER TABLE Public_Light
-ADD FOREIGN KEY (light_id) REFERENCES Infrastructure(asset_id)
-ON DELETE CASCADE;
-
-
 
 CREATE TABLE Powernodes (
     node_id INT PRIMARY KEY,
     capacity VARCHAR(100),
     installation_date DATE,
     status VARCHAR(50),
-    FOREIGN KEY (node_id) REFERENCES Infrastructure(asset_id)
+    FOREIGN KEY (node_id) REFERENCES Infrastructure(asset_id) ON DELETE CASCADE
 );
-ALTER TABLE Powernodes
-DROP FOREIGN KEY Powernodes_ibfk_1;
-ALTER TABLE Powernodes
-ADD FOREIGN KEY (node_id) REFERENCES Infrastructure(asset_id)
-ON DELETE CASCADE;
-
 
 CREATE TABLE Pipeline (
     pipeline_id INT PRIMARY KEY,
@@ -679,15 +413,8 @@ CREATE TABLE Pipeline (
     diameter DECIMAL(10,2),
     flow_type VARCHAR(100),
     material_type VARCHAR(100),
-    FOREIGN KEY (pipeline_id) REFERENCES Infrastructure(asset_id)
+    FOREIGN KEY (pipeline_id) REFERENCES Infrastructure(asset_id) ON DELETE CASCADE
 );
-ALTER TABLE Pipeline
-DROP FOREIGN KEY Pipeline_ibfk_1;
-ALTER TABLE Pipeline
-ADD FOREIGN KEY (pipeline_id) REFERENCES Infrastructure(asset_id)
-ON DELETE CASCADE;
-
-
 
 CREATE TABLE consumes (
     fuel_id INT NOT NULL,
@@ -700,7 +427,6 @@ CREATE TABLE consumes (
     FOREIGN KEY (fuel_id) REFERENCES Fuel(fuel_id) ON DELETE CASCADE,
     FOREIGN KEY (vehicle_id) REFERENCES Vehicle(vehicle_no) ON DELETE CASCADE
 );
-
 
 CREATE TABLE infra_located_in (
     asset_id INT NOT NULL,
@@ -718,7 +444,6 @@ CREATE TABLE managed_by (
     FOREIGN KEY (waste_id) REFERENCES Waste_Management(waste_id) ON DELETE CASCADE
 );
 
-
 CREATE TABLE provided_through (
     pipeline_id INT NOT NULL,
     water_id INT NOT NULL,
@@ -735,7 +460,6 @@ CREATE TABLE provided_by (
     FOREIGN KEY (node_id) REFERENCES Powernodes(node_id)ON DELETE CASCADE
 );
 
-
 CREATE TABLE AuditLog (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT,
@@ -746,210 +470,7 @@ CREATE TABLE AuditLog (
   FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
 );
 
-
-
-INSERT INTO Zone (zone_name, type) VALUES
-('Vijay Nagar', 'Commercial'),
-('Rau', 'Industrial'),
-('Old Palasia', 'Residential'),
-('Annapurna', 'Mixed-Use');
-
-
-INSERT INTO House (type, area, zone_id) VALUES
-('Apartment', '1200 sq ft', 1),   -- Vijay Nagar
-('Bungalow', '2500 sq ft', 3),    -- Old Palasia
-('Duplex', '1800 sq ft', 4),      -- Annapurna
-('Villa', '3000 sq ft', 2),       -- Rau
-('Row House', '1500 sq ft', 1);   -- Vijay Nagar
-
-INSERT INTO Citizen (first_name, last_name, gender, dob, street, area, city, pincode, house_id) VALUES
-('Priya', 'Sharma', 'Female', '1995-08-15', '123 AB Road', 'Vijay Nagar', 'Indore', '452010', 1),
-('Amit', 'Singh', 'Male', '1992-04-22', '456 MG Road', 'Old Palasia', 'Indore', '452001', 2),
-('Sonia', 'Verma', 'Female', '1988-11-01', '789 Ring Road', 'Annapurna', 'Indore', '452009', 3),
-('Rajesh', 'Kumar', 'Male', '1985-02-10', '101 Industrial Area', 'Rau', 'Indore', '453331', 4);
-
-INSERT INTO Citizen (first_name, last_name, gender, dob, street, area, city, pincode, house_id) VALUES
-('Neha', 'Patel', 'Female', '1993-06-18', '202 Silver Street', 'Vijay Nagar', 'Indore', '452011', 5);
-
-
-
-INSERT INTO Citizen_Phone_Number (citizen_id, phone_number) VALUES
-(1, '9876543210'),
-(1, '9876543211'),
-(2, '8765432109'),
-(3, '7654321098'),
-(4, '6543210987');
-
-INSERT INTO lives_in (house_id, citizen_id) VALUES
-(1,1),
-(2,2),
-(3,3),
-(4,4);
-
-INSERT INTO Service_Provider (name, service_type, contact_no) VALUES
-('Indore Municipal Corporation', 'Utility', '0731-2535566'),
-('City Bus Services', 'Transport', '0731-2498877'),
-('Apex Hospitals', 'Health Care', '0731-4021111'),
-('Airtel', 'Internet', '18001034444');
-
-INSERT INTO Service (service_name, cost, availability_status, operating_hours, provider_id) VALUES
-('Waste Management', 150.00, 'Active', '06:00 - 12:00', 1),
-('Water Supply', 200.00, 'Active', '24/7', 1),
-('City Bus Route 5', 20.00, 'Active', '07:00 - 22:00', 2),
-('Emergency Care', 500.00, 'Active', '24/7', 3),
-('Fiber Internet', 799.00, 'Active', '24/7', 4);
-
-
-
-INSERT INTO Utility (utility_id, unit, issue_date) VALUES 
-(1,'monthly', '2025-11-01'),
-(2, 'KL', '2025-11-05'),
-(3,  'monthly', '2025-11-10'),
-(4,  'monthly', '2025-11-12'),
-(5,  'monthly', '2025-11-15');
-
-
-INSERT INTO Water (water_id, source, cost_per_litre, distribution_area, quality_level, supply_hours) VALUES 
-(2, 'Narmada River', 8.50, 'Vijay Nagar', 'Potable', '06:00-09:00, 18:00-21:00'),
-(5, 'Kshipra River', 10.00, 'Old Palasia', 'Potable', '07:00-10:00, 17:00-20:00');
-
-INSERT INTO Fuel (fuel_id, type, price_per_unit, provider_id, cost_per_month) VALUES 
-(1, 'Diesel', 95.50, 'PetroCorp', 1500.00),
-(5, 'CNG', 70.00, 'GreenFuel', 1200.00);
-
-INSERT INTO Electricity (electricity_id, provider_id, voltage_level, distribution_area, source_type, traffic_rate) VALUES 
-(1, 101, '230V', 'Vijay Nagar', 'Solar', 12.50),
-(4, 102, '110V', 'Old Palasia', 'Hydro', 10.75);
-
-INSERT INTO Internet (internet_id, provider_name, bandwidth, coverage_area, cost_per_month, service_type) VALUES
-(3, 'CityNet', '200 Mbps', 'City-wide', 1200.00, 'Fiber'),
-(4, 'HomeConnect', '100 Mbps', 'Residential', 800.00, 'DSL');
-
-INSERT INTO Vehicle (vehicle_no, type, model, owner_citizen_id, consumes_fuel_id) VALUES
-('MP09AB1234', 'Car', 'Honda City', 1, 1),
-('MP09CD5678', 'Bike', 'Yamaha FZ', 2, 5),
-('MP09GH3456', 'Car', 'Hyundai i20', 4, 5),
-('MP09IJ7890', 'Scooter', 'Honda Activa', 3, 5);
-
-INSERT INTO Route (start_point, end_point,distance_km) VALUES ('Rajwada', 'Vijay Nagar Square', 8.5);
-INSERT INTO Transport (transport_id, mode) VALUES (3, 'Bus');
-INSERT INTO Transport_Schedule (transport_id, route_id, days_of_operation, frequency, start_time, end_time, status) VALUES (3, 2, 'Mon-Sun', 'Every 20 mins', '07:00', '22:00', 'On-time');
-
-INSERT INTO Healthcare (hospital_id, name, capacity, type) VALUES (4, 'Apex Hospital Vijay Nagar', 150, 'Private');
-INSERT INTO Doctors (name, specialization) VALUES ('Dr. Gupta', 'Cardiologist'), ('Dr. Patel', 'Orthopedic');
-INSERT INTO works_in (doctor_id,hospital_id) values 
-(1,4),
-(2,4);
-
-INSERT INTO Infrastructure (zone_id) VALUES
-(1), -- Smart Bin in Vijay Nagar
-(3),-- Public Light in Old Palasia
-(1);-- Traffic Sensor in Vijay Nagar
-
-
-INSERT INTO Users (email, password_hash, role, linked_id)
-VALUES
-('priya.sharma@example.com', SHA2('password123', 256), 'citizen', 1),
-('amit.singh@example.com' , SHA2('password123', 256), 'citizen', 2),
-('sonia.verma@example.com', SHA2('password123', 256), 'citizen', 3),
-('rajesh.kumar@example.com', SHA2('password123', 256), 'citizen', 4);
-
-UPDATE Users SET email = 'amit.singh@example.com' WHERE linked_id = 2;
-UPDATE Users SET email = 'sonia.verma@example.com' WHERE linked_id = 3;
-UPDATE Users SET email = 'rajesh.kumar@example.com' WHERE linked_id = 4;
-
-DELETE FROM Users
-WHERE role='citizen';
-
-
-CREATE TABLE Notifications (
-    notification_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    message TEXT NOT NULL,
-    is_read BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id)
-);
-
-CREATE TABLE Property (
-    property_id INT AUTO_INCREMENT PRIMARY KEY,
-    owner_citizen_id INT NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    type VARCHAR(50),
-    area_sqft INT,
-    registration_no VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (owner_citizen_id) REFERENCES Citizen(citizen_id)
-);
-CREATE TABLE Service_Booking (
-    booking_id INT AUTO_INCREMENT PRIMARY KEY,
-    citizen_id INT NOT NULL,
-    service_id INT NOT NULL,
-    booking_date DATE NOT NULL,
-    status VARCHAR(50) DEFAULT 'upcoming',
-    details TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (citizen_id) REFERENCES Citizen(citizen_id),
-    FOREIGN KEY (service_id) REFERENCES Service(service_id)
-);
-USE Smartcity_management_system;
-CREATE TABLE IF NOT EXISTS Service_Booking (
-  booking_id INT AUTO_INCREMENT PRIMARY KEY,
-  citizen_id INT NOT NULL,
-  service_id INT NOT NULL,
-  booking_start DATETIME NOT NULL,
-  booking_end DATETIME NULL,
-  status ENUM('upcoming','scheduled','in_progress','completed','cancelled','no_show') DEFAULT 'upcoming',
-  details JSON NULL,
-  priority ENUM('low','medium','high') DEFAULT 'medium',
-  assigned_to INT NULL,
-  created_by INT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NULL,
-  provider_id INT NULL, -- denormalized cache from Service -> Service_Provider (if available)
-  service_name_cache VARCHAR(255) NULL, -- denormalized service name for quick frontend display
-  service_category_cache VARCHAR(100) NULL, -- optional category/tag for frontend grouping
-  FOREIGN KEY (citizen_id) REFERENCES Citizen(citizen_id) ON DELETE CASCADE,
-  FOREIGN KEY (service_id) REFERENCES Service(service_id) ON DELETE CASCADE,
-  FOREIGN KEY (assigned_to) REFERENCES Users(user_id) ON DELETE SET NULL,
-  FOREIGN KEY (created_by) REFERENCES Users(user_id) ON DELETE SET NULL
-);
-
-
-USE Smartcity_management_system;
-
--- If Sensors exists but is wrong, drop and recreate (or ALTER accordingly)
-DELETE FROM Sensors;
-
-CREATE TABLE Sensors (
-  sensor_id INT AUTO_INCREMENT PRIMARY KEY,
-  asset_id INT NOT NULL,                        -- references infrastructure.asset_id
-  sensor_type VARCHAR(50) NOT NULL,             -- e.g. 'light_status','energy','temp'
-  status VARCHAR(50) DEFAULT 'active',
-  location VARCHAR(255) NULL,                   -- optional human-readable location
-  provider_id INT NULL,
-  data_frequency VARCHAR(100) NULL,
-  last_calibrated DATE NULL,
-  installation_date DATE NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (asset_id) REFERENCES Infrastructure(asset_id) ON DELETE CASCADE
-);
-
-ALTER TABLE Sensors
-RENAME COLUMN asset_id to sensor_id;
-
-CREATE TABLE Sensor_Data (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  sensor_id INT NOT NULL,
-  metric VARCHAR(100) NOT NULL,   -- e.g. 'light_status','power','lux'
-  value DOUBLE NULL,
-  unit VARCHAR(50) NULL,
-  recorded_at DATETIME NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX (sensor_id),
-  INDEX (recorded_at),
-  FOREIGN KEY (sensor_id) REFERENCES Sensors(sensor_id) ON DELETE CASCADE
-);
+-- REMOVED: Duplicate/confusing Sensor and Maintenance definitions
 
 CREATE TABLE Alerts (
   alert_id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -962,30 +483,7 @@ CREATE TABLE Alerts (
   resolved_at TIMESTAMP NULL,
   FOREIGN KEY (asset_id) REFERENCES Infrastructure(asset_id) ON DELETE cascade
 );
-DROP TABLE Alerts;
-
-
-CREATE TABLE Maintenance_Task (
-    task_id INT AUTO_INCREMENT PRIMARY KEY,
-    asset_id INT,
-    task_type VARCHAR(100),
-    description TEXT,
-    scheduled_date DATE,
-    completion_date DATE,
-    status ENUM('Scheduled', 'In Progress', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
-    assigned_to INT, -- User ID of maintenance personnel
-    FOREIGN KEY (asset_id) REFERENCES Infrastructure(asset_id),
-    FOREIGN KEY (assigned_to) REFERENCES Users(user_id)
-);
-ALTER TABLE Maintenance_Task
-  ADD COLUMN priority ENUM('low','medium','high') DEFAULT 'medium',
-  ADD COLUMN created_by INT NULL,
-  ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  ADD COLUMN updated_at TIMESTAMP NULL,
-  ADD INDEX (asset_id),
-  ADD INDEX (status);
--- ensure assigned_to FK exists; you already have it
-
+-- REMOVED: `DROP TABLE Alerts;` that was right after its creation.
 
 
 CREATE TABLE IF NOT EXISTS Service_Category (
@@ -1010,6 +508,180 @@ CREATE TABLE IF NOT EXISTS Service_Category_Map (
   FOREIGN KEY (category_id) REFERENCES Service_Category(category_id) ON DELETE CASCADE
 );
 
+CREATE TABLE Notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+);
+
+CREATE TABLE Property (
+    property_id INT AUTO_INCREMENT PRIMARY KEY,
+    owner_citizen_id INT NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    type VARCHAR(50),
+    area_sqft INT,
+    registration_no VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_citizen_id) REFERENCES Citizen(citizen_id)
+);
+
+-- REMOVED: First, simple Service_Booking definition.
+-- This is the correct, complete definition used by your code.
+CREATE TABLE IF NOT EXISTS Service_Booking (
+  booking_id INT AUTO_INCREMENT PRIMARY KEY,
+  citizen_id INT NOT NULL,
+  service_id INT NOT NULL,
+  booking_start DATETIME NOT NULL,
+  booking_end DATETIME NULL,
+  status ENUM('upcoming','scheduled','in_progress','completed','cancelled','no_show') DEFAULT 'upcoming',
+  details JSON NULL,
+  priority ENUM('low','medium','high') DEFAULT 'medium',
+  assigned_to INT NULL,
+  created_by INT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL,
+  provider_id INT NULL, 
+  service_name_cache VARCHAR(255) NULL, 
+  service_category_cache VARCHAR(100) NULL, 
+  FOREIGN KEY (citizen_id) REFERENCES Citizen(citizen_id) ON DELETE CASCADE,
+  FOREIGN KEY (service_id) REFERENCES Service(service_id) ON DELETE CASCADE,
+  FOREIGN KEY (assigned_to) REFERENCES Users(user_id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES Users(user_id) ON DELETE SET NULL
+);
+
+
+-- -----------------------------------------------------
+-- DATA INSERTION
+-- -----------------------------------------------------
+
+INSERT INTO Zone (zone_name, type) VALUES
+('Vijay Nagar', 'Commercial'),
+('Rau', 'Industrial'),
+('Old Palasia', 'Residential'),
+('Annapurna', 'Mixed-Use');
+
+INSERT INTO House (type, area, zone_id) VALUES
+('Apartment', '1200 sq ft', 1),   -- Vijay Nagar
+('Bungalow', '2500 sq ft', 3),    -- Old Palasia
+('Duplex', '1800 sq ft', 4),      -- Annapurna
+('Villa', '3000 sq ft', 2),       -- Rau
+('Row House', '1500 sq ft', 1);   -- Vijay Nagar
+
+INSERT INTO Citizen (first_name, last_name, gender, dob, street, area, city, pincode, house_id) VALUES
+('Priya', 'Sharma', 'Female', '1995-08-15', '123 AB Road', 'Vijay Nagar', 'Indore', '452010', 1),
+('Amit', 'Singh', 'Male', '1992-04-22', '456 MG Road', 'Old Palasia', 'Indore', '452001', 2),
+('Sonia', 'Verma', 'Female', '1988-11-01', '789 Ring Road', 'Annapurna', 'Indore', '452009', 3),
+('Rajesh', 'Kumar', 'Male', '1985-02-10', '101 Industrial Area', 'Rau', 'Indore', '453331', 4),
+('Neha', 'Patel', 'Female', '1993-06-18', '202 Silver Street', 'Vijay Nagar', 'Indore', '452011', 5);
+
+INSERT INTO Citizen_Phone_Number (citizen_id, phone_number) VALUES
+(1, '9876543210'),
+(1, '9876543211'),
+(2, '8765432109'),
+(3, '7654321098'),
+(4, '6543210987');
+
+INSERT INTO lives_in (house_id, citizen_id) VALUES
+(1,1),
+(2,2),
+(3,3),
+(4,4);
+
+INSERT INTO Service_Provider (name, service_type, contact_no) VALUES
+('Indore Municipal Corporation', 'Utility', '0731-2535566'),
+('City Bus Services', 'Transport', '0731-2498877'),
+('Apex Hospitals', 'Health Care', '0731-4021111'),
+('Airtel', 'Internet', '18001034444');
+
+INSERT INTO Service (service_id, service_name, cost, availability_status, operating_hours, provider_id) VALUES
+(1, 'Waste Management', 150.00, 'Active', '06:00 - 12:00', 1),
+(2, 'Water Supply', 200.00, 'Active', '24/7', 1),
+(3, 'City Bus Route 5', 20.00, 'Active', '07:00 - 22:00', 2),
+(4, 'Emergency Care', 500.00, 'Active', '24/7', 3),
+(5, 'Fiber Internet', 799.00, 'Active', '24/7', 4);
+
+-- FIXED: This insert now only includes service_ids that are actually utilities.
+INSERT INTO Utility (utility_id, unit, issue_date) VALUES 
+(1,'monthly', '2025-11-01'), -- Waste Management
+(2, 'KL', '2025-11-05'),      -- Water Supply
+(5,  'monthly', '2025-11-15'); -- Fiber Internet
+
+-- Data for Utility Subtypes
+-- WARNING: The following inserts are logically conflicted.
+-- A service cannot be 'Water' and 'Fuel' at the same time.
+-- The service_id (e.g., 5) is 'Fiber Internet', but you are trying to insert it into 'Water' and 'Fuel'.
+-- These inserts will FAIL. You must create new Service records for Fuel, Electricity, etc.,
+-- add them to the Utility table, and then use *those* new IDs here.
+
+-- Example:
+-- INSERT INTO Service (service_name, ...) VALUES ('Diesel Supply', ...); -- Creates service_id 6
+-- INSERT INTO Utility (utility_id, ...) VALUES (6, ...);
+-- INSERT INTO Fuel (fuel_id, ...) VALUES (6, ...); -- This is now valid.
+
+-- COMMENTING OUT CONFLICTED DATA:
+-- INSERT INTO Water (water_id, source, cost_per_litre, distribution_area, quality_level, supply_hours) VALUES 
+-- (2, 'Narmada River', 8.50, 'Vijay Nagar', 'Potable', '06:00-09:00, 18:00-21:00'),
+-- (5, 'Kshipra River', 10.00, 'Old Palasia', 'Potable', '07:00-10:00, 17:00-20:00'); -- ID 5 is Internet
+
+-- INSERT INTO Fuel (fuel_id, type, price_per_unit, provider_id, cost_per_month) VALUES 
+-- (1, 'Diesel', 95.50, 'PetroCorp', 1500.00), -- ID 1 is Waste
+-- (5, 'CNG', 70.00, 'GreenFuel', 1200.00); -- ID 5 is Internet
+
+-- INSERT INTO Electricity (electricity_id, provider_id, voltage_level, distribution_area, source_type, traffic_rate) VALUES 
+-- (1, 101, '230V', 'Vijay Nagar', 'Solar', 12.50), -- ID 1 is Waste
+-- (4, 102, '110V', 'Old Palasia', 'Hydro', 10.75); -- ID 4 is not a utility
+
+-- INSERT INTO Internet (internet_id, provider_name, bandwidth, coverage_area, cost_per_month, service_type) VALUES
+-- (3, 'CityNet', '200 Mbps', 'City-wide', 1200.00, 'Fiber'), -- ID 3 is not a utility
+-- (4, 'HomeConnect', '100 Mbps', 'Residential', 800.00, 'DSL'); -- ID 4 is not a utility
+
+-- VALID INSERTS (Using the correct IDs from Service table)
+INSERT INTO Water (water_id, source, cost_per_litre, distribution_area, quality_level, supply_hours) VALUES 
+(2, 'Narmada River', 8.50, 'Vijay Nagar', 'Potable', '06:00-09:00, 18:00-21:00');
+
+INSERT INTO Internet (internet_id, provider_name, bandwidth, coverage_area, cost_per_month, service_type) VALUES
+(5, 'Airtel', '100 Mbps', 'Vijay Nagar', 799.00, 'Fiber'); -- Assuming ID 5 is the Internet service
+
+
+INSERT INTO Vehicle (vehicle_no, type, model, owner_citizen_id, consumes_fuel_id) VALUES
+('MP09AB1234', 'Car', 'Honda City', 1, NULL), -- Set to NULL as Fuel inserts are conflicted
+('MP09CD5678', 'Bike', 'Yamaha FZ', 2, NULL),
+('MP09GH3456', 'Car', 'Hyundai i20', 4, NULL),
+('MP09IJ7890', 'Scooter', 'Honda Activa', 3, NULL);
+
+INSERT INTO Route (start_point, end_point,distance_km) VALUES ('Rajwada', 'Vijay Nagar Square', 8.5);
+INSERT INTO Transport (transport_id, mode) VALUES (3, 'Bus');
+INSERT INTO Transport_Schedule (transport_id, route_id, days_of_operation, frequency, start_time, end_time, status) VALUES (3, 1, 'Mon-Sun', 'Every 20 mins', '07:00', '22:00', 'On-time'); -- Fixed route_id to 1
+
+INSERT INTO Healthcare (hospital_id, name, capacity, type) VALUES (4, 'Apex Hospital Vijay Nagar', 150, 'Private');
+INSERT INTO Doctors (name, specialization) VALUES ('Dr. Gupta', 'Cardiologist'), ('Dr. Patel', 'Orthopedic');
+INSERT INTO works_in (doctor_id,hospital_id) values 
+(1,4),
+(2,4);
+
+INSERT INTO Infrastructure (zone_id) VALUES
+(1), -- Asset 1: Smart Bin in Vijay Nagar
+(3),-- Asset 2: Public Light in Old Palasia
+(1);-- Asset 3: Traffic Sensor in Vijay Nagar
+
+-- You must insert data into Sensors, Traffic_Sensors etc. here
+-- Example:
+-- INSERT INTO Sensors (sensor_id, status, location) VALUES (3, 'Active', 'Vijay Nagar Square');
+-- INSERT INTO Traffic_Sensors (sensor_id) VALUES (3);
+
+
+INSERT INTO Users (email, password_hash, role, linked_id)
+VALUES
+('priya.sharma@example.com', SHA2('password123', 256), 'citizen', 1),
+('amit.singh@example.com' , SHA2('password123', 256), 'citizen', 2),
+('sonia.verma@example.com', SHA2('password123', 256), 'citizen', 3),
+('rajesh.kumar@example.com', SHA2('password123', 256), 'citizen', 4);
+
+DELETE FROM Users WHERE role='citizen';
+
 -- Insert common categories if they don't exist
 INSERT IGNORE INTO Service_Category (name, description) VALUES
   ('water','Water supply and distribution services'),
@@ -1019,19 +691,16 @@ INSERT IGNORE INTO Service_Category (name, description) VALUES
   ('waste','Waste collection and management services'),
   ('healthcare','Healthcare and medical services');
   
-  INSERT IGNORE INTO Service_To_Provider (service_id, provider_id) VALUES
+INSERT IGNORE INTO Service_To_Provider (service_id, provider_id) VALUES
   (1,1),
   (2,1),
   (3,2),
   (4,3),
   (5,4);
   
-  INSERT IGNORE INTO Service_Category_Map (service_id, category_id) VALUES
-  (1,1),
-  (2,1),
-  (3,4),
-  (4,6),
-  (5,3);
-  
-  
-
+INSERT IGNORE INTO Service_Category_Map (service_id, category_id) VALUES
+  (1,5), -- Service 1 (Waste) -> Category 5 (waste)
+  (2,1), -- Service 2 (Water) -> Category 1 (water)
+  (3,4), -- Service 3 (Bus) -> Category 4 (transport)
+  (4,6), -- Service 4 (Health) -> Category 6 (healthcare)
+  (5,3); -- Service 5 (Internet) -> Category 3 (internet)
