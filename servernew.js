@@ -157,7 +157,7 @@ const { errorHandler } = require("./middleware/error");
 app.use(errorHandler);
 
 // Test DB connection at startup
-const db = require('./db');
+const { db } = require('./db');
 db.query('SELECT 1')
   .then(() => console.log('✓ Database connection successful'))
   .catch(err => console.error('✗ Database connection failed:', err.message));
