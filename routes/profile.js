@@ -1,7 +1,7 @@
 
 const express = require('express');
 const router = express.Router();
-const db = require('../db'); // promise-based pool
+const {db} = require('../db'); // promise-based pool
 const { authenticateToken } = require('../middleware/auth');
 
 // GET current user's profile (citizen/healthcare/transport) using JWT

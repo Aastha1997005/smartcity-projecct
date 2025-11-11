@@ -144,6 +144,9 @@
       <li class="nav-item"><a href="utilities_fuel.html" class="nav-link"><i class="fas fa-gas-pump"></i> Fuel</a></li>
       <li class="nav-item"><a href="utilities_infrastructure.html" class="nav-link"><i class="fas fa-building"></i> Infrastructure</a></li>
     </ul>
+    <div class="p-3 mt-auto">
+        <button class="btn btn-danger w-100" id="logoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+    </div>
   </div>
 
   <!-- Main Content -->
@@ -345,6 +348,13 @@
     // Initialize on page load
     document.addEventListener("DOMContentLoaded", () => {
       loadUtilitiesData();
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userEmail');
+        window.location.href = 'login.html';
+      });
     });
   </script>
 </body>

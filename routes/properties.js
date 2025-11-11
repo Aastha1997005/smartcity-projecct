@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db");
+const {db} = require("../db");
 
 // Get all properties for a specific citizen (user)
 router.get("/user/:user_id", async (req, res) => {

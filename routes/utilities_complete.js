@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db");
+const {db} = require("../db");
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 // ==================== DIAGNOSTIC TEST ROUTE ====================
@@ -383,7 +383,7 @@ router.get("/smart-bins", async (req, res) => {
 router.get("/smart-bins/:bin_id", async (req, res) => {
   try {
     const [[bin]] = await db.query(`
-      SELECT sb.*, i.zone_id, z.zone_name, z.type as zone_type, wm.collection_schedule, wm.last_emptied_at
+      SELECT sb.*, i.zone_id, z.zone_name, z.type as zone_type, wm.collection_schedule
       FROM Smart_Bin sb
       JOIN Infrastructure i ON sb.bin_id = i.asset_id
       LEFT JOIN Zone z ON i.zone_id = z.zone_id
@@ -418,17 +418,8 @@ router.put("/smart-bins/:bin_id/fill-level", authenticateToken, async (req, res)
     
     // Create alert if fill level is high
     if (fill_level >= 85) {
-      // Check if Alerts table exists before inserting
-      const [tables] = await db.query("SHOW TABLES LIKE 'Alerts'");
-      if (tables.length > 0) {
-        await db.query(
-          `INSERT INTO Alerts (asset_id, alert_type, severity, details)
-           VALUES (?, 'high_fill_level', 'warning', ?)`, 
-          [req.params.bin_id, JSON.stringify({ fill_level, message: 'Smart bin needs collection' })]
-        );
-      } else {
-        console.warn('Alerts table not found. Skipping alert insertion.');
-      }
+      // The Alerts table is dropped in newDB.txt, so this is commented out.
+      // console.warn('Alerts table not found. Skipping alert insertion.');
     }
     
     res.json({ message: 'Fill level updated' });
@@ -497,10 +488,10 @@ router.get("/internet/:internet_id", async (req, res) => {
 router.get("/fuel", async (req, res) => {
   try {
     const [fuelServices] = await db.query(`
-      SELECT f.*, u.unit, u.issue_date, p.provider_name
+      SELECT f.*, u.unit, u.issue_date, p.name as provider_name
       FROM Fuel f
       JOIN Utility u ON f.fuel_id = u.utility_id
-      LEFT JOIN Provider p ON f.provider_id = p.provider_id
+      LEFT JOIN Service_Provider p ON f.provider_id = p.provider_id
       ORDER BY f.fuel_id
     `);
     
@@ -514,10 +505,10 @@ router.get("/fuel", async (req, res) => {
 router.get("/fuel/:fuel_id", async (req, res) => {
   try {
     const [[fuel]] = await db.query(`
-      SELECT f.*, u.unit, u.issue_date, p.provider_name
+      SELECT f.*, u.unit, u.issue_date, p.name as provider_name
       FROM Fuel f
       JOIN Utility u ON f.fuel_id = u.utility_id
-      LEFT JOIN Provider p ON f.provider_id = p.provider_id
+      LEFT JOIN Service_Provider p ON f.provider_id = p.provider_id
       WHERE f.fuel_id = ?
     `, [req.params.fuel_id]);
     
@@ -549,22 +540,12 @@ router.get("/infrastructure/overview", async (req, res) => {
     
     // Get maintenance statistics, trying both singular and plural table names
     let maintenanceStats;
-    try {
-      const [stats] = await db.query(`
-        SELECT status, COUNT(*) as count
-        FROM Maintenance_Task
-        GROUP BY status
-      `);
-      maintenanceStats = stats;
-    } catch (e) {
-      // If Maintenance_Task doesn't exist, try Maintenance_Tasks
-      const [stats] = await db.query(`
-        SELECT status, COUNT(*) as count
-        FROM Maintenance_Tasks
-        GROUP BY status
-      `);
-      maintenanceStats = stats;
-    }
+    const [stats] = await db.query(`
+      SELECT status, COUNT(*) as count
+      FROM Maintenance_Task
+      GROUP BY status
+    `);
+    maintenanceStats = stats;
     
     // The Alerts table is dropped in newDB.txt, so this query is removed.
     const alertStats = [];

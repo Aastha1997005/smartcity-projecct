@@ -1,5 +1,5 @@
 const express = require("express");
-const db = require("../db");
+const {db} = require("../db");
 const router = express.Router();
 const { authenticateToken, authorizeRoles } = require("../middleware/auth");
 // Departments that should be able to access complaint stats/search/list

@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db");
+const {db} = require("../db");
 
 // Get all zones
 router.get("/", async (req, res) => {
+  console.log(db);
   try {
     const { include_stats } = req.query;
     

@@ -1,3 +1,4 @@
+console.log('loading db.js');
 require('dotenv').config();
 const mysql = require('mysql2/promise');
 

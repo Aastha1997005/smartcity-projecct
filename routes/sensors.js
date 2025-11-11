@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const {db} = require('../db');
 
 // Quick debug logger for incoming requests to this router
 router.use((req, res, next) => {

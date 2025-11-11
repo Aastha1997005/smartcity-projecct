@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const {db} = require('../db');
 
 // Get all readings for a traffic sensor, with optional date filter
 router.get('/traffic_sensors/:sensor_id/readings', async (req, res) => {
