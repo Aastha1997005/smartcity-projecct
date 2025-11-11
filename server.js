@@ -59,8 +59,8 @@ const vehicleRoutes = require("./routes/vehicles");
 console.log("Loaded vehicleRoutes");
 const utilityRoutes = require("./routes/utilities_complete");
 console.log("Loaded utilityRoutes from utilities_complete.js");
-const healthcareRoutes = require("./routes/healthcare");
-console.log("Loaded healthcareRoutes");
+const healthcareRoutes = require("./routes/enhanced_healthcare");
+console.log("Loaded healthcareRoutes from enhanced_healthcare.js");
 const serviceRoutes = require("./routes/services");
 console.log("Loaded serviceRoutes");
 const providerRoutes = require("./routes/providers");
@@ -103,6 +103,7 @@ const adminRoutes = require("./routes/admin_routes");
 console.log("Loaded adminRoutes");
 
 // Register routes
+
 app.use("/api/auth", authRoutes); console.log("Registered /api/auth");
 app.use("/api/complaints", complaintRoutes); console.log("Registered /api/complaints");
 app.use("/api/citizens", citizenRoutes); console.log("Registered /api/citizens");
@@ -121,7 +122,7 @@ app.use("/api/public-lights", publicLightsRoutes); console.log("Registered /api/
 app.use("/api/sensors", sensorsRoutes); console.log("Registered /api/sensors");
 app.use("/api/smart-bins", smartBinsRoutes); console.log("Registered /api/smart-bins");
 app.use("/api/transport", transportRoutes); console.log("Registered /api/transport");
-app.use("/api/transport-schedules", transportSchedulesRoutes); console.log("Registered /api/transport-schedules");
+app.use("/api/transportSchedules", transportSchedulesRoutes); console.log("Registered /api/transportSchedules");
 app.use("/api/infrastructure", infrastructureRoutes); console.log("Registered /api/infrastructure");
 app.use("/api/routes", routesRoutes); console.log("Registered /api/routes");
 app.use("/api/properties", propertiesRoutes); console.log("Registered /api/properties");

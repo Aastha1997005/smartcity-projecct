@@ -5,7 +5,14 @@ const {db} = require('../db');
 // Get all transport schedules
 router.get('/', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM Transport_Schedule');
+    const [rows] = await db.query(`
+        SELECT ts.*, t.mode, s.service_name, r.start_point, r.end_point
+        FROM Transport_Schedule ts
+        JOIN Transport t ON ts.transport_id = t.transport_id
+        JOIN Service s ON t.transport_id = s.service_id
+        JOIN Route r ON ts.route_id = r.route_id
+        ORDER BY ts.start_time
+    `);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });

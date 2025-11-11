@@ -193,43 +193,33 @@
 
         async function loadDashboardData() {
             try {
-                const [schedulesRes, routesRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/transportSchedules`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch(`${API_BASE_URL}/routes`, { headers: { 'Authorization': `Bearer ${token}` } })
+                const [schedulesRes, routesRes, transportRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/transportSchedules`, { headers: { 'Authorization': `Bearer ${token}` } }).then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status} for schedules data`);
+                        }
+                        return response.json();
+                    }),
+                    fetch(`${API_BASE_URL}/routes`, { headers: { 'Authorization': `Bearer ${token}` } }).then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status} for routes data`);
+                        }
+                        return response.json();
+                    }),
+                    fetch(`${API_BASE_URL}/transport`, { headers: { 'Authorization': `Bearer ${token}` } }).then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status} for transport data`);
+                        }
+                        return response.json();
+                    })
                 ]);
 
-                let schedules = [];
-                let routes = [];
-
-                if (schedulesRes.ok) {
-                    schedules = await schedulesRes.json();
-                } else {
-                    console.warn('Could not fetch schedules, using mock data.');
-                    schedules = [
-                        { schedule_id: 1, status: 'active', transport_id: 101 },
-                        { schedule_id: 2, status: 'active', transport_id: 102 },
-                        { schedule_id: 3, status: 'inactive', transport_id: 103 },
-                    ];
-                }
-
-                if (routesRes.ok) {
-                    routes = await routesRes.json();
-                } else {
-                    console.warn('Could not fetch routes, using mock data.');
-                    routes = [
-                        { route_id: 1, mode: 'Bus' },
-                        { route_id: 2, mode: 'Bus' },
-                        { route_id: 3, mode: 'Train' },
-                    ];
-                }
+                const schedules = schedulesRes;
+                const routes = routesRes;
+                const transports = transportRes;
                 
-                // This part is a bit tricky without joining tables on the backend.
-                // We will assume for now that the mode is on the route.
-                // A better implementation would have a dedicated /transport endpoint.
-                const busSchedules = schedules.filter(s => {
-                    const route = routes.find(r => r.route_id === s.route_id);
-                    return route && route.mode && route.mode.toLowerCase() === 'bus';
-                });
+                const busTransports = transports.filter(t => t.mode && t.mode.toLowerCase() === 'bus').map(t => t.transport_id);
+                const busSchedules = schedules.filter(s => busTransports.includes(s.transport_id));
 
                 document.getElementById('totalSchedules').textContent = schedules.length;
                 document.getElementById('totalRoutes').textContent = routes.length;
@@ -238,7 +228,13 @@
 
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
-                alert('An error occurred while loading dashboard data.');
+                if (error.message.includes('HTTP error!')) {
+                    alert(`An error occurred while loading dashboard data: ${error.message}. Please check the server.`);
+                } else if (error instanceof TypeError) { // e.g., network error or CORS
+                    alert('A network error occurred while loading dashboard data. Please check your internet connection and try again.');
+                } else {
+                    alert('An unexpected error occurred while loading dashboard data. Please try again later.');
+                }
             }
         }
     </script>

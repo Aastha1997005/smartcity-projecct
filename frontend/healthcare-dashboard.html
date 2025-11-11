@@ -513,13 +513,22 @@ background:
   </div>
 
   <script>
+    const API_BASE_URL = 'http://localhost:5000/api';
+    const token = localStorage.getItem('token');
+
     document.addEventListener('DOMContentLoaded', () => {
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
+
       // Sidebar Tab Switching
       const tabButtons = document.querySelectorAll('.tab-button');
       const tabContents = document.querySelectorAll('.tab-content');
 
       tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', (e) => {
+          e.preventDefault();
           tabButtons.forEach(btn => btn.classList.remove('active'));
           tabContents.forEach(content => content.classList.remove('active'));
           button.classList.add('active');
@@ -527,42 +536,77 @@ background:
         });
       });
 
-      // Hardcoded Data
-      const dashboardData = {
-        totalDoctors: 8,
-        currentPatients: 42,
-        todayAppointments: 15,
-        availableBeds: 12
-      };
+      loadDashboardData();
 
-      const doctorsData = [
-        { doctor_id: 1, name: "Dr. Arjun Mehta", specialization: "Cardiologist" },
-        { doctor_id: 2, name: "Dr. Nisha Sharma", specialization: "Neurologist" },
-        { doctor_id: 3, name: "Dr. Rakesh Patel", specialization: "Orthopedic" },
-        { doctor_id: 4, name: "Dr. Priya Iyer", specialization: "Pediatrician" },
-        { doctor_id: 5, name: "Dr. Saurabh Jain", specialization: "Dermatologist" },
-        { doctor_id: 6, name: "Dr. Leena Desai", specialization: "Gynecologist" },
-        { doctor_id: 7, name: "Dr. Vinay Rao", specialization: "Oncologist" },
-        { doctor_id: 8, name: "Dr. Reema Shah", specialization: "Psychiatrist" }
-      ];
+      // Event listeners
+      document.getElementById('searchName').addEventListener('input', loadDoctors);
+      document.getElementById('filterSpecialization').addEventListener('change', loadDoctors);
+      document.getElementById('dateFilter').addEventListener('change', loadAppointments);
+      document.getElementById('statusFilter').addEventListener('change', loadAppointments);
+    });
 
-      const appointmentsData = [
-        { patient_name: "Amit Kumar", booking_start: "2025-11-05T09:00:00", status: "upcoming", details: "Routine check-up" },
-        { patient_name: "Sneha Patel", booking_start: "2025-11-04T14:00:00", status: "completed", details: "Skin treatment follow-up" },
-        { patient_name: "Raj Singh", booking_start: "2025-11-05T11:00:00", status: "upcoming", details: "X-ray review" },
-        { patient_name: "Neha Gupta", booking_start: "2025-11-03T10:00:00", status: "cancelled", details: "Cancelled by patient" }
-      ];
+    let doctorsData = [];
+    let appointmentsData = [];
+    let hospitalsData = [];
 
-      // Update Dashboard
-      function updateDashboardStats() {
-        document.getElementById('doctorCount').textContent = dashboardData.totalDoctors;
-        document.getElementById('patientCount').textContent = dashboardData.currentPatients;
-        document.getElementById('appointmentCount').textContent = dashboardData.todayAppointments;
-        document.getElementById('bedCount').textContent = dashboardData.availableBeds;
-      }
+    async function loadDashboardData() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/healthcare`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            hospitalsData = await response.json();
+            
+            let totalDoctors = 0;
+            let totalPatients = 0;
+            let totalAppointments = 0;
+            let totalBeds = 0;
 
-      // Load Doctors
-      function loadDoctors() {
+            for (const hospital of hospitalsData) {
+                totalDoctors += hospital.doctor_count || 0;
+                totalBeds += hospital.capacity || 0;
+
+                const appointmentsResponse = await fetch(`${API_BASE_URL}/healthcare/${hospital.hospital_id}/appointments`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if(appointmentsResponse.ok) {
+                    const appointments = await appointmentsResponse.json();
+                    totalAppointments += appointments.length;
+                    totalPatients += appointments.filter(a => a.status === 'in_progress').length;
+                    appointmentsData.push(...appointments);
+                }
+
+                const doctorsResponse = await fetch(`${API_BASE_URL}/healthcare/${hospital.hospital_id}/doctors`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if(doctorsResponse.ok) {
+                    const doctors = await doctorsResponse.json();
+                    doctorsData.push(...doctors);
+                }
+            }
+
+            updateDashboardStats({ totalDoctors, totalPatients, totalAppointments, totalBeds });
+            loadDoctors();
+            loadAppointments();
+            fillSpecializationFilter();
+
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+            alert('Failed to load dashboard data. Please try again.');
+        }
+    }
+
+    function updateDashboardStats(data) {
+        document.getElementById('doctorCount').textContent = data.totalDoctors;
+        document.getElementById('patientCount').textContent = data.totalPatients;
+        document.getElementById('appointmentCount').textContent = data.totalAppointments;
+        document.getElementById('bedCount').textContent = data.totalBeds;
+    }
+
+    function loadDoctors() {
         const grid = document.getElementById('doctorsGrid');
         const search = document.getElementById('searchName').value.toLowerCase();
         const specializationFilter = document.getElementById('filterSpecialization').value;
@@ -594,20 +638,21 @@ background:
             </div>`;
           grid.innerHTML += card;
         });
-      }
+    }
 
-      // Fill specialization filter
-      const specSet = new Set(doctorsData.map(d => d.specialization));
-      const specSelect = document.getElementById('filterSpecialization');
-      specSet.forEach(spec => {
-        const option = document.createElement('option');
-        option.value = spec;
-        option.textContent = spec;
-        specSelect.appendChild(option);
-      });
+    function fillSpecializationFilter() {
+        const specSet = new Set(doctorsData.map(d => d.specialization));
+        const specSelect = document.getElementById('filterSpecialization');
+        specSelect.innerHTML = '<option value="">All Specializations</option>';
+        specSet.forEach(spec => {
+            const option = document.createElement('option');
+            option.value = spec;
+            option.textContent = spec;
+            specSelect.appendChild(option);
+        });
+    }
 
-      // Load Appointments
-      function loadAppointments() {
+    function loadAppointments() {
         const date = document.getElementById('dateFilter').value;
         const status = document.getElementById('statusFilter').value;
         const list = document.getElementById('appointmentsList');
@@ -637,30 +682,17 @@ background:
             </div>`;
           list.innerHTML += card;
         });
-      }
+    }
 
-      // Update doctors and dashboard data
-      function updateDoctorData(doctor) {
-        const index = doctorsData.findIndex(doc => doc.doctor_id === doctor.doctor_id);
-        if (index !== -1) {
-          doctorsData[index] = doctor;
-        } else {
-          doctorsData.push(doctor);
-        }
-        loadDoctors();
-        updateDashboardStats();
-      }
-
-      var addDoctorModal;
-      window.addNewDoctor = function() {
+    var addDoctorModal;
+    window.addNewDoctor = function() {
         addDoctorModal = new bootstrap.Modal(document.getElementById('addDoctorModal'), {});
         const specSelect = document.getElementById('newDoctorSpecialization');
         
-        // Clear previous inputs
         document.getElementById('newDoctorName').value = '';
         specSelect.value = '';
         
-        // Populate specialization options if empty
+        const specSet = new Set(doctorsData.map(d => d.specialization));
         if(specSelect.options.length <= 1) {
           specSet.forEach(spec => {
             const option = document.createElement('option');
@@ -671,15 +703,15 @@ background:
         }
         
         addDoctorModal.show();
-      }
+    }
 
-      window.closeModal = function() {
+    window.closeModal = function() {
         if (addDoctorModal) {
           addDoctorModal.hide();
         }
-      }
+    }
 
-      window.saveNewDoctor = function() {
+    window.saveNewDoctor = async function() {
         const name = document.getElementById('newDoctorName').value;
         const specialization = document.getElementById('newDoctorSpecialization').value;
         
@@ -688,29 +720,45 @@ background:
           return;
         }
 
-        const newDoctor = {
-          doctor_id: doctorsData.length + 1,
-          name: name,
-          specialization: specialization
-        };
+        // Assuming the first hospital is the one to add the doctor to
+        const hospitalId = hospitalsData.length > 0 ? hospitalsData[0].hospital_id : null;
+        if(!hospitalId) {
+            alert('No hospital found to add a doctor to.');
+            return;
+        }
 
-        doctorsData.push(newDoctor);
-        closeModal();
-        loadDoctors();
-        updateDashboardStats();
-      }
+        try {
+            const response = await fetch(`${API_BASE_URL}/healthcare/${hospitalId}/doctors`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ name, specialization })
+            });
 
-      var addAppointmentModal;
-      window.newAppointment = function() {
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to save doctor');
+            }
+            
+            closeModal();
+            loadDashboardData();
+        } catch (error) {
+            console.error('Error saving doctor:', error);
+            alert(`Error: ${error.message}`);
+        }
+    }
+
+    var addAppointmentModal;
+    window.newAppointment = function() {
         addAppointmentModal = new bootstrap.Modal(document.getElementById('addAppointmentModal'), {});
         const doctorSelect = document.getElementById('appointmentDoctor');
         
-        // Clear previous inputs
         document.getElementById('patientName').value = '';
         document.getElementById('appointmentDateTime').value = '';
         document.getElementById('appointmentDetails').value = '';
         
-        // Clear and repopulate doctors dropdown
         doctorSelect.innerHTML = '<option value="">Select Doctor</option>';
         doctorsData.forEach(doc => {
           const option = document.createElement('option');
@@ -720,49 +768,68 @@ background:
         });
         
         addAppointmentModal.show();
-      }
+    }
 
-      window.closeAppointmentModal = function() {
+    window.closeAppointmentModal = function() {
         if (addAppointmentModal) {
           addAppointmentModal.hide();
         }
-      }
+    }
 
-      window.saveAppointment = function() {
+    window.saveAppointment = async function() {
         const patientName = document.getElementById('patientName').value;
         const appointmentDate = document.getElementById('appointmentDateTime').value;
         const details = document.getElementById('appointmentDetails').value;
+        const doctorId = document.getElementById('appointmentDoctor').value;
         
-        if (!patientName || !appointmentDate || !details) {
+        if (!patientName || !appointmentDate || !details || !doctorId) {
           alert('Please fill in all fields');
           return;
         }
 
-        const newAppointment = {
-          patient_name: patientName,
-          booking_start: appointmentDate,
-          status: "upcoming",
-          details: details
-        };
+        // This is a simplification. In a real app, you'd get the citizen_id from the logged-in user.
+        // For now, we'll hardcode a citizen_id for demonstration purposes.
+        const citizenId = 1; 
 
-        appointmentsData.push(newAppointment);
-        closeAppointmentModal();
-        loadAppointments();
-        dashboardData.todayAppointments++;
-        updateDashboardStats();
-      }
+        // Assuming the first hospital is the one to book the appointment at
+        const hospitalId = hospitalsData.length > 0 ? hospitalsData[0].hospital_id : null;
+        if(!hospitalId) {
+            alert('No hospital found to book an appointment at.');
+            return;
+        }
 
-      // Initial load
-      updateDashboardStats();
-      loadDoctors();
-      loadAppointments();
+        try {
+            const response = await fetch(`${API_BASE_URL}/healthcare/${hospitalId}/appointments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ 
+                    citizen_id: citizenId,
+                    booking_start: appointmentDate,
+                    details: { notes: details, doctor_id: doctorId }
+                })
+            });
 
-      // Event listeners
-      document.getElementById('searchName').addEventListener('input', loadDoctors);
-      document.getElementById('filterSpecialization').addEventListener('change', loadDoctors);
-      document.getElementById('dateFilter').addEventListener('change', loadAppointments);
-      document.getElementById('statusFilter').addEventListener('change', loadAppointments);
-    });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to book appointment');
+            }
+            
+            closeAppointmentModal();
+            loadDashboardData();
+        } catch (error) {
+            console.error('Error booking appointment:', error);
+            alert(`Error: ${error.message}`);
+        }
+    }
+    function logout() {
+        if (confirm("Are you sure you want to logout?")) {
+            localStorage.clear();
+            window.location.href = "login.html";
+        }
+    }
   </script>
 </body>
 </html>

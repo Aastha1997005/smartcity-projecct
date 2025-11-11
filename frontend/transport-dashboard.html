@@ -188,7 +188,7 @@
                             </tr>
                         </thead>
                         <tbody id="schedulesTableBody">
-                            <!-- Rows will be inserted here -->
+                            <!-- Rows will be inserted here by renderSchedules() -->
                         </tbody>
                     </table>
                 </div>
@@ -269,19 +269,39 @@
             loadSchedules();
         });
 
-        const mockSchedules = [
-            { schedule_id: 101, transport_id: 1, route_id: 1, start_time: '08:00', end_time: '22:00', frequency: 15, days_of_operation: 'Mon-Fri', status: 'active' },
-            { schedule_id: 102, transport_id: 2, route_id: 2, start_time: '09:00', end_time: '21:00', frequency: 20, days_of_operation: 'Mon-Sat', status: 'active' },
-            { schedule_id: 103, transport_id: 3, route_id: 1, start_time: '07:30', end_time: '23:00', frequency: 10, days_of_operation: 'All Days', status: 'inactive' }
-        ];
+        async function loadSchedules() {
+            try {
+                // NOTE: This uses the /api/transportSchedules endpoint we fixed in server.js
+                const response = await fetch(`${API_BASE_URL}/transportSchedules`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} while fetching schedules`);
+                }
+                
+                const schedules = await response.json();
+                renderSchedules(schedules); // This function is now defined below
+            } catch (error) {
+                console.error('Error loading schedules:', error);
+                if (error.message.includes('HTTP error!')) {
+                    alert(`An error occurred while loading schedules: ${error.message}. Please check the server.`);
+                } else if (error instanceof TypeError) { // e.g., network error or CORS
+                    alert('A network error occurred while loading schedules. Please check your internet connection and try again.');
+                } else {
+                    alert('An unexpected error occurred while loading schedules. Please try again later.');
+                }
+            }
+        }
 
+        // --- NEW FUNCTION ADDED ---
         function renderSchedules(schedules) {
             const tableBody = document.getElementById('schedulesTableBody');
-            tableBody.innerHTML = '';
+            tableBody.innerHTML = ''; // Clear existing rows
             if (!schedules || schedules.length === 0) {
                 tableBody.innerHTML = '<tr><td colspan="9" class="text-center">No schedules found.</td></tr>';
                 return;
             }
+            
             schedules.forEach(schedule => {
                 const row = `
                     <tr>
@@ -292,7 +312,11 @@
                         <td>${schedule.end_time}</td>
                         <td>${schedule.frequency}</td>
                         <td>${schedule.days_of_operation}</td>
-                        <td><span class="badge bg-${schedule.status === 'active' ? 'success' : 'secondary'}">${schedule.status}</span></td>
+                        <td>
+                            <span class="badge ${schedule.status === 'active' ? 'bg-success' : 'bg-secondary'}">
+                                ${schedule.status}
+                            </span>
+                        </td>
                         <td>
                             <button class="btn btn-sm btn-warning" onclick="editSchedule(${schedule.schedule_id})"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-sm btn-danger" onclick="deleteSchedule(${schedule.schedule_id})"><i class="fas fa-trash"></i></button>
@@ -302,22 +326,7 @@
                 tableBody.innerHTML += row;
             });
         }
-
-        async function loadSchedules() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/transportSchedules`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!response.ok) throw new Error('Failed to fetch schedules');
-                
-                const schedules = await response.json();
-                renderSchedules(schedules);
-            } catch (error) {
-                console.error('Error loading schedules:', error);
-                console.log('Loading mock data for schedules.');
-                renderSchedules(mockSchedules);
-            }
-        }
+        // --- END OF NEW FUNCTION ---
 
         document.getElementById('scheduleForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -331,14 +340,6 @@
                 days_of_operation: document.getElementById('daysOfOperation').value,
                 status: document.getElementById('status').value,
             };
-
-            // The schedule_id in the database is not auto-incrementing, so we need to generate one for new schedules.
-            if (!scheduleId) {
-                scheduleData.schedule_id = Date.now(); // Using timestamp as a simple unique ID
-            } else {
-                scheduleData.schedule_id = scheduleId;
-            }
-
 
             const url = scheduleId 
                 ? `${API_BASE_URL}/transportSchedules/${scheduleId}` 
@@ -357,15 +358,24 @@
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to save schedule');
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Failed to save schedule'}`);
                 }
                 
-                bootstrap.Modal.getInstance(document.getElementById('scheduleModal')).hide();
+                const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleModal'));
+                if (modal) {
+                    modal.hide();
+                }
                 loadSchedules();
                 document.getElementById('scheduleForm').reset();
             } catch (error) {
                 console.error('Error saving schedule:', error);
-                alert(`Error: ${error.message}`);
+                if (error.message.includes('HTTP error!')) {
+                    alert(`An error occurred while saving schedule: ${error.message}. Please check the server.`);
+                } else if (error instanceof TypeError) { // e.g., network error or CORS
+                    alert('A network error occurred while saving schedule. Please check your internet connection and try again.');
+                } else {
+                    alert('An unexpected error occurred while saving schedule. Please try again later.');
+                }
             }
         });
 
@@ -379,7 +389,8 @@
             document.getElementById('daysOfOperation').value = schedule.days_of_operation;
             document.getElementById('status').value = schedule.status;
 
-            new bootstrap.Modal(document.getElementById('scheduleModal')).show();
+            const modal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+            modal.show();
         }
 
         async function editSchedule(scheduleId) {
@@ -387,18 +398,20 @@
                 const response = await fetch(`${API_BASE_URL}/transportSchedules/${scheduleId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!response.ok) throw new Error('Failed to fetch schedule details');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} while fetching schedule details`);
+                }
 
                 const schedule = await response.json();
                 populateAndShowModal(schedule);
             } catch (error) {
                 console.error('Error fetching schedule for edit:', error);
-                console.log('Loading mock data for schedule edit.');
-                const schedule = mockSchedules.find(s => s.schedule_id === scheduleId);
-                if (schedule) {
-                    populateAndShowModal(schedule);
+                if (error.message.includes('HTTP error!')) {
+                    alert(`An error occurred while fetching schedule details: ${error.message}. Please check the server.`);
+                } else if (error instanceof TypeError) { // e.g., network error or CORS
+                    alert('A network error occurred while fetching schedule details. Please check your internet connection and try again.');
                 } else {
-                    alert('Could not find schedule details for editing.');
+                    alert('An unexpected error occurred while fetching schedule details. Please try again later.');
                 }
             }
         }
@@ -413,13 +426,19 @@
                 });
 
                 if (!response.ok) {
-                     const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to delete schedule');
+                    const errorData = await response.json();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Failed to delete schedule'}`);
                 }
                 loadSchedules();
             } catch (error) {
                 console.error('Error deleting schedule:', error);
-                alert(`Error: ${error.message}`);
+                if (error.message.includes('HTTP error!')) {
+                    alert(`An error occurred while deleting schedule: ${error.message}. Please check the server.`);
+                } else if (error instanceof TypeError) { // e.g., network error or CORS
+                    alert('A network error occurred while deleting schedule. Please check your internet connection and try again.');
+                } else {
+                    alert('An unexpected error occurred while deleting schedule. Please try again later.');
+                }
             }
         }
         

@@ -25,9 +25,9 @@ router.get('/:route_id', async (req, res) => {
 
 // Create route
 router.post('/', async (req, res) => {
-  const { route_id, start_point, end_point, distance, mode } = req.body;
+  const { start_point, end_point, distance_km } = req.body;
   try {
-    await db.query('INSERT INTO Route (route_id, start_point, end_point, distance, mode) VALUES (?, ?, ?, ?, ?)', [route_id, start_point, end_point, distance, mode]);
+    await db.query('INSERT INTO Route (start_point, end_point, distance_km) VALUES (?, ?, ?)', [start_point, end_point, distance_km]);
     res.json({ message: 'Route created' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -36,9 +36,9 @@ router.post('/', async (req, res) => {
 
 // Update route
 router.put('/:route_id', async (req, res) => {
-  const { start_point, end_point, distance, mode } = req.body;
+  const { start_point, end_point, distance_km } = req.body;
   try {
-    await db.query('UPDATE Route SET start_point = ?, end_point = ?, distance = ?, mode = ? WHERE route_id = ?', [start_point, end_point, distance, mode, req.params.route_id]);
+    await db.query('UPDATE Route SET start_point = ?, end_point = ?, distance_km = ? WHERE route_id = ?', [start_point, end_point, distance_km, req.params.route_id]);
     res.json({ message: 'Route updated' });
   } catch (err) {
     res.status(500).json({ error: err.message });

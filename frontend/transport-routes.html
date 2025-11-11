@@ -179,7 +179,7 @@
                                 <th>Route ID</th>
                                 <th>Start Point</th>
                                 <th>End Point</th>
-                                <th>Distance</th>
+                                <th>Distance (km)</th>
                                 <th>Mode</th>
                                 <th>Actions</th>
                             </tr>
@@ -251,15 +251,6 @@
             loadRoutes();
         });
 
-        const mockRoutes = [
-            { route_id: 1, start_point: 'Downtown', end_point: 'Uptown', distance: 10.5, mode: 'Bus' },
-            { route_id: 2, start_point: 'East Side', end_point: 'West Side', distance: 25.0, mode: 'Train' },
-            { route_id: 3, start_point: 'Central Park', end_point: 'Museum District', distance: 5.2, mode: 'Tram' },
-            { route_id: 4, start_point: 'Northwood', end_point: 'Southport', distance: 15.0, mode: 'Bus' },
-            { route_id: 5, start_point: 'Riverside', end_point: 'Mountain View', distance: 30.0, mode: 'Train' },
-            { route_id: 6, start_point: 'City Center', end_point: 'Airport', distance: 8.7, mode: 'Bus' }
-        ];
-
         function renderRoutes(routes) {
             const tableBody = document.getElementById('routesTableBody');
             tableBody.innerHTML = '';
@@ -268,13 +259,15 @@
                 return;
             }
             routes.forEach(route => {
+                // Note: Your 'routes.js' backend and 'Route' table do not include a 'mode' column.
+                // It is in your 'transport' table. This 'mode' column here will likely be empty.
                 const row = `
                     <tr>
                         <td>${route.route_id}</td>
                         <td>${route.start_point}</td>
                         <td>${route.end_point}</td>
-                        <td>${route.distance || 'N/A'}</td>
-                        <td>${route.mode || 'N/A'}</td>
+                        <td>${route.distance_km || 'N/A'}</td>
+                        <td>${route.mode || 'N/A'}</td> 
                         <td>
                             <button class="btn btn-sm btn-warning" onclick="editRoute(${route.route_id})"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-sm btn-danger" onclick="deleteRoute(${route.route_id})"><i class="fas fa-trash"></i></button>
@@ -285,20 +278,36 @@
             });
         }
 
+        // --- THIS IS THE NEW IMPLEMENTATION ---
         async function loadRoutes() {
-            // Directly load mock data for frontend development
-            console.log('Loading mock data for routes.');
-            renderRoutes(mockRoutes);
+            try {
+                const response = await fetch(`${API_BASE_URL}/routes`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} while fetching routes`);
+                }
+                const routes = await response.json();
+                renderRoutes(routes);
+            } catch (error) {
+                console.error('Error loading routes:', error);
+                // Use a non-blocking notification if possible, but alert is simple
+                alert(`An error occurred while loading routes: ${error.message}. Please check the server.`);
+            }
         }
 
         document.getElementById('routeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const routeId = document.getElementById('routeId').value;
+            
+            // Your 'routes.js' backend only accepts start_point, end_point, and distance_km
             const routeData = {
                 start_point: document.getElementById('startPoint').value,
                 end_point: document.getElementById('endPoint').value,
-                distance: document.getElementById('distance').value,
-                mode: document.getElementById('mode').value,
+                distance_km: document.getElementById('distance').value,
+                // 'mode' is in your form but not in your 'routes.js' backend create/update logic.
+                // The backend will ignore this field, which is fine.
+                // mode: document.getElementById('mode').value 
             };
 
             const url = routeId 
@@ -307,8 +316,6 @@
             const method = routeId ? 'PUT' : 'POST';
 
             try {
-                // NOTE: This frontend assumes the backend route for /api/routes is implemented.
-                // If not, this will fail.
                 const response = await fetch(url, {
                     method: method,
                     headers: {
@@ -320,48 +327,49 @@
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to save route');
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Failed to save route'}`);
                 }
                 
-                bootstrap.Modal.getInstance(document.getElementById('routeModal')).hide();
+                // Hide modal and reload data
+                const modal = bootstrap.Modal.getInstance(document.getElementById('routeModal'));
+                if (modal) {
+                    modal.hide();
+                }
                 loadRoutes();
-                document.getElementById('routeForm').reset();
             } catch (error) {
                 console.error('Error saving route:', error);
-                alert(`Error: ${error.message}. Ensure backend /api/routes is implemented.`);
+                alert(`An error occurred while saving route: ${error.message}.`);
             }
         });
-
+        
         function populateAndShowModal(route) {
             document.getElementById('routeId').value = route.route_id;
             document.getElementById('startPoint').value = route.start_point;
             document.getElementById('endPoint').value = route.end_point;
-            document.getElementById('distance').value = route.distance;
-            document.getElementById('mode').value = route.mode;
+            document.getElementById('distance').value = route.distance_km; // Field from DB is distance_km
+            
+            // 'mode' isn't in the 'Route' table, so it will be blank
+            // This is correct based on your DB schema.
+            document.getElementById('mode').value = route.mode || ''; 
 
-            new bootstrap.Modal(document.getElementById('routeModal')).show();
+            const modal = new bootstrap.Modal(document.getElementById('routeModal'));
+            modal.show();
         }
 
         async function editRoute(routeId) {
             try {
-                // NOTE: This frontend assumes the backend route for /api/routes is implemented.
-                // If not, this will fail.
                 const response = await fetch(`${API_BASE_URL}/routes/${routeId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!response.ok) throw new Error('Failed to fetch route details');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} while fetching route details`);
+                }
 
                 const route = await response.json();
                 populateAndShowModal(route);
             } catch (error) {
                 console.error('Error fetching route for edit:', error);
-                console.log('Loading mock data for route edit.');
-                const route = mockRoutes.find(r => r.route_id === routeId);
-                if (route) {
-                    populateAndShowModal(route);
-                } else {
-                    alert('Could not find route details for editing.');
-                }
+                alert(`An error occurred while fetching route details: ${error.message}.`);
             }
         }
 
@@ -369,23 +377,21 @@
             if (!confirm('Are you sure you want to delete this route?')) return;
 
             try {
-                // NOTE: This frontend assumes the backend route for /api/routes is implemented.
-                // If not, this will fail.
                 const response = await fetch(`${API_BASE_URL}/routes/${routeId}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 if (!response.ok) {
-                     const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to delete route');
+                    const errorData = await response.json();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Failed to delete route'}`);
                 }
-                loadRoutes();
+                loadRoutes(); // Refresh the list after successful deletion
             } catch (error) {
                 console.error('Error deleting route:', error);
-                alert(`Error: ${error.message}. Ensure backend /api/routes is implemented.`);
+                alert(`An error occurred while deleting route: ${error.message}.`);
             }
-        }
+        }        
         
         // Reset modal on hide
         document.getElementById('routeModal').addEventListener('hidden.bs.modal', () => {
