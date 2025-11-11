@@ -7,7 +7,7 @@ const bodyParser = require("body-parser");
 
 
 const app = express();
-const PORT = 5501; // Changed port to 5501 to match frontend expectation
+const PORT = 5000; // Changed port to 5000 to match frontend expectation
 
 // Serve static files from the 'frontend' directory
 app.use(express.static('frontend'));
