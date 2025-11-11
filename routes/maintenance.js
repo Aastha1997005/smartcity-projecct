@@ -24,16 +24,8 @@ router.post('/tasks', authenticateToken, async (req, res) => {
 router.get('/tasks/:department', authenticateToken, async (req, res) => {
   const dept = req.params.department;
   try {
-    // Some deployments use `Maintenance_Task` (singular) while others use `Maintenance_Tasks`.
-    // Try the singular table first, then fall back to the plural name to avoid 500s.
-    let rows;
-    try {
-      [rows] = await db.query('SELECT * FROM Maintenance_Task WHERE department = ? ORDER BY created_at DESC', [dept]);
-    } catch (e) {
-      // fallback
-      [rows] = await db.query('SELECT * FROM Maintenance_Tasks WHERE department = ? ORDER BY created_at DESC', [dept]);
-    }
-    res.json(rows || []);
+    const [rows] = await db.query('SELECT * FROM Maintenance_Tasks WHERE department = ? ORDER BY created_at DESC', [dept]);
+    res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

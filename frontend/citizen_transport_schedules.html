@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Transport Schedules - SmartCity</title>
+    <title>Transport Schedule - SmartCity</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -13,13 +13,13 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <style>
-      /* same theme basics */
       :root {
         --primary-color: rgba(255, 255, 255, 0.6);
         --secondary-color: rgba(255, 255, 255, 0.6);
         --sidebar-width: 260px;
         --text-dark: #03045e;
       }
+
       body {
         font-family: "Montserrat", sans-serif;
         background: linear-gradient(
@@ -28,14 +28,16 @@
           ),
           url("https://i.ibb.co/S4yxVvP2/img-smartcity.jpg") center/cover fixed;
         color: var(--text-dark);
+        margin: 0;
       }
+
+      /* Sidebar Styling (Copied from Dashboard) */
       .sidebar {
         position: fixed;
         top: 0;
         left: 0;
         height: 100vh;
         width: var(--sidebar-width);
-        
         background: linear-gradient(
           180deg,
           var(--primary-color),
@@ -44,77 +46,51 @@
         box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
         border-top-right-radius: 20px;
         border-bottom-right-radius: 20px;
-
         color: rgba(0, 3, 154, 0.866);
         overflow-y: auto;
-        transition: all 0.3s;
         z-index: 1000;
         transition: margin-left 0.4s ease-in-out;
       }
+
       .sidebar-header {
         padding: 20px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
-      /* // */
-      /* Enhanced Responsive Logo Styling */
+
       .logo-img {
-        width: 200px; /* Bigger default size */
-        max-width: 60%; /* Prevents overflow on smaller viewports */
+        width: 200px;
+        max-width: 60%;
         height: auto;
         margin-bottom: 30px;
         border-radius: 15px;
         object-fit: contain;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
         box-shadow: 0 8px 22px #03055e7a;
         background-color: #ffffffd0;
       }
 
-      /* Hover animation to match the elegant button style */
       .logo-img:hover {
         transform: scale(1.06);
         box-shadow: 0 10px 28px rgba(19, 63, 110, 0.568);
       }
 
-      /* Responsive adjustments for various screen sizes */
-      @media (max-width: 992px) {
-        .logo-img {
-          width: 170px;
-          margin-bottom: 25px;
-        }
-      }
-
-      @media (max-width: 768px) {
-        .logo-img {
-          width: 140px;
-          margin-bottom: 22px;
-        }
-      }
-
-      @media (max-width: 576px) {
-        .logo-img {
-          width: 110px;
-          margin-bottom: 18px;
-        }
-      }
-
-      /* // */
       .nav-link {
-        color: #03045E;
+        color: #03045e;
         padding: 12px 20px;
         border-radius: 10px;
         transition: all 0.3s;
         display: flex;
         align-items: center;
       }
+
       .nav-link:hover {
         background-color: #0076b680;
         transform: translateX(5px);
-
         color: rgb(0, 5, 137);
       }
-       .nav-link.active {
+
+      .nav-link.active {
         background-color: #03045e;
-        color: #CAF0F8;
+        color: #caf0f8;
         font-weight: 600;
       }
 
@@ -130,7 +106,6 @@
         min-height: 100vh;
       }
 
-      /* sidebar ends */
       .welcome-banner {
         background: linear-gradient(
           135deg,
@@ -141,6 +116,7 @@
         padding: 24px;
         box-shadow: 0 10px 25px #03055e76;
       }
+
       .card-glass {
         background: rgba(255, 255, 255, 0.6);
         border-radius: 18px;
@@ -148,6 +124,34 @@
         backdrop-filter: blur(10px);
         box-shadow: 0 4px 15px #03055e78;
       }
+
+      .filter-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      .badge-status {
+        padding: 6px 10px;
+        border-radius: 12px;
+        color: white;
+        font-size: 0.85rem;
+      }
+
+      .badge-on {
+        background-color: #198754;
+      }
+      .badge-delayed {
+        background-color: #dc3545;
+      }
+      .badge-maintenance {
+        background-color: #fd7e14;
+      }
+      .badge-crowded {
+        background-color: #0d6efd;
+      }
+
       @media (max-width: 768px) {
         .sidebar {
           margin-left: -260px;
@@ -162,241 +166,286 @@
     </style>
   </head>
   <body>
-    <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <h3>
-            <img src="assets/07.png" alt="Smart City Logo" class="logo-img" />
-            SmartCity
-        </h3>
-        <small>CITIZEN</small>
-    </div>
-    
-    <ul class="nav flex-column mt-3">
-        <li class="nav-item">
-            <a class="nav-link" href="dashboard.html">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-        </li>
+   <div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h3>
+      <img src="assets/07.png" alt="Smart City Logo" class="logo-img" />
+      SmartCity
+    </h3>
+    <small>CITIZEN</small>
+  </div>
 
-        <li class="nav-item">
-            <a class="nav-link" href="my_complaints.html">
-                <i class="fas fa-file-alt"></i> My Complaints
-            </a>
-        </li>
+  <ul class="nav flex-column mt-3">
+    <li class="nav-item">
+      <a class="nav-link" href="dashboard.html">
+        <i class="fas fa-home"></i> Dashboard
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="submit_complaint.html">
-                <i class="fas fa-plus-circle"></i> Submit Complaint
-            </a>
-        </li>
+    <li class="nav-item">
+      <a class="nav-link" href="my_complaints.html">
+        <i class="fas fa-file-alt"></i> My Complaints
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="my_vehicles.html">
-                <i class="fas fa-car"></i> My Vehicles
-            </a>
-        </li>
+    <li class="nav-item">
+      <a class="nav-link" href="submit_complaint.html">
+        <i class="fas fa-plus-circle"></i> Submit Complaint
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="my-properties.html">
-                <i class="fas fa-home"></i> My Properties
-            </a>
-        </li>
+    <li class="nav-item">
+      <a class="nav-link" href="my_vehicles.html">
+        <i class="fas fa-car"></i> My Vehicles
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link active" href="services.html">
-                <i class="fas fa-concierge-bell"></i> Services
-            </a>
-        </li>
+    <li class="nav-item">
+      <a class="nav-link" href="my-properties.html">
+        <i class="fas fa-home"></i> My Properties
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="announcements.html">
-                <i class="fas fa-bullhorn"></i> Announcements
-            </a>
-        </li>
+    <li class="nav-item">
+      <a class="nav-link active" href="services.html">
+        <i class="fas fa-concierge-bell"></i> Services
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="profile.html">
-                <i class="fas fa-user"></i> My Profile
-            </a>
-        </li>
+    <li class="nav-item">
+      <a class="nav-link" href="announcements.html">
+        <i class="fas fa-bullhorn"></i> Announcements
+      </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="#" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
-        </li>
-    </ul>
+    <li class="nav-item">
+      <a class="nav-link" href="profile.html">
+        <i class="fas fa-user"></i> My Profile
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a class="nav-link" href="#" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </li>
+  </ul>
 </div>
 
 
+    <!-- Main Content -->
     <div class="main-content">
       <div
         class="welcome-banner d-flex justify-content-between align-items-center flex-wrap mb-3"
       >
         <div>
           <h1 class="mb-1">Public Transport</h1>
-          <p class="opacity-75 mb-0">Find routes, stops and arrival times.</p>
+          <p class="opacity-75 mb-0">
+            Filter, search, and explore Indore’s transport schedules.
+          </p>
         </div>
         <button class="btn btn-light mt-3 mt-md-0" onclick="toggleSidebar()">
           <i class="fas fa-bars me-2"></i>Menu
         </button>
       </div>
 
-      <div class="row g-3">
-        <div class="col-lg-4">
-          <div class="card-glass h-100">
-            <h5 class="mb-2">
-              <i class="fa-solid fa-route me-2 text-success"></i>Choose Route
-            </h5>
-            <select id="routeSel" class="form-select mb-2"></select>
-            <label class="form-label">Direction</label>
-            <select id="dirSel" class="form-select mb-3">
-              <option value="Outbound">Outbound</option>
-              <option value="Inbound">Inbound</option>
-            </select>
-            <h6 class="mb-2">Stops</h6>
-            <ul
-              class="list-group small"
-              id="stopsList"
-              style="max-height: 350px; overflow: auto"
-            ></ul>
-          </div>
+      <div class="card-glass">
+        <div class="filter-controls">
+          <input
+            type="text"
+            id="searchBox"
+            class="form-control"
+            placeholder="Search route, stop, or station..."
+            style="flex: 1"
+          />
+          <select id="modeFilter" class="form-select" style="width: 200px">
+            <option value="">All Modes</option>
+            <option value="Bus">Bus</option>
+            <option value="Metro">Metro</option>
+            <option value="Tram">Tram</option>
+            <option value="Electric Bus">Electric Bus</option>
+            <option value="Mini Bus">Mini Bus</option>
+          </select>
+          <button class="btn btn-outline-primary" onclick="sortByTime()">
+            <i class="fa-solid fa-clock"></i> Sort by Time
+          </button>
+          <button class="btn btn-outline-success" onclick="sortByStatus()">
+            <i class="fa-solid fa-signal"></i> Sort by Status
+          </button>
         </div>
 
-        <div class="col-lg-8">
-          <div class="card-glass mb-3">
-            <h5 class="mb-2">
-              <i class="fa-regular fa-clock me-2 text-success"></i>Next Arrivals
-            </h5>
-            <div id="arrivals" class="row g-2"></div>
-          </div>
-          <div class="card-glass">
-            <h5 class="mb-2">
-              <i class="fa-solid fa-table me-2 text-success"></i>Schedule
-              (Today)
-            </h5>
-            <div class="table-responsive">
-              <table class="table table-hover align-middle">
-                <thead>
-                  <tr>
-                    <th>Time</th>
-                    <th>From</th>
-                    <th>To</th>
-                    <th>ETA</th>
-                  </tr>
-                </thead>
-                <tbody id="schedBody"></tbody>
-              </table>
-            </div>
-          </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Mode</th>
+                <th>Route</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Frequency</th>
+                <th>Days</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleBody"></tbody>
+          </table>
         </div>
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       function toggleSidebar() {
         document.getElementById("sidebar").classList.toggle("show");
       }
 
-      const ROUTES = [
+      function logout() {
+        if (confirm("Are you sure you want to logout?")) {
+          localStorage.clear();
+          window.location.href = "login.html";
+        }
+      }
+
+      const schedules = [
         {
-          id: "R1",
-          name: "R1 - Central Loop",
-          stops: [
-            "Central Station",
-            "City Mall",
-            "River Park",
-            "Tech Park",
-            "Museum",
-          ],
+          id: 1,
+          mode: "Bus",
+          start_point: "Rajwada",
+          end_point: "Vijay Nagar",
+          start_time: "06:00",
+          end_time: "22:00",
+          frequency: "15 mins",
+          days: "Mon–Sun",
+          status: "On-time",
         },
         {
-          id: "R2",
-          name: "R2 - East Express",
-          stops: [
-            "Central Station",
-            "Old Town",
-            "Uni Gate",
-            "East Market",
-            "Airport",
-          ],
+          id: 2,
+          mode: "Metro",
+          start_point: "Palasia",
+          end_point: "MR 10",
+          start_time: "05:30",
+          end_time: "23:00",
+          frequency: "10 mins",
+          days: "Mon–Sun",
+          status: "On-time",
         },
         {
-          id: "R3",
-          name: "R3 - West Connector",
-          stops: [
-            "Tech Park",
-            "Court Rd",
-            "Sports Complex",
-            "West End",
-            "Harbor",
-          ],
+          id: 3,
+          mode: "Bus",
+          start_point: "Airport",
+          end_point: "Railway Station",
+          start_time: "06:30",
+          end_time: "21:30",
+          frequency: "20 mins",
+          days: "Mon–Sat",
+          status: "Delayed",
+        },
+        {
+          id: 4,
+          mode: "Tram",
+          start_point: "New Market",
+          end_point: "Tech Park",
+          start_time: "07:00",
+          end_time: "19:30",
+          frequency: "25 mins",
+          days: "Mon–Fri",
+          status: "Maintenance",
+        },
+        {
+          id: 5,
+          mode: "Electric Bus",
+          start_point: "AIIMS Indore",
+          end_point: "IIT Indore",
+          start_time: "07:30",
+          end_time: "21:00",
+          frequency: "30 mins",
+          days: "Mon–Sun",
+          status: "On-time",
+        },
+        {
+          id: 6,
+          mode: "Mini Bus",
+          start_point: "LIG Square",
+          end_point: "Bhawarkuan",
+          start_time: "08:00",
+          end_time: "20:30",
+          frequency: "12 mins",
+          days: "Mon–Sat",
+          status: "Crowded",
         },
       ];
 
-      function init() {
-        const sel = document.getElementById("routeSel");
-        ROUTES.forEach((r) => {
-          const o = document.createElement("option");
-          o.value = r.id;
-          o.textContent = r.name;
-          sel.appendChild(o);
+      let currentData = [...schedules];
+
+      function renderTable(data) {
+        const tbody = document.getElementById("scheduleBody");
+        tbody.innerHTML = "";
+        data.forEach((s) => {
+          const badgeClass =
+            s.status === "On-time"
+              ? "badge-on"
+              : s.status === "Delayed"
+              ? "badge-delayed"
+              : s.status === "Maintenance"
+              ? "badge-maintenance"
+              : "badge-crowded";
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${s.id}</td>
+            <td>${s.mode}</td>
+            <td>${s.start_point} → ${s.end_point}</td>
+            <td>${s.start_time}</td>
+            <td>${s.end_time}</td>
+            <td>${s.frequency}</td>
+            <td>${s.days}</td>
+            <td><span class="badge-status ${badgeClass}">${s.status}</span></td>
+          `;
+          tbody.appendChild(tr);
         });
-        sel.addEventListener("change", renderRoute);
-        document
-          .getElementById("dirSel")
-          .addEventListener("change", renderRoute);
-        renderRoute();
       }
 
-      function renderRoute() {
-        const id = document.getElementById("routeSel").value || ROUTES[0].id;
-        const dir = document.getElementById("dirSel").value;
-        const route = ROUTES.find((r) => r.id === id);
-        const list = document.getElementById("stopsList");
-        list.innerHTML = "";
-        route.stops.forEach((s, i) => {
-          const li = document.createElement("li");
-          li.className =
-            "list-group-item d-flex justify-content-between align-items-center";
-          li.innerHTML = `${
-            dir === "Outbound" ? s : route.stops[route.stops.length - 1 - i]
-          } <span class="badge bg-success rounded-pill">${5 + i * 3}m</span>`;
-          list.appendChild(li);
+      function applyFilters() {
+        const searchText = document
+          .getElementById("searchBox")
+          .value.toLowerCase();
+        const modeFilter = document.getElementById("modeFilter").value;
+
+        const filtered = schedules.filter((s) => {
+          const matchesSearch =
+            s.start_point.toLowerCase().includes(searchText) ||
+            s.end_point.toLowerCase().includes(searchText);
+          const matchesMode = modeFilter ? s.mode === modeFilter : true;
+          return matchesSearch && matchesMode;
         });
-        // arrivals mock
-        const arrDiv = document.getElementById("arrivals");
-        arrDiv.innerHTML = "";
-        [5, 9, 14].forEach((m, idx) => {
-          const col = document.createElement("div");
-          col.className = "col-12 col-md-4";
-          col.innerHTML = `<div class="p-3 border rounded-3"><div class="fw-bold">${route.name}</div><div class="small text-muted">${dir}</div><div class="display-6">${m}<span class="fs-6"> min</span></div></div>`;
-          arrDiv.appendChild(col);
-        });
-        // schedule mock
-        const body = document.getElementById("schedBody");
-        body.innerHTML = "";
-        const times = [
-          "08:00",
-          "08:20",
-          "08:40",
-          "09:00",
-          "09:20",
-          "09:40",
-          "10:00",
-        ];
-        times.forEach((t) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${t}</td><td>${
-            route.stops[0]
-          }</td><td>${route.stops.at(-1)}</td><td>${
-            Math.floor(Math.random() * 10) + 2
-          } min</td>`;
-          body.appendChild(tr);
-        });
+
+        currentData = filtered;
+        renderTable(filtered);
       }
-      init();
+
+      function sortByTime() {
+        currentData.sort(
+          (a, b) => a.start_time.localeCompare(b.start_time)
+        );
+        renderTable(currentData);
+      }
+
+      function sortByStatus() {
+        const order = ["On-time", "Crowded", "Delayed", "Maintenance"];
+        currentData.sort(
+          (a, b) => order.indexOf(a.status) - order.indexOf(b.status)
+        );
+        renderTable(currentData);
+      }
+
+      document
+        .getElementById("searchBox")
+        .addEventListener("input", applyFilters);
+      document
+        .getElementById("modeFilter")
+        .addEventListener("change", applyFilters);
+
+      renderTable(schedules);
     </script>
   </body>
 </html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transport Routes - Smart City</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --primary-color: rgba(255, 255, 255, 0.6); /* Deep clean blue */
+            --secondary-color: rgba(255, 255, 255, 0.6); /* Accent blue */
+            --sidebar-width: 260px;
+            --bg-light: #f5f8ff;
+            --text-dark: #03045E;
+        }
+
+        body {
+            font-family: "Montserrat", sans-serif;
+            background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)),
+                        url('https://i.ibb.co/S4yxVvP2/img-smartcity.jpg') center center / cover no-repeat fixed;
+            background-color: rgba(237, 236, 236, 0.94);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+            border-top-right-radius: 20px;
+            border-bottom-right-radius: 20px;
+            color: rgba(0, 3, 154, 0.866);
+            overflow-y: auto;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .logo-img {
+            width: 150px;
+            margin-bottom: 15px;
+        }
+
+        .nav-link {
+            color: #03045E !important;
+            padding: 12px 20px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-link:hover {
+            background-color: #03045e !important;
+            transform: translateX(5px);
+            color: #CAF0F8 !important;
+        }
+
+        .nav-link.active {
+            background-color: #03045e;
+            color: #CAF0F8 !important;
+            font-weight: 600;
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px #03055e67;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 4px 15px #03055e67;
+            color: #03045E;
+        }
+
+        .btn-custom {
+            background-color: #FFF;
+            color: #03045e;
+            border: 1px solid #03045e;
+            font-weight: 600;
+        }
+
+        .btn-custom:hover {
+            background-color: #03045e;
+            border-color: #03045e;
+            color: #CAF0F8;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                margin-left: calc(-1 * var(--sidebar-width));
+            }
+            .sidebar.show {
+                margin-left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="assets/07.png" alt="Smart City Logo" class="logo-img">
+            <h3>Transport</h3>
+            <small id="userRole">TRANSPORT DASHBOARD</small>
+        </div>
+
+        <ul class="nav flex-column mt-3">
+            <li class="nav-item">
+                <a class="nav-link" href="transport-main-dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="transport-dashboard.html"><i class="fas fa-bus"></i> Schedules</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="transport-routes.html"><i class="fas fa-route"></i> Routes</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="top-bar">
+            <h1 class="h4">Route Management</h1>
+            <button class="btn btn-light d-md-none" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <button class="btn btn-custom mb-3" data-bs-toggle="modal" data-bs-target="#routeModal">
+                    <i class="fas fa-plus"></i> Add New Route
+                </button>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Route ID</th>
+                                <th>Start Point</th>
+                                <th>End Point</th>
+                                <th>Distance</th>
+                                <th>Mode</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="routesTableBody">
+                            <!-- Rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Route Modal -->
+    <div class="modal fade" id="routeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="routeModalLabel">Add/Edit Route</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="routeForm">
+                        <input type="hidden" id="routeId">
+                        <div class="mb-3">
+                            <label for="startPoint" class="form-label">Start Point</label>
+                            <input type="text" class="form-control" id="startPoint" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="endPoint" class="form-label">End Point</label>
+                            <input type="text" class="form-control" id="endPoint" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="distance" class="form-label">Distance (km)</label>
+                            <input type="number" step="0.01" class="form-control" id="distance">
+                        </div>
+                        <div class="mb-3">
+                            <label for="mode" class="form-label">Mode</label>
+                            <input type="text" class="form-control" id="mode" placeholder="e.g., Bus, Train">
+                        </div>
+                        <button type="submit" class="btn btn-custom">Save Route</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        const token = localStorage.getItem('token');
+
+        function logout() {
+            if (confirm("Are you sure you want to logout?")) {
+                localStorage.clear();
+                window.location.href = "login.html";
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById("sidebar").classList.toggle("show");
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            loadRoutes();
+        });
+
+        const mockRoutes = [
+            { route_id: 1, start_point: 'Downtown', end_point: 'Uptown', distance: 10.5, mode: 'Bus' },
+            { route_id: 2, start_point: 'East Side', end_point: 'West Side', distance: 25.0, mode: 'Train' },
+            { route_id: 3, start_point: 'Central Park', end_point: 'Museum District', distance: 5.2, mode: 'Tram' },
+            { route_id: 4, start_point: 'Northwood', end_point: 'Southport', distance: 15.0, mode: 'Bus' },
+            { route_id: 5, start_point: 'Riverside', end_point: 'Mountain View', distance: 30.0, mode: 'Train' },
+            { route_id: 6, start_point: 'City Center', end_point: 'Airport', distance: 8.7, mode: 'Bus' }
+        ];
+
+        function renderRoutes(routes) {
+            const tableBody = document.getElementById('routesTableBody');
+            tableBody.innerHTML = '';
+            if (!routes || routes.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No routes found.</td></tr>';
+                return;
+            }
+            routes.forEach(route => {
+                const row = `
+                    <tr>
+                        <td>${route.route_id}</td>
+                        <td>${route.start_point}</td>
+                        <td>${route.end_point}</td>
+                        <td>${route.distance || 'N/A'}</td>
+                        <td>${route.mode || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editRoute(${route.route_id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteRoute(${route.route_id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        async function loadRoutes() {
+            // Directly load mock data for frontend development
+            console.log('Loading mock data for routes.');
+            renderRoutes(mockRoutes);
+        }
+
+        document.getElementById('routeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const routeId = document.getElementById('routeId').value;
+            const routeData = {
+                start_point: document.getElementById('startPoint').value,
+                end_point: document.getElementById('endPoint').value,
+                distance: document.getElementById('distance').value,
+                mode: document.getElementById('mode').value,
+            };
+
+            const url = routeId 
+                ? `${API_BASE_URL}/routes/${routeId}` 
+                : `${API_BASE_URL}/routes`;
+            const method = routeId ? 'PUT' : 'POST';
+
+            try {
+                // NOTE: This frontend assumes the backend route for /api/routes is implemented.
+                // If not, this will fail.
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(routeData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to save route');
+                }
+                
+                bootstrap.Modal.getInstance(document.getElementById('routeModal')).hide();
+                loadRoutes();
+                document.getElementById('routeForm').reset();
+            } catch (error) {
+                console.error('Error saving route:', error);
+                alert(`Error: ${error.message}. Ensure backend /api/routes is implemented.`);
+            }
+        });
+
+        function populateAndShowModal(route) {
+            document.getElementById('routeId').value = route.route_id;
+            document.getElementById('startPoint').value = route.start_point;
+            document.getElementById('endPoint').value = route.end_point;
+            document.getElementById('distance').value = route.distance;
+            document.getElementById('mode').value = route.mode;
+
+            new bootstrap.Modal(document.getElementById('routeModal')).show();
+        }
+
+        async function editRoute(routeId) {
+            try {
+                // NOTE: This frontend assumes the backend route for /api/routes is implemented.
+                // If not, this will fail.
+                const response = await fetch(`${API_BASE_URL}/routes/${routeId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to fetch route details');
+
+                const route = await response.json();
+                populateAndShowModal(route);
+            } catch (error) {
+                console.error('Error fetching route for edit:', error);
+                console.log('Loading mock data for route edit.');
+                const route = mockRoutes.find(r => r.route_id === routeId);
+                if (route) {
+                    populateAndShowModal(route);
+                } else {
+                    alert('Could not find route details for editing.');
+                }
+            }
+        }
+
+        async function deleteRoute(routeId) {
+            if (!confirm('Are you sure you want to delete this route?')) return;
+
+            try {
+                // NOTE: This frontend assumes the backend route for /api/routes is implemented.
+                // If not, this will fail.
+                const response = await fetch(`${API_BASE_URL}/routes/${routeId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                     const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to delete route');
+                }
+                loadRoutes();
+            } catch (error) {
+                console.error('Error deleting route:', error);
+                alert(`Error: ${error.message}. Ensure backend /api/routes is implemented.`);
+            }
+        }
+        
+        // Reset modal on hide
+        document.getElementById('routeModal').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('routeForm').reset();
+            document.getElementById('routeId').value = '';
+        });
+    </script>
+</body>
+</html>

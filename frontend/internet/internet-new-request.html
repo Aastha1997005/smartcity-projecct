@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Request New Internet Connection - SmartCity</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <style>
+    body {
+      font-family: "Montserrat", sans-serif;
+      background: 
+        linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)),
+        url('https://i.ibb.co/S4yxVvP2/img-smartcity.jpg') center center/cover no-repeat fixed;
+      background-color: rgba(237,236,236,0.94);
+      color: #03045E;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .request-card {
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: 0 10px 25px #03055e70;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .request-card h3 {
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .form-control {
+      border-radius: 10px;
+      padding: 12px;
+      border: 1.5px solid #cfd8dc;
+      font-size: 0.95rem;
+    }
+
+    .form-control:focus {
+      border-color: #03045E;
+      box-shadow: 0 0 0 0.2rem rgba(3,4,94,0.25);
+    }
+
+    .btn-primary {
+      background-color: #03045E;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+
+    .btn-primary:hover {
+      background: #0076b6;
+      transform: translateY(-2px);
+    }
+
+    .alert {
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+
+    a {
+      color: #03045E;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+    /* Sidebar */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+        background: linear-gradient(
+          180deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+        color: rgba(0, 3, 154, 0.866);
+        overflow-y: auto;
+        transition: margin-left 0.4s ease-in-out;
+        z-index: 1000;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .logo-img {
+        width: 200px;
+        max-width: 60%;
+        height: auto;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        object-fit: contain;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 8px 22px #03055e7a;
+        background-color: #ffffffd0;
+      }
+
+      .logo-img:hover {
+        transform: scale(1.06);
+        box-shadow: 0 10px 28px rgba(19, 63, 110, 0.568);
+      }
+
+      .nav-link {
+        color: #03045e;
+        padding: 12px 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s;
+      }
+
+      .nav-link:hover {
+        background-color: #0076b680;
+        transform: translateX(5px);
+        color: rgb(0, 5, 137);
+      }
+
+      .nav-link.active {
+        background-color: #03045e;
+        color: #caf0f8;
+        font-weight: 600;
+      }
+
+      .nav-link i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+      }
+
+  </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <img src="../assets/07.png" alt="SmartCity" class="logo-img" />
+        <h4>SmartCity</h4>
+        <small id="deptRole">INTERNET DEPT</small>
+      </div>
+
+      <ul class="nav flex-column mt-3 mb-4">
+        <li class="nav-item">
+          <a class="nav-link active" href="internet-dashboard.html">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="internet-manage.html">
+            <i class="fas fa-server"></i> Manage ISPs
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="internet-connections.html">
+            <i class="fas fa-signal"></i> Connections
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="internet-new-request.html">
+            <i class="fas fa-paper-plane"></i> New Requests
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="internet-reports.html">
+            <i class="fas fa-chart-line"></i> Reports
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="internet-issues.html">
+            <i class="fas fa-exclamation-circle"></i> Complaints
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="internet-compare.html">
+            <i class="fas fa-chart-bar"></i> Compare Plans
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="../login.html" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+  <div class="request-card">
+    <h3><i class="fas fa-wifi me-2 text-info"></i>Request New Internet Connection</h3>
+    <p class="text-muted mb-4">Fill the form below to request a new connection from available service providers.</p>
+
+    <div id="alertBox" style="display:none;"></div>
+
+    <form id="requestForm">
+      <div class="mb-3">
+        <label class="form-label"><i class="fas fa-id-card me-2"></i>Citizen ID</label>
+        <input type="text" id="citizen_id" class="form-control" placeholder="Enter your citizen ID" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label"><i class="fas fa-home me-2"></i>Installation Address</label>
+        <input type="text" id="installation_address" class="form-control" placeholder="House No., Street, City" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label"><i class="fas fa-signal me-2"></i>Preferred Plan</label>
+        <select id="preferred_plan" class="form-control" required>
+          <option value="">Select Plan</option>
+          <option value="standard">Standard (50 Mbps)</option>
+          <option value="premium">Premium (150 Mbps)</option>
+          <option value="ultra">Ultra (300 Mbps)</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label"><i class="fas fa-phone me-2"></i>Contact Number</label>
+        <input type="text" id="contact_number" class="form-control" placeholder="Enter your phone number" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label"><i class="fas fa-network-wired me-2"></i>Internet Service ID</label>
+        <input type="number" id="internet_id" class="form-control" placeholder="Enter Internet Service ID" required />
+      </div>
+      <button type="submit" class="btn btn-primary w-100 mt-2">Submit Request</button>
+    </form>
+
+    <div class="text-center mt-3">
+      <a href="internet-department.html"><i class="fas fa-arrow-left me-2"></i>Back to Dashboard</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const API_BASE_URL = "http://localhost:5000/api/internet";
+    const alertBox = document.getElementById('alertBox');
+
+    function showAlert(type, msg){
+      alertBox.style.display = 'block';
+      alertBox.className = 'alert alert-' + type;
+      alertBox.textContent = msg;
+    }
+
+    document.getElementById('requestForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const internet_id = document.getElementById('internet_id').value.trim();
+      const citizen_id = document.getElementById('citizen_id').value.trim();
+      const installation_address = document.getElementById('installation_address').value.trim();
+      const preferred_plan = document.getElementById('preferred_plan').value;
+      const contact_number = document.getElementById('contact_number').value.trim();
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/${internet_id}/request-connection`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ citizen_id, installation_address, preferred_plan, contact_number })
+        });
+        const data = await res.json();
+        if(!res.ok){
+          showAlert('danger', data.error || 'Request failed.');
+          return;
+        }
+        showAlert('success', 'Connection request submitted successfully!');
+        document.getElementById('requestForm').reset();
+      } catch (err) {
+        showAlert('danger', 'Server error. Try again later.');
+      }
+    });
+  </script>
+</body>
+</html>

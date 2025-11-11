@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Internet Department - SmartCity</title>
+
+    <!-- External libs (allowed) -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      :root {
+        --primary-color: rgba(255, 255, 255, 0.6);
+        --secondary-color: rgba(255, 255, 255, 0.6);
+        --sidebar-width: 260px;
+        --text-dark: #03045e;
+        --bg-light: #f5f8ff;
+      }
+
+      /* Base */
+      body {
+        font-family: "Montserrat", sans-serif;
+        margin: 0;
+        padding: 0;
+        color: var(--text-dark);
+        background: linear-gradient(
+            rgba(255, 255, 255, 0.6),
+            rgba(255, 255, 255, 0.6)
+          ),
+          url("https://i.ibb.co/S4yxVvP2/img-smartcity.jpg") center center /
+            cover no-repeat fixed;
+        background-color: rgba(237, 236, 236, 0.94);
+      }
+
+      /* Sidebar */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+        background: linear-gradient(
+          180deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+        color: rgba(0, 3, 154, 0.866);
+        overflow-y: auto;
+        transition: margin-left 0.4s ease-in-out;
+        z-index: 1000;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .logo-img {
+        width: 200px;
+        max-width: 60%;
+        height: auto;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        object-fit: contain;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 8px 22px #03055e7a;
+        background-color: #ffffffd0;
+      }
+
+      .logo-img:hover {
+        transform: scale(1.06);
+        box-shadow: 0 10px 28px rgba(19, 63, 110, 0.568);
+      }
+
+      .nav-link {
+        color: #03045e;
+        padding: 12px 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s;
+      }
+
+      .nav-link:hover {
+        background-color: #0076b680;
+        transform: translateX(5px);
+        color: rgb(0, 5, 137);
+      }
+
+      .nav-link.active {
+        background-color: #03045e;
+        color: #caf0f8;
+        font-weight: 600;
+      }
+
+      .nav-link i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+      }
+
+      /* Main content */
+      .main-content {
+        margin-left: var(--sidebar-width);
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      .welcome-banner {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-radius: 15px;
+        padding: 28px;
+        margin-bottom: 26px;
+        box-shadow: 0 10px 25px #03055e76;
+        color: var(--text-dark);
+      }
+
+      .stats-card {
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: 0 4px 15px #03055e78;
+        transition: all 0.3s ease;
+        border-left: 4px solid;
+        backdrop-filter: blur(10px);
+        color: var(--text-dark);
+      }
+      .stats-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 8px 20px #03055e70;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 18px;
+        box-shadow: 0 4px 15px #03055e67;
+        border: none;
+        backdrop-filter: blur(10px);
+      }
+
+      .table-container {
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 15px;
+        padding: 18px;
+        box-shadow: 0 4px 15px #03055e67;
+        backdrop-filter: blur(10px);
+      }
+
+      table thead {
+        background-color: #03045e;
+        color: #fff;
+      }
+      .btn-primary,
+      .btn-light {
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 10px 18px;
+      }
+      .btn-primary {
+        background: var(--primary-color);
+        border: none;
+        color: var(--text-dark);
+      }
+      .toggle-btn {
+        background: #ffffffaa;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        padding: 8px 14px;
+        color: #03045e;
+        font-weight: 600;
+      }
+      .toggle-btn:hover {
+        background: #03045e;
+        color: #fff;
+      }
+
+      /* Utility icons */
+      .metric-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-right: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          margin-left: calc(-1 * var(--sidebar-width));
+        }
+        .sidebar.show {
+          margin-left: 0;
+        }
+        .main-content {
+          margin-left: 0;
+        }
+      }
+
+      /* small niceties */
+      .small-muted {
+        color: #6b7280;
+      }
+      .chip {
+        background: #ffffffb8;
+        padding: 6px 10px;
+        border-radius: 999px;
+        display: inline-block;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <img src="../assets/07.png" alt="SmartCity" class="logo-img" />
+        <h4>SmartCity</h4>
+        <small id="deptRole">INTERNET DEPT</small>
+      </div>
+
+      <ul class="nav flex-column mt-3 mb-4">
+        <li class="nav-item">
+          <a class="nav-link active" href="internet-dashboard.html">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="internet-manage.html">
+            <i class="fas fa-server"></i> Manage ISPs
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="internet-connections.html">
+            <i class="fas fa-signal"></i> Connections
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="internet-new-request.html">
+            <i class="fas fa-paper-plane"></i> New Requests
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="internet-reports.html">
+            <i class="fas fa-chart-line"></i> Reports
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="internet-issues.html">
+            <i class="fas fa-exclamation-circle"></i> Complaints
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="internet-compare.html">
+            <i class="fas fa-chart-bar"></i> Compare Plans
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="../login.html" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Main -->
+    <div class="main-content">
+      <div
+        class="d-flex justify-content-between align-items-center flex-wrap mb-3"
+      >
+        <div class="welcome-banner flex-grow-1 me-3">
+          <h2 class="mb-1">
+            <i class="fas fa-globe me-2 text-primary"></i> Internet Department
+            Dashboard
+          </h2>
+          <p class="opacity-75 mb-0">
+            Monitor providers, active connections, bandwidth and service
+            requests.
+          </p>
+        </div>
+        <button class="toggle-btn mt-3 mt-md-0" onclick="toggleSidebar()">
+          <i class="fas fa-bars me-2"></i> Menu
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="row g-4 mb-4" id="statsRow">
+        <div class="col-md-6 col-lg-3">
+          <div class="stats-card">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="small-muted mb-1">Total Providers</h6>
+                <h3 id="totalProviders">--</h3>
+              </div>
+              <div class="metric-icon bg-primary bg-opacity-10 text-primary">
+                <i class="fas fa-building"></i>
+              </div>
+            </div>
+            <small class="small-muted">Providers registered in system</small>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="stats-card">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="small-muted mb-1">Active Connections</h6>
+                <h3 id="activeConnections">--</h3>
+              </div>
+              <div class="metric-icon bg-success bg-opacity-10 text-success">
+                <i class="fas fa-user-check"></i>
+              </div>
+            </div>
+            <small class="small-muted">Currently in-progress connections</small>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="stats-card">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="small-muted mb-1">Avg Bandwidth</h6>
+                <h3 id="avgBandwidth">--</h3>
+              </div>
+              <div class="metric-icon bg-warning bg-opacity-10 text-warning">
+                <i class="fas fa-chart-area"></i>
+              </div>
+            </div>
+            <small class="small-muted"
+              >Average bandwidth across providers</small
+            >
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="stats-card">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="small-muted mb-1">Avg Monthly Cost</h6>
+                <h3 id="avgCost">--</h3>
+              </div>
+              <div
+                class="metric-icon bg-secondary bg-opacity-10 text-secondary"
+              >
+                <i class="fas fa-dollar-sign"></i>
+              </div>
+            </div>
+            <small class="small-muted">Average monthly charge</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top actions + search -->
+      <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+          <div class="card p-3">
+            <h6 class="mb-3">Quick Actions</h6>
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary" onclick="fetchServices()">
+                Refresh Services
+              </button>
+              <button class="btn btn-light" onclick="openCreateModal()">
+                Add Provider
+              </button>
+              <a
+                class="btn btn-light"
+                href="#compare-section"
+                onclick="loadPlanComparison()"
+                >Plan Comparison</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-8">
+          <div class="card p-3">
+            <h6 class="mb-3">Search Providers</h6>
+            <div class="row g-2 align-items-center">
+              <div class="col-md-4">
+                <input
+                  id="searchProvider"
+                  class="form-control"
+                  placeholder="Provider name"
+                />
+              </div>
+              <div class="col-md-3">
+                <input
+                  id="searchCoverage"
+                  class="form-control"
+                  placeholder="Coverage area"
+                />
+              </div>
+              <div class="col-md-2">
+                <input
+                  id="searchType"
+                  class="form-control"
+                  placeholder="Service type"
+                />
+              </div>
+              <div class="col-md-2">
+                <input
+                  id="searchMaxCost"
+                  class="form-control"
+                  placeholder="Max cost"
+                />
+              </div>
+              <div class="col-md-1 d-grid">
+                <button class="btn btn-primary" onclick="searchProviders()">
+                  Go
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Services table -->
+      <div class="table-container mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">
+            <i class="fas fa-server me-2 text-primary"></i> Internet Services
+          </h5>
+          <span class="chip" id="serviceCount">-- services</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle" id="servicesTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Provider</th>
+                <th>Bandwidth</th>
+                <th>Coverage</th>
+                <th>Type</th>
+                <th>Monthly Cost</th>
+                <th>Active Connections</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="servicesTbody">
+              <!-- populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Charts & comparison -->
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="card p-3">
+            <h6>Bandwidth Distribution</h6>
+            <canvas id="bandwidthChart" height="160"></canvas>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card p-3">
+            <h6>Active vs Total Connections</h6>
+            <canvas id="connectionsChart" height="160"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plan comparison section (collapsed initially) -->
+      <div
+        id="compare-section"
+        class="table-container mt-4"
+        style="display: none"
+      >
+        <h5 class="mb-3">
+          <i class="fas fa-list me-2 text-primary"></i> Plan Comparison
+        </h5>
+        <div id="compareList" class="row g-3"></div>
+      </div>
+    </div>
+
+    <!-- Provider details modal -->
+    <div class="modal fade" id="providerModal" tabindex="-1">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-server me-2"></i> Provider Details
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body" id="providerModalBody">
+            <div class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Provider modal (simple form) -->
+    <div class="modal fade" id="createModal" tabindex="-1">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Create Internet Provider</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="createForm">
+              <div class="mb-3">
+                <label class="form-label">Provider Name</label>
+                <input class="form-control" id="cp_provider_name" required />
+              </div>
+              <div class="row g-2">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Bandwidth (e.g. 100 Mbps)</label>
+                  <input class="form-control" id="cp_bandwidth" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Coverage Area</label>
+                  <input class="form-control" id="cp_coverage" required />
+                </div>
+              </div>
+              <div class="row g-2">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Monthly Cost</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="cp_cost"
+                    required
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Service Type</label>
+                  <input
+                    class="form-control"
+                    id="cp_type"
+                    placeholder="Fiber / DSL / Wireless"
+                  />
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label"
+                  >Contact Phones (comma separated)</label
+                >
+                <input
+                  class="form-control"
+                  id="cp_phones"
+                  placeholder="0123...,0456..."
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label"
+                  >Contact Emails (comma separated)</label
+                >
+                <input
+                  class="form-control"
+                  id="cp_emails"
+                  placeholder="support@isp.com"
+                />
+              </div>
+              <div class="d-flex justify-content-end gap-2">
+                <button
+                  type="button"
+                  class="btn btn-light"
+                  data-bs-dismiss="modal"
+                >
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">Create</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      // ---- Config ----
+      const API_BASE_URL = "http://localhost:5000/api/internet";
+      let token = localStorage.getItem("token") || "";
+
+      // If your system requires auth, redirect when not logged in (keeps same behavior as other pages)
+      if (!token) {
+        // keep comment if you want to force login redirect
+        // window.location.href = "login.html";
+      }
+
+      // Utility: toggle sidebar
+      function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("show");
+      }
+
+      function logout() {
+        if (confirm("Logout?")) {
+          localStorage.clear();
+          window.location.href = "../login.html";
+        }
+      }
+
+      // DOM refs
+      const tbody = document.getElementById("servicesTbody");
+      const serviceCountLabel = document.getElementById("serviceCount");
+
+      // Charts
+      let bandwidthChart = null;
+      let connectionsChart = null;
+
+      // ---- Fetch and render functions ----
+      async function fetchStats() {
+        try {
+          const res = await fetch(API_BASE_URL + "/statistics/overview", {
+            headers: token ? { Authorization: "Bearer " + token } : {},
+          });
+          if (!res.ok) throw new Error("Failed to load stats");
+          const stats = await res.json();
+
+          // derive global stats
+          const totalProviders = stats.length;
+          const totalConnections = stats.reduce(
+            (sum, s) => sum + (s.total_connections || 0),
+            0
+          );
+          const activeConnections = stats.reduce(
+            (sum, s) => sum + (s.active_connections || 0),
+            0
+          );
+          const avgBandwidthNum =
+            stats.reduce((sum, s) => {
+              // try to parse numeric from bandwidth string, e.g. "100 Mbps"
+              const p =
+                parseInt((s.bandwidth || "").toString().split(/\s/)[0]) || 0;
+              return sum + p;
+            }, 0) / Math.max(1, totalProviders);
+          const avgCost =
+            stats.reduce(
+              (sum, s) => sum + (parseFloat(s.avg_monthly_cost || 0) || 0),
+              0
+            ) / Math.max(1, totalProviders);
+
+          document.getElementById("totalProviders").textContent =
+            totalProviders;
+          document.getElementById("activeConnections").textContent =
+            activeConnections;
+          document.getElementById("avgBandwidth").textContent =
+            Math.round(avgBandwidthNum * 10) / 10 + " Mbps";
+          document.getElementById("avgCost").textContent =
+            "₹" + Math.round(avgCost * 100) / 100;
+
+          // Bandwidth chart data
+          const labels = stats.map(
+            (s) => s.provider_name || "ID " + s.internet_id
+          );
+          const bandwidthVals = stats.map((s) => {
+            const p =
+              parseInt((s.bandwidth || "").toString().split(/\s/)[0]) || 0;
+            return p;
+          });
+          const activeVals = stats.map((s) => s.active_connections || 0);
+          renderBandwidthChart(labels, bandwidthVals);
+          renderConnectionsChart(
+            activeVals,
+            stats.map((s) => s.total_connections || 0)
+          );
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function fetchServices() {
+        try {
+          const res = await fetch(API_BASE_URL, {
+            headers: token ? { Authorization: "Bearer " + token } : {},
+          });
+          if (!res.ok) throw new Error("Failed to fetch services");
+          const services = await res.json();
+          renderServicesTable(services);
+        } catch (err) {
+          console.error("Services load error", err);
+          tbody.innerHTML =
+            '<tr><td colspan="8" class="text-center text-danger">Failed to load services</td></tr>';
+          serviceCountLabel.textContent = "0 services";
+        }
+      }
+
+      function renderServicesTable(services) {
+        tbody.innerHTML = "";
+        if (!services || services.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="8" class="text-center small-muted">No services found</td></tr>';
+          serviceCountLabel.textContent = "0 services";
+          return;
+        }
+
+        services.forEach((s, idx) => {
+          const active = s.active_connections || 0;
+          const monthly =
+            s.cost_per_month !== undefined
+              ? "₹" + s.cost_per_month
+              : s.cost || "-";
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(s.provider_name || "-")}</td>
+          <td>${escapeHtml(s.bandwidth || "-")}</td>
+          <td>${escapeHtml(s.coverage_area || "-")}</td>
+          <td>${escapeHtml(s.service_type || "-")}</td>
+          <td>${monthly}</td>
+          <td>${active}</td>
+          <td>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-light" onclick="showProvider(${
+                s.internet_id
+              })"><i class="fas fa-eye"></i></button>
+              <button class="btn btn-sm btn-warning" onclick="openEdit(${
+                s.internet_id
+              })"><i class="fas fa-pen"></i></button>
+            </div>
+          </td>
+        `;
+          tbody.appendChild(tr);
+        });
+
+        serviceCountLabel.textContent = services.length + " services";
+      }
+
+      // provider detail modal
+      async function showProvider(id) {
+        const modalEl = document.getElementById("providerModal");
+        const modalBody = document.getElementById("providerModalBody");
+        modalBody.innerHTML = `<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+
+        try {
+          const res = await fetch(API_BASE_URL + "/" + id, {
+            headers: token ? { Authorization: "Bearer " + token } : {},
+          });
+          if (!res.ok) throw new Error("Failed to load provider");
+          const data = await res.json();
+
+          const internet = data.internet || data; // adapt if API returns object or root
+          const contacts = data.contacts || {};
+          const connections = data.connections || [];
+          const stats = data.statistics || {};
+
+          let html = `
+          <div class="row">
+            <div class="col-md-8">
+              <h5>${escapeHtml(internet.provider_name || "Provider")}</h5>
+              <p class="small-muted mb-1"><strong>Bandwidth:</strong> ${escapeHtml(
+                internet.bandwidth || "-"
+              )}</p>
+              <p class="small-muted mb-1"><strong>Coverage:</strong> ${escapeHtml(
+                internet.coverage_area || "-"
+              )}</p>
+              <p class="small-muted mb-1"><strong>Type:</strong> ${escapeHtml(
+                internet.service_type || "-"
+              )}</p>
+              <p class="small-muted mb-1"><strong>Monthly:</strong> ₹${
+                internet.cost_per_month || internet.cost || "-"
+              }</p>
+              <p class="small-muted mb-1"><strong>Unit:</strong> ${escapeHtml(
+                internet.unit || "-"
+              )}</p>
+            </div>
+            <div class="col-md-4">
+              <h6>Contacts</h6>
+              ${
+                contacts.phones && contacts.phones.length
+                  ? `<p>${contacts.phones
+                      .map((p) => `<div>${escapeHtml(p)}</div>`)
+                      .join("")}</p>`
+                  : '<p class="small-muted">No phones</p>'
+              }
+              ${
+                contacts.emails && contacts.emails.length
+                  ? `<p>${contacts.emails
+                      .map((e) => `<div>${escapeHtml(e)}</div>`)
+                      .join("")}</p>`
+                  : '<p class="small-muted">No emails</p>'
+              }
+            </div>
+          </div>
+          <hr/>
+          <h6>Recent Connections (${connections.length})</h6>
+          <div class="list-group mb-2">
+            ${
+              connections.length
+                ? connections
+                    .map(
+                      (c) =>
+                        `<div class="list-group-item"><strong>${escapeHtml(
+                          c.customer_name || "Customer"
+                        )}</strong> • ${escapeHtml(
+                          c.area || ""
+                        )} • <small class="text-muted">${new Date(
+                          c.booking_start
+                        ).toLocaleString()}</small> • <span class="badge bg-${
+                          c.status === "in_progress" ? "success" : "secondary"
+                        }">${escapeHtml(c.status)}</span></div>`
+                    )
+                    .join("")
+                : '<div class="small-muted p-2">No recent connections</div>'
+            }
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
+            <button class="btn btn-warning" onclick="prepareCreateBooking(${
+              internet.internet_id
+            })">Create Booking</button>
+          </div>
+        `;
+          modalBody.innerHTML = html;
+        } catch (err) {
+          modalBody.innerHTML = `<div class="text-danger">Failed to load details.</div>`;
+          console.error(err);
+        }
+      }
+
+      // Create provider interactions
+      function openCreateModal() {
+        const m = new bootstrap.Modal(document.getElementById("createModal"));
+        document.getElementById("createForm").reset();
+        m.show();
+      }
+
+      document
+        .getElementById("createForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const payload = {
+            provider_name: document
+              .getElementById("cp_provider_name")
+              .value.trim(),
+            bandwidth: document.getElementById("cp_bandwidth").value.trim(),
+            coverage_area: document.getElementById("cp_coverage").value.trim(),
+            cost_per_month:
+              parseFloat(document.getElementById("cp_cost").value) || 0,
+            service_type: document.getElementById("cp_type").value.trim(),
+            phones: document
+              .getElementById("cp_phones")
+              .value.split(",")
+              .map((s) => s.trim())
+              .filter(Boolean),
+            emails: document
+              .getElementById("cp_emails")
+              .value.split(",")
+              .map((s) => s.trim())
+              .filter(Boolean),
+            unit: "monthly",
+            issue_date: new Date().toISOString(),
+          };
+
+          try {
+            const res = await fetch(API_BASE_URL, {
+              method: "POST",
+              headers: Object.assign(
+                { "Content-Type": "application/json" },
+                token ? { Authorization: "Bearer " + token } : {}
+              ),
+              body: JSON.stringify(payload),
+            });
+            const j = await res.json();
+            if (!res.ok) throw new Error(j.error || "Create failed");
+            bootstrap.Modal.getInstance(
+              document.getElementById("createModal")
+            ).hide();
+            fetchServices();
+            fetchStats();
+            alert("Provider created");
+          } catch (err) {
+            console.error("Create error", err);
+            alert("Failed to create provider: " + err.message);
+          }
+        });
+
+      // Search
+      async function searchProviders() {
+        const provider = document.getElementById("searchProvider").value.trim();
+        const coverage = document.getElementById("searchCoverage").value.trim();
+        const service_type = document.getElementById("searchType").value.trim();
+        const max_cost = document.getElementById("searchMaxCost").value.trim();
+
+        const params = new URLSearchParams();
+        if (provider) params.append("provider", provider);
+        if (coverage) params.append("coverage", coverage);
+        if (service_type) params.append("service_type", service_type);
+        if (max_cost) params.append("max_cost", max_cost);
+
+        try {
+          const res = await fetch(
+            API_BASE_URL + "/search?" + params.toString(),
+            { headers: token ? { Authorization: "Bearer " + token } : {} }
+          );
+          if (!res.ok) throw new Error("Search failed");
+          const results = await res.json();
+          renderServicesTable(results);
+        } catch (err) {
+          console.error(err);
+          alert("Search failed");
+        }
+      }
+
+      // Plan comparison loader
+      async function loadPlanComparison() {
+        try {
+          const res = await fetch(API_BASE_URL + "/compare", {
+            headers: token ? { Authorization: "Bearer " + token } : {},
+          });
+          if (!res.ok) throw new Error("Compare failed");
+          const plans = await res.json();
+          document.getElementById("compare-section").style.display = "block";
+          const container = document.getElementById("compareList");
+          container.innerHTML = "";
+          plans.forEach((p) => {
+            const card = document.createElement("div");
+            card.className = "col-md-6 col-lg-4";
+            card.innerHTML = `
+            <div class="card p-3">
+              <h6>${escapeHtml(p.provider_name)}</h6>
+              <p class="small-muted mb-1">Bandwidth: ${escapeHtml(
+                p.bandwidth
+              )}</p>
+              <p class="small-muted mb-1">Cost: ₹${p.cost_per_month || "-"}</p>
+              <p class="small-muted mb-1">Type: ${escapeHtml(
+                p.service_type || "-"
+              )}</p>
+              <p class="small-muted mb-1">Customers: ${p.customers || 0}</p>
+            </div>
+          `;
+            container.appendChild(card);
+          });
+          // scroll into view
+          document
+            .getElementById("compare-section")
+            .scrollIntoView({ behavior: "smooth" });
+        } catch (err) {
+          console.error(err);
+          alert("Failed to load comparison");
+        }
+      }
+
+      // helper: edit (opens provider modal with details, then you could wire update)
+      async function openEdit(id) {
+        // For now, reuse showProvider but you can extend to show editable fields
+        await showProvider(id);
+        // TODO: provide inline edit if required
+      }
+
+      // small booking helper (create a quick booking -- demo)
+      async function prepareCreateBooking(serviceId) {
+        const citizenId = prompt("Citizen ID for booking (demo):");
+        if (!citizenId) return;
+        try {
+          const payload = {
+            citizen_id: citizenId,
+            installation_address: "N/A",
+            preferred_plan: "standard",
+            contact_number: "",
+          };
+          const res = await fetch(
+            API_BASE_URL + "/" + serviceId + "/request-connection",
+            {
+              method: "POST",
+              headers: Object.assign(
+                { "Content-Type": "application/json" },
+                token ? { Authorization: "Bearer " + token } : {}
+              ),
+              body: JSON.stringify(payload),
+            }
+          );
+          const j = await res.json();
+          if (!res.ok) throw new Error(j.error || "Booking failed");
+          alert("Booking requested. ID: " + j.booking_id);
+          bootstrap.Modal.getInstance(
+            document.getElementById("providerModal")
+          ).hide();
+          fetchServices();
+          fetchStats();
+        } catch (err) {
+          console.error(err);
+          alert("Booking error: " + err.message);
+        }
+      }
+
+      // ---- Charts rendering ----
+      function renderBandwidthChart(labels, data) {
+        const ctx = document.getElementById("bandwidthChart").getContext("2d");
+        if (bandwidthChart) bandwidthChart.destroy();
+        bandwidthChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [{ label: "Bandwidth (Mbps)", data, borderRadius: 6 }],
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } },
+          },
+        });
+      }
+
+      function renderConnectionsChart(activeArr, totalArr) {
+        const labels = totalArr.map((_, i) => "P" + (i + 1));
+        const ctx = document
+          .getElementById("connectionsChart")
+          .getContext("2d");
+        if (connectionsChart) connectionsChart.destroy();
+        connectionsChart = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: ["Active Connections", "Other"],
+            datasets: [
+              {
+                data: [
+                  activeArr.reduce((a, b) => a + b, 0),
+                  Math.max(
+                    0,
+                    totalArr.reduce((a, b) => a + b, 0) -
+                      activeArr.reduce((a, b) => a + b, 0)
+                  ),
+                ],
+              },
+            ],
+          },
+          options: { plugins: { legend: { position: "bottom" } } },
+        });
+      }
+
+      // ---- Utilities ----
+      function escapeHtml(text) {
+        if (text === null || text === undefined) return "";
+        return String(text)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      // initial load
+      document.addEventListener("DOMContentLoaded", () => {
+        fetchServices();
+        fetchStats();
+      });
+
+      // Expose some functions to inline handlers
+      window.toggleSidebar = toggleSidebar;
+      window.logout = logout;
+      window.fetchServices = fetchServices;
+      window.showProvider = showProvider;
+      window.openCreateModal = openCreateModal;
+      window.loadPlanComparison = loadPlanComparison;
+      window.searchProviders = searchProviders;
+    </script>
+  </body>
+</html>

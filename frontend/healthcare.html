@@ -421,6 +421,7 @@ background:
             const listEl = document.getElementById('facilityList');
             try {
                 const res = await fetch(`${API_BASE}/healthcare`);
+                if (!res.ok) throw new Error('Failed to load facilities: ' + res.status);
                 const items = await res.json();
                 if (!items || items.length === 0) { listEl.innerHTML = '<li class="list-group-item">No facilities</li>'; return; }
                 listEl.innerHTML = '';
@@ -440,7 +441,7 @@ background:
             el.innerHTML = '<p class="text-muted">Loading...</p>';
             try {
                 const res = await fetch(`${API_BASE}/healthcare/${id}`);
-                if (!res.ok) throw new Error('Not found');
+                if (!res.ok) throw new Error('Failed to load facility: ' + res.status);
                 const data = await res.json();
                 const { healthcare, doctors, bookings } = data;
                 let html = `<h5>${healthcare.name || 'Facility ' + healthcare.hospital_id}</h5>`;
