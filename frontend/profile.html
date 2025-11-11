@@ -363,10 +363,10 @@
                         <label for="profilePhone" class="form-label">Phone Number</label>
                         <input type="tel" class="form-control" id="profilePhone" value="${userData.phone || ''}">
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="profileDob" class="form-label">Date of Birth</label>
-                        <input type="date" class="form-control" id="profileDob" value="${userData.dob || ''}">
-                    </div>
+          <div class="col-md-6 mb-3">
+            <label for="profileDob" class="form-label">Date of Birth</label>
+            <input type="date" class="form-control" id="profileDob" value="${userData.dob ? (userData.dob.indexOf('T') > -1 ? userData.dob.split('T')[0] : userData.dob) : ''}">
+          </div>
                     <div class="col-md-6 mb-3">
                         <label for="profileGender" class="form-label">Gender</label>
                         <select class="form-select" id="profileGender">
@@ -448,25 +448,42 @@
             };
 
             try {
-                const res = await fetch(`${API_BASE_URL}/profile`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(updatedData)
-                });
+        // Try PATCH first; if server doesn't accept PATCH, retry with PUT
+        let res = await fetch(`${API_BASE_URL}/profile`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(updatedData)
+        });
 
-                if (res.status === 401 || res.status === 403) {
-                    localStorage.removeItem('token');
-                    alert('Session expired or unauthorized. Please login again.');
-                    window.location.href = 'login.html';
-                    return;
-                }
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    throw new Error(errorData.error || 'Failed to save changes.');
-                }
+        if (res.status === 404 || res.status === 405) {
+          // Retry with PUT
+          res = await fetch(`${API_BASE_URL}/profile`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(updatedData)
+          });
+        }
+
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem('token');
+          alert('Session expired or unauthorized. Please login again.');
+          window.location.href = 'login.html';
+          return;
+        }
+
+        if (!res.ok) {
+          const resText = await res.text();
+          let errorData = {};
+          try { errorData = resText ? JSON.parse(resText) : {}; } catch (e) { errorData = { raw: resText }; }
+          const errMsg = errorData && (errorData.error || errorData.message) ? (errorData.error || errorData.message) : (errorData.raw || `HTTP ${res.status}`);
+          throw new Error(errMsg || 'Failed to save changes.');
+        }
                 
                 alert('Profile updated successfully!');
                 toggleEditMode(); // Exit edit mode and refresh data
@@ -525,20 +542,22 @@
             }
 
             try {
-                const res = await fetch(`${API_BASE_URL}/users/change-password`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ currentPassword, newPassword })
-                });
+        const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ oldPassword: currentPassword, newPassword })
+        });
 
-                const data = await res.json();
+        const resText = await res.text();
+        let data = {};
+        try { data = resText ? JSON.parse(resText) : {}; } catch(e) { data = { raw: resText }; }
 
-                if (!res.ok) {
-                    throw new Error(data.message || 'Failed to change password.');
-                }
+        if (!res.ok) {
+          throw new Error(data && (data.error || data.message) ? (data.error || data.message) : (data.raw || `HTTP ${res.status}`));
+        }
 
                 passwordAlert.textContent = 'Password changed successfully!';
                 passwordAlert.className = 'alert alert-success';

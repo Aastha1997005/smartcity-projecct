@@ -148,6 +148,39 @@ function fetchBookings() {
     console.log('Fetching bookings from API...');
 }
 
+// Notifications helpers
+async function fetchNotifications({ all = false, user_id = null } = {}) {
+    const base = (window.API_BASE || 'http://127.0.0.1:5000/api').replace(/\/$/, '');
+    const params = [];
+    let url = base + '/notifications';
+    if (user_id) url += '?user_id=' + encodeURIComponent(user_id);
+    else if (all) url += '?all=true';
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to fetch notifications');
+        return await res.json();
+    } catch (e) {
+        console.error('fetchNotifications error', e);
+        return [];
+    }
+}
+
+async function sendAnnouncement(payload) {
+    const base = (window.API_BASE || 'http://127.0.0.1:5000/api').replace(/\/$/, '');
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('Authentication required');
+    const res = await fetch(base + '/notifications/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+        const body = await res.json().catch(()=>({}));
+        throw new Error(body.error || body.message || 'Failed to send announcement');
+    }
+    return await res.json();
+}
+
 // Export functions for use in other scripts if needed
 window.smartCityAdmin = {
     showToast: showToast,
@@ -157,3 +190,5 @@ window.smartCityAdmin = {
     fetchMaintenanceRequests: fetchMaintenanceRequests,
     fetchBookings: fetchBookings
 };
+window.smartCityAdmin.fetchNotifications = fetchNotifications;
+window.smartCityAdmin.sendAnnouncement = sendAnnouncement;

@@ -516,11 +516,17 @@ background:
             },
             body: JSON.stringify(payload)
           });
-          const body = await res.json();
+
+          const resText = await res.text();
+          let body = {};
+          try { body = resText ? JSON.parse(resText) : {}; } catch(e) { body = { raw: resText }; }
+
           if (!res.ok) {
-            alert(body.error || body.message || 'Failed to send announcement');
+            const msg = body && (body.error || body.message) ? (body.error || body.message) : (body.raw || `HTTP ${res.status}`);
+            alert(msg || 'Failed to send announcement');
             return;
           }
+
           alert(body.message || 'Announcement sent');
           document.getElementById('announcementForm').reset();
           loadNotifications();
