@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
+const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 // Get all transport options
 router.get('/', async (req, res) => {
@@ -49,8 +50,18 @@ router.get('/:transport_id', async (req, res) => {
 });
 
 // Create transport
-router.post('/', async (req, res) => {
-    res.send('Create transport');
+router.post('/', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+    const { transport_id, mode } = req.body;
+    try {
+        await db.query(
+            "INSERT INTO Transport (transport_id, mode) VALUES (?, ?)",
+            [transport_id, mode]
+        );
+        res.json({ message: "Transport created successfully", transport_id });
+    } catch (err) {
+        console.error('Error creating transport:', err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Update transport

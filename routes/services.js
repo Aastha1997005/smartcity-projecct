@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {db} = require("../db");
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 // Helper: fetch providers (with phones/emails) mapped to a service
 async function fetchProvidersForService(serviceId) {
@@ -467,7 +467,7 @@ router.get("/", async (req, res) => {
 });
 
 // Add a new service
-router.post("/", async (req, res) => {
+router.post("/", authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const {
     service_name,
     cost,

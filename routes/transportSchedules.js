@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {db} = require('../db');
+const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 // Get all transport schedules
 router.get('/', async (req, res) => {
@@ -31,7 +32,7 @@ router.get('/:schedule_id', async (req, res) => {
 });
 
 // Create a new schedule
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const { schedule_id, transport_id, route_id, start_time, end_time, frequency, days_of_operation, status } = req.body;
   try {
     await db.query('INSERT INTO Transport_Schedule (schedule_id, transport_id, route_id, start_time, end_time, frequency, days_of_operation, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [schedule_id, transport_id, route_id, start_time, end_time, frequency, days_of_operation, status]);

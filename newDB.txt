@@ -245,6 +245,15 @@ CREATE TABLE Users (
 INSERT INTO Users (email, password_hash, role) VALUES ('admin@smartcity.com', SHA2('admin123', 256), 'admin');
 
 
+CREATE TABLE Admin_Details (
+    admin_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    post VARCHAR(255),
+    department VARCHAR(255),
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
 -- This is the correct, complete definition.
 CREATE TABLE Maintenance_Task (
     task_id INT AUTO_INCREMENT PRIMARY KEY,

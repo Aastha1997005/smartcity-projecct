@@ -355,10 +355,29 @@
                                 <select class="form-select" id="role" required>
                                     <option value="">Select Role</option>
                                     <option value="citizen">Citizen</option>
-                                    <option value="transport">Transport</option>
-                                    <option value="utility">Utility</option>
-                                    <option value="healthcare">Healthcare</option>
+                                    <option value="admin">Admin</option>
                                 </select>
+                            </div>
+
+                            <div id="adminDetailsFields" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="adminName" class="form-label">Your Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="adminName" placeholder="Enter your name">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="adminPost" class="form-label">Your Post <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="adminPost" placeholder="e.g., Manager, Coordinator">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="adminDepartment" class="form-label">Concerned Department <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="adminDepartment">
+                                        <option value="">Select Department</option>
+                                        <option value="healthcare">Healthcare</option>
+                                        <option value="utility">Utility</option>
+                                        <option value="transport">Transport</option>
+                                        <option value="general">General Administration</option>
+                                    </select>
+                                </div>
                             </div>
                             
                             <div class="mb-3 form-check">
@@ -461,6 +480,11 @@
                     if (data.linked_id) {
                         localStorage.setItem('linkedId', data.linked_id);
                     }
+                    if (data.adminDetails) {
+                        localStorage.setItem('adminName', data.adminDetails.name);
+                        localStorage.setItem('adminPost', data.adminDetails.post);
+                        localStorage.setItem('adminDepartment', data.adminDetails.department);
+                    }
                     
                     showAlert('Login successful! Redirecting...', 'success');
                     
@@ -493,15 +517,45 @@
             }
         });
 
+        // Toggle admin details fields based on role selection
+        document.getElementById('role').addEventListener('change', function() {
+            const adminDetailsFields = document.getElementById('adminDetailsFields');
+            if (this.value === 'admin') {
+                adminDetailsFields.style.display = 'block';
+                // Make fields required for admin role
+                document.getElementById('adminName').setAttribute('required', 'required');
+                document.getElementById('adminPost').setAttribute('required', 'required');
+                document.getElementById('adminDepartment').setAttribute('required', 'required');
+            } else {
+                adminDetailsFields.style.display = 'none';
+                // Remove required attribute if not admin
+                document.getElementById('adminName').removeAttribute('required');
+                document.getElementById('adminPost').removeAttribute('required');
+                document.getElementById('adminDepartment').removeAttribute('required');
+            }
+        });
+
         // Sign up form submission
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-                const email = document.getElementById('signupEmail').value;
+            const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const role = document.getElementById('role').value;
             const submitBtn = e.target.querySelector('button[type="submit"]');
+
+            let adminName, adminPost, adminDepartment;
+            if (role === 'admin') {
+                adminName = document.getElementById('adminName').value;
+                adminPost = document.getElementById('adminPost').value;
+                adminDepartment = document.getElementById('adminDepartment').value;
+
+                if (!adminName || !adminPost || !adminDepartment) {
+                    showAlert('Please fill in all admin details.');
+                    return;
+                }
+            }
             
             // Validate passwords match
             if (password !== confirmPassword) {
@@ -514,16 +568,19 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating account...';
             
             try {
+                const body = { email, password, role };
+                if (role === 'admin') {
+                    body.adminName = adminName;
+                    body.adminPost = adminPost;
+                    body.adminDepartment = adminDepartment;
+                }
+
                 const response = await fetch(`${API_BASE_URL}/auth/register`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ 
-                        email,
-                        password, 
-                        role
-                    })
+                    body: JSON.stringify(body)
                 });
                 
                 const data = await response.json();

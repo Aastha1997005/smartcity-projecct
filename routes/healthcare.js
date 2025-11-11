@@ -1,6 +1,8 @@
 const express = require("express");
+const router = express = require("express");
 const router = express.Router();
 const {db} = require("../db");
+const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 // Get all healthcare facilities
 router.get("/", async (req, res) => {
   try {
@@ -56,7 +58,7 @@ router.get("/:hospital_id", async (req, res) => {
 });
 
 // Create healthcare
-router.post("/", async (req, res) => {
+router.post("/", authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const { hospital_id, name, capacity, type } = req.body;
   try {
     await db.query(

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {db} = require('../db');
+const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 // Get all routes
 router.get('/', async (req, res) => {
@@ -24,7 +25,7 @@ router.get('/:route_id', async (req, res) => {
 });
 
 // Create route
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const { start_point, end_point, distance_km } = req.body;
   try {
     await db.query('INSERT INTO Route (start_point, end_point, distance_km) VALUES (?, ?, ?)', [start_point, end_point, distance_km]);

@@ -341,40 +341,46 @@ background:
             </div>
             <ul class="nav flex-column mt-3">
                 <li class="nav-item">
-                    <a class="nav-link active" href="admin.html"><i class="fas fa-home"></i> Dashboard</a>
+                    <a class="nav-link active" href="#" data-target="dashboard"><i class="fas fa-home"></i> Dashboard</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="citizen.html"><i class="fas fa-users"></i> Citizens</a>
+                    <a class="nav-link" href="#" data-target="citizens"><i class="fas fa-users"></i> Citizens</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="transport.html"><i class="fas fa-bus"></i> Transport</a>
+                    <a class="nav-link" href="#" data-target="transport"><i class="fas fa-bus"></i> Transport</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="internet.html"><i class="fas fa-wifi"></i> Internet</a>
+                    <a class="nav-link" href="#" data-target="add-transport"><i class="fas fa-plus-circle"></i> Add Transport</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="utilities.html"><i class="fas fa-water"></i> Utilities</a>
+                    <a class="nav-link" href="#" data-target="utilities"><i class="fas fa-water"></i> Utilities</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="healthcare.html"><i class="fas fa-hospital"></i> Healthcare</a>
+                    <a class="nav-link" href="#" data-target="add-utility"><i class="fas fa-plus-circle"></i> Add Utility</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="complaints.html"><i class="fas fa-exclamation-circle"></i> Complaints</a>
+                    <a class="nav-link" href="#" data-target="healthcare"><i class="fas fa-hospital"></i> Healthcare</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="maintenance.html"><i class="fas fa-wrench"></i> Maintenance</a>
+                    <a class="nav-link" href="#" data-target="add-healthcare"><i class="fas fa-plus-circle"></i> Add Healthcare</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="bookings.html"><i class="fas fa-calendar-alt"></i> Bookings</a>
+                    <a class="nav-link" href="#" data-target="complaints"><i class="fas fa-exclamation-circle"></i> Complaints</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="announcements-admin.html"><i class="fas fa-bullhorn"></i> Announcements</a>
+                    <a class="nav-link" href="#" data-target="maintenance"><i class="fas fa-wrench"></i> Maintenance</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="add-citizen.html"><i class="fas fa-user-plus"></i> Add Citizen</a>
+                    <a class="nav-link" href="#" data-target="bookings"><i class="fas fa-calendar-alt"></i> Bookings</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="departments.html"><i class="fas fa-building"></i> Departments</a>
+                    <a class="nav-link" href="#" data-target="announcements"><i class="fas fa-bullhorn"></i> Announcements</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-target="add-citizen"><i class="fas fa-user-plus"></i> Add Citizen</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-target="departments"><i class="fas fa-building"></i> Departments</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -384,6 +390,7 @@ background:
 
         <!-- Main Content -->
         <div id="content" class="main-content">
+            <div id="dynamic-content-area">
                 <div class="mb-4">
                     <h1 class="h2 fw-bold">Dashboard</h1>
                     <p class="text-muted">Overview of your smart city platform</p>
@@ -521,10 +528,13 @@ background:
                     </div>
                   </div>
                 </div>
+            </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="app.js"></script>
     <script>
+      const API_BASE_URL = "http://localhost:5000/api"; // Define API base URL globally
+      const token = localStorage.getItem('token'); // Define token globally
+
       function logout() {
         if (confirm("Are you sure you want to logout?")) {
           localStorage.clear();
@@ -532,135 +542,127 @@ background:
         }
       }
 
-      (function(){
-  const API_BASE = window.API_BASE || '/api';
-  const token = localStorage.getItem('token');
-  // base headers; Authorization will be conditionally added per-request
-  const baseHeaders = { 'Accept': 'application/json' };
-  if (token) baseHeaders['Authorization'] = 'Bearer ' + token;
+      // Define baseHeaders globally
+      const baseHeaders = { 'Accept': 'application/json' };
+      if (token) baseHeaders['Authorization'] = 'Bearer ' + token;
 
-        async function safeFetch(path, opts={}){
-          try{
-            const headers = Object.assign({}, baseHeaders, opts.headers || {});
-            const res = await fetch(API_BASE + path, Object.assign({}, opts, { headers }));
-            if (!res.ok) {
-              console.error('fetch', path, 'failed', res.status);
-              let body = null;
-              try { body = await res.text(); } catch(e){}
-              return { ok: false, status: res.status, data: null, body };
-            }
-            const data = await res.json();
-            return { ok: true, data };
-          } catch(e){
-            console.error('fetch', path, 'error', e);
-            return { ok: false, status: 0, data: null, error: String(e) };
+      // Define safeFetch globally
+      async function safeFetch(path, opts={}){
+        try{
+          const headers = Object.assign({}, baseHeaders, opts.headers || {});
+          const res = await fetch(API_BASE_URL + path, Object.assign({}, opts, { headers }));
+          if (!res.ok) {
+            console.error('fetch', path, 'failed', res.status);
+            let body = null;
+            try { body = await res.text(); } catch(e){}
+            return { ok: false, status: res.status, data: null, body };
           }
+          const data = await res.json();
+          return { ok: true, data };
+        } catch(e){
+          console.error('fetch', path, 'error', e);
+          return { ok: false, status: 0, data: null, error: String(e) };
         }
+      }
 
-        // Load healthcare list
-        // show debug header
-        (function showDebug(){
-          const dbg = document.createElement('div');
-          dbg.className = 'mb-2 text-muted small';
-          dbg.id = 'admin-debug';
-          dbg.innerText = `API_BASE=${API_BASE} token=${token ? 'present' : 'missing'}`;
-          document.querySelector('.main-content').insertBefore(dbg, document.querySelector('.main-content').firstChild);
-          // raw response container for admin stats
-          const raw = document.createElement('pre');
-          raw.id = 'admin-stats-raw';
-          raw.style.maxHeight = '180px';
-          raw.style.overflow = 'auto';
-          raw.className = 'small text-muted';
-          document.querySelector('.main-content').insertBefore(raw, dbg.nextSibling);
-        })();
+      // Load healthcare list
+      // show debug header
+      async function showDebug(){
+        const dbg = document.getElementById('admin-debug');
+        if (dbg) dbg.innerText = `API_BASE=${API_BASE_URL} token=${token ? 'present' : 'missing'}`;
+        const raw = document.getElementById('admin-stats-raw');
+        if (raw) raw.style.maxHeight = '180px';
+        if (raw) raw.style.overflow = 'auto';
+        if (raw) raw.className = 'small text-muted';
+      }
 
-        (async function loadHealthcare(){
-          const el = document.getElementById('hc-list');
-          const r = await safeFetch('/healthcare');
-          if (!r.ok) { el.innerText = 'Could not load healthcare list; see console for details'; console.error('healthcare fetch failed', r); return; }
-          const rows = r.data || [];
-          if (!rows.length) { el.innerText = 'No facilities found'; return; }
-          const ul = document.createElement('ul');
-          ul.className = 'list-group';
-          rows.forEach(h => {
+      async function loadHealthcare(){
+        const el = document.getElementById('hc-list');
+        const r = await safeFetch('/healthcare');
+        if (!r.ok) { if(el) el.innerText = 'Could not load healthcare list; see console for details'; console.error('healthcare fetch failed', r); return; }
+        const rows = r.data || [];
+        if (!rows.length) { if(el) el.innerText = 'No facilities found'; return; }
+        const ul = document.createElement('ul');
+        ul.className = 'list-group';
+        rows.forEach(h => {
+          const li = document.createElement('li');
+          li.className = 'list-group-item d-flex justify-content-between align-items-start';
+          li.innerHTML = `<div><strong>${h.name || h.name}</strong><br/><small>Capacity: ${h.capacity || 'N/A'} · Type: ${h.type || 'N/A'}</small></div><div><a href=\"healthcare.html?hospital_id=${h.hospital_id}\" class=\"btn btn-sm btn-primary\">Open</a></div>`;
+          ul.appendChild(li);
+        });
+        el.innerHTML = '';
+        el.appendChild(ul);
+      }
+
+      // Load grouped services
+      async function loadServices(){
+        const el = document.getElementById('svc-list');
+        const r = await safeFetch('/services/grouped');
+        if (!r.ok) { el.innerText = 'Could not load services; see console for details'; console.error('services grouped fetch failed', r); return; }
+        const grouped = r.data || {};
+        const container = document.createElement('div');
+        for (const cat of Object.keys(grouped)){
+          const card = document.createElement('div');
+          card.className = 'mb-2';
+          const title = document.createElement('div');
+          title.innerHTML = `<strong>${cat}</strong>`;
+          card.appendChild(title);
+          const list = document.createElement('ul');
+          list.className = 'list-group list-group-flush';
+          (grouped[cat]||[]).slice(0,6).forEach(s => {
             const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-start';
-            li.innerHTML = `<div><strong>${h.name || h.name}</strong><br/><small>Capacity: ${h.capacity || 'N/A'} · Type: ${h.type || 'N/A'}</small></div><div><a href=\"healthcare.html?hospital_id=${h.hospital_id}\" class=\"btn btn-sm btn-primary\">Open</a></div>`;
+            li.className = 'list-group-item';
+            li.innerHTML = `${s.service_name || s.service_name} <span class=\"text-muted small\">${s.provider_name ? ' · ' + s.provider_name : ''}</span>`;
+            list.appendChild(li);
+          });
+          card.appendChild(list);
+          container.appendChild(card);
+        }
+        el.innerHTML = '';
+        el.appendChild(container);
+      }
+
+      // Load announcements
+      async function loadAnnouncements(){
+        const el = document.getElementById('ann-list');
+        const a = await safeFetch('/announcements');
+        if (!a.ok) { el.innerText = 'Could not load announcements; see console for details'; console.error('announcements fetch failed', a); return; }
+        const rows = a.data || [];
+        if (!rows.length) { el.innerText = 'No announcements'; return; }
+        const frag = document.createDocumentFragment();
+        rows.slice(0,10).forEach(n => {
+          const d = document.createElement('div');
+          d.className = 'announcement-card';
+          const when = new Date(n.created_at || n.createdAt || Date.now()).toLocaleString();
+          d.innerHTML = `<div><strong>${n.message || n.title || ''}</strong></div><div class=\"text-muted small\">${when}</div>`;
+          frag.appendChild(d);
+        });
+        el.innerHTML = '';
+        el.appendChild(frag);
+      }
+
+      // Load alerts summary (may require auth)
+      async function loadAlerts(){
+        const el = document.getElementById('alerts-summary');
+        const r = await safeFetch('/alerts/summary/active');
+        if (!r.ok) { el.innerText = 'No permission or unable to load alerts summary; see console for details'; console.error('alerts summary fetch failed', r); return; }
+        const data = r.data || {};
+        // show raw JSON for debugging
+        const rawEl = document.getElementById('admin-stats-raw');
+        if (rawEl) rawEl.innerText = JSON.stringify(data, null, 2);
+        if(el) el.innerHTML = `<div>Total active: <strong>${data.total || data.count || 0}</strong></div>`;
+        if (data.by_severity) {
+          const ul = document.createElement('ul');
+          ul.className = 'list-group mt-2';
+          Object.entries(data.by_severity).forEach(([sev, cnt]) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.innerText = `${sev}: ${cnt}`;
             ul.appendChild(li);
           });
-          el.innerHTML = '';
-          el.appendChild(ul);
-        })();
-
-        // Load grouped services
-        (async function loadServices(){
-          const el = document.getElementById('svc-list');
-          const r = await safeFetch('/services/grouped');
-          if (!r.ok) { el.innerText = 'Could not load services; see console for details'; console.error('services grouped fetch failed', r); return; }
-          const grouped = r.data || {};
-          const container = document.createElement('div');
-          for (const cat of Object.keys(grouped)){
-            const card = document.createElement('div');
-            card.className = 'mb-2';
-            const title = document.createElement('div');
-            title.innerHTML = `<strong>${cat}</strong>`;
-            card.appendChild(title);
-            const list = document.createElement('ul');
-            list.className = 'list-group list-group-flush';
-            (grouped[cat]||[]).slice(0,6).forEach(s => {
-              const li = document.createElement('li');
-              li.className = 'list-group-item';
-              li.innerHTML = `${s.service_name || s.service_name} <span class=\"text-muted small\">${s.provider_name ? ' · ' + s.provider_name : ''}</span>`;
-              list.appendChild(li);
-            });
-            card.appendChild(list);
-            container.appendChild(card);
-          }
-          el.innerHTML = '';
-          el.appendChild(container);
-        })();
-
-        // Load announcements
-        (async function loadAnnouncements(){
-          const el = document.getElementById('ann-list');
-          const a = await safeFetch('/announcements');
-          if (!a.ok) { el.innerText = 'Could not load announcements; see console for details'; console.error('announcements fetch failed', a); return; }
-          const rows = a.data || [];
-          if (!rows.length) { el.innerText = 'No announcements'; return; }
-          const frag = document.createDocumentFragment();
-          rows.slice(0,10).forEach(n => {
-            const d = document.createElement('div');
-            d.className = 'announcement-card';
-            const when = new Date(n.created_at || n.createdAt || Date.now()).toLocaleString();
-            d.innerHTML = `<div><strong>${n.message || n.title || ''}</strong></div><div class=\"text-muted small\">${when}</div>`;
-            frag.appendChild(d);
-          });
-          el.innerHTML = '';
-          el.appendChild(frag);
-        })();
-
-        // Load alerts summary (may require auth)
-        (async function loadAlerts(){
-          const el = document.getElementById('alerts-summary');
-          const r = await safeFetch('/alerts/summary/active');
-          if (!r.ok) { el.innerText = 'No permission or unable to load alerts summary; see console for details'; console.error('alerts summary fetch failed', r); return; }
-          const data = r.data || {};
-          // show raw JSON for debugging
-          const rawEl = document.getElementById('admin-stats-raw');
-          if (rawEl) rawEl.innerText = JSON.stringify(data, null, 2);
-          el.innerHTML = `<div>Total active: <strong>${data.total || data.count || 0}</strong></div>`;
-          if (data.by_severity) {
-            const ul = document.createElement('ul');
-            ul.className = 'list-group mt-2';
-            Object.entries(data.by_severity).forEach(([sev, cnt]) => {
-              const li = document.createElement('li');
-              li.className = 'list-group-item';
-              li.innerText = `${sev}: ${cnt}`;
-              ul.appendChild(li);
-            });
-            el.appendChild(ul);
-          }
-        })();
+          if(el) el.appendChild(ul);
+        }
+      }
 
         // Load admin dashboard summary stats (requires admin token)
         (async function loadAdminStats(){
@@ -796,6 +798,537 @@ background:
         })();
 
       })();
+
+      // Dynamic Content Loader
+      const dynamicContentArea = document.getElementById('dynamic-content-area');
+      const sidebarLinks = document.querySelectorAll('.sidebar .nav-link');
+
+      async function loadDynamicContent(target) {
+          // Remove active class from all links
+          sidebarLinks.forEach(link => link.classList.remove('active'));
+          // Add active class to the clicked link
+          const activeLink = document.querySelector(`.sidebar .nav-link[data-target="${target}"]`);
+          if (activeLink) {
+              activeLink.classList.add('active');
+          }
+
+          let url = '';
+          let scriptToExecute = null;
+
+          switch (target) {
+              case 'dashboard':
+                  // Reload the original dashboard content
+                  dynamicContentArea.innerHTML = `
+                    <div class="mb-4">
+                        <h1 class="h2 fw-bold">Dashboard</h1>
+                        <p class="text-muted">Overview of your smart city platform</p>
+                    </div>
+                    <!-- Stats Cards -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card stat-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <p class="text-muted mb-1 small">Total Citizens</p>
+                                            <h3 class="fw-bold mb-1"><span id="stat-citizens">—</span></h3>
+                                            <small class="text-success" id="stat-citizens-delta">&nbsp;</small>
+                                        </div>
+                                        <i class="bi bi-people text-muted" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card stat-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <p class="text-muted mb-1 small">Active Complaints</p>
+                                            <h3 class="fw-bold mb-1"><span id="stat-complaints">—</span></h3>
+                                            <small class="text-danger" id="stat-complaints-delta">&nbsp;</small>
+                                    </div>
+                                        <i class="bi bi-exclamation-circle text-muted" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card stat-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <p class="text-muted mb-1 small">Maintenance Requests</p>
+                                            <h3 class="fw-bold mb-1"><span id="stat-maintenance">—</span></h3>
+                                            <small class="text-success" id="stat-maintenance-delta">&nbsp;</small>
+                                        </div>
+                                        <i class="bi bi-wrench text-muted" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card stat-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <p class="text-muted mb-1 small">Pending Bookings</p>
+                                            <h3 class="fw-bold mb-1"><span id="stat-bookings">—</span></h3>
+                                            <small class="text-success" id="stat-bookings-delta">&nbsp;</small>
+                                        </div>
+                                        <i class="bi bi-calendar text-muted" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity and Stats -->
+                    <div class="row g-4 flex-grow-1">
+                        <div class="col-lg-8">
+                            <div class="card h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Recent Activity</h5>
+                                    <div>
+                                        <button id="btn-add-activity" class="btn btn-sm btn-outline-primary" style="display:none;">Add Activity</button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recent-activity-list">Loading recent activity...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Quick Stats</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span class="text-muted">Transport Services</span>
+                                        <span class="fw-semibold" id="quick-transport">-</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span class="text-muted">Internet Providers</span>
+                                        <span class="fw-semibold" id="quick-internet">-</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span class="text-muted">Utility Services</span>
+                                        <span class="fw-semibold" id="quick-utilities">-</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Healthcare Centers</span>
+                                        <span class="fw-semibold" id="quick-healthcare">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Dynamic containers (populated by JS) -->
+                    <div class="row g-4 mt-4">
+                        <div class="col-md-6">
+                            <div class="card card-body" id="hc-container">
+                                <h5>Healthcare Facilities</h5>
+                                <div id="hc-list">Loading...</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card card-body" id="svc-container">
+                                <h5>Service Categories</h5>
+                                <div id="svc-list">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mt-3">
+                        <div class="col-md-6">
+                            <div class="card card-body" id="ann-container">
+                                <h5>Announcements</h5>
+                                <div id="ann-list">Loading...</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card card-body" id="alerts-container">
+                                <h5>Active Alerts Summary</h5>
+                                <div id="alerts-summary">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                  `;
+                  // Re-run dashboard specific scripts manually using globally defined functions
+                  showDebug();
+                  loadHealthcare();
+                  loadServices();
+                  loadAnnouncements();
+                  loadAlerts();
+                  loadAdminStats();
+                  break;
+              case 'citizens':
+                  url = 'citizen.html';
+                  break;
+              case 'transport':
+                  url = 'transport-main-dashboard.html';
+                  break;
+              case 'add-transport':
+                  // This will be a form to add transport details
+                  dynamicContentArea.innerHTML = `
+                    <div class="mb-4">
+                        <h1 class="h2 fw-bold">Add New Transport</h1>
+                        <p class="text-muted">Fill in the details to add a new transport service or route.</p>
+                    </div>
+                    <div class="card card-body">
+                        <form id="addTransportForm">
+                            <div class="mb-3">
+                                <label for="transportMode" class="form-label">Mode of Transport</label>
+                                <input type="text" class="form-control" id="transportMode" required placeholder="e.g., Bus, Train, Metro">
+                            </div>
+                            <div class="mb-3">
+                                <label for="routeName" class="form-label">Route Name/Number</label>
+                                <input type="text" class="form-control" id="routeName" required placeholder="e.g., Route 5, Downtown Express">
+                            </div>
+                            <div class="mb-3">
+                                <label for="startPoint" class="form-label">Start Point</label>
+                                <input type="text" class="form-control" id="startPoint" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="endPoint" class="form-label">End Point</label>
+                                <input type="text" class="form-control" id="endPoint" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="distance" class="form-label">Distance (km)</label>
+                                <input type="number" step="0.1" class="form-control" id="distance" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="frequency" class="form-label">Frequency</label>
+                                <input type="text" class="form-control" id="frequency" placeholder="e.g., Every 15 mins">
+                            </div>
+                            <div class="mb-3">
+                                <label for="daysOfOperation" class="form-label">Days of Operation</label>
+                                <input type="text" class="form-control" id="daysOfOperation" placeholder="e.g., Mon-Fri, Daily">
+                            </div>
+                            <div class="mb-3">
+                                <label for="startTime" class="form-label">Start Time</label>
+                                <input type="time" class="form-control" id="startTime">
+                            </div>
+                            <div class="mb-3">
+                                <label for="endTime" class="form-label">End Time</label>
+                                <input type="time" class="form-control" id="endTime">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Transport</button>
+                        </form>
+                    </div>
+                  `;
+                  scriptToExecute = async () => {
+                      document.getElementById('addTransportForm').addEventListener('submit', async (e) => {
+                          e.preventDefault();
+                          const transportMode = document.getElementById('transportMode').value;
+                          const routeName = document.getElementById('routeName').value;
+                          const startPoint = document.getElementById('startPoint').value;
+                          const endPoint = document.getElementById('endPoint').value;
+                          const distance = document.getElementById('distance').value;
+                          const frequency = document.getElementById('frequency').value;
+                          const daysOfOperation = document.getElementById('daysOfOperation').value;
+                          const startTime = document.getElementById('startTime').value;
+                          const endTime = document.getElementById('endTime').value;
+
+                          try {
+                              // First, create the Service entry for the transport
+                              const serviceResponse = await fetch(`${API_BASE_URL}/services`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  body: JSON.stringify({
+                                      service_name: `${transportMode} - ${routeName}`,
+                                      cost: 0, // Default cost
+                                      availability_status: 'Active',
+                                      operating_hours: `${startTime}-${endTime}`
+                                  })
+                              });
+                              if (!serviceResponse.ok) throw new Error('Failed to create service');
+                              const serviceData = await serviceResponse.json();
+                              const serviceId = serviceData.service_id;
+
+                              // Then, create the Transport entry
+                              const transportResponse = await fetch(`${API_BASE_URL}/transport`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  body: JSON.stringify({
+                                      transport_id: serviceId, // Link to service
+                                      mode: transportMode
+                                  })
+                              });
+                              if (!transportResponse.ok) throw new Error('Failed to create transport');
+
+                              // Then, create the Route entry
+                              const routeResponse = await fetch(`${API_BASE_URL}/routes`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  body: JSON.stringify({
+                                      start_point: startPoint,
+                                      end_point: endPoint,
+                                      distance_km: distance
+                                  })
+                              });
+                              if (!routeResponse.ok) throw new Error('Failed to create route');
+                              const routeData = await routeResponse.json();
+                              const routeId = routeData.route_id;
+
+                              // Finally, create the Transport Schedule
+                              const scheduleResponse = await fetch(`${API_BASE_URL}/transportSchedules`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  body: JSON.stringify({
+                                      transport_id: serviceId,
+                                      route_id: routeId,
+                                      start_time: startTime,
+                                      end_time: endTime,
+                                      frequency: frequency,
+                                      days_of_operation: daysOfOperation,
+                                      status: 'On-time'
+                                  })
+                              });
+                              if (!scheduleResponse.ok) throw new Error('Failed to create schedule');
+
+                              alert('Transport service, route, and schedule added successfully!');
+                              document.getElementById('addTransportForm').reset();
+                              loadDynamicContent('transport'); // Reload transport list
+                          } catch (error) {
+                              console.error('Error adding transport:', error);
+                              alert(`Failed to add transport: ${error.message}`);
+                          }
+                      });
+                  };
+                  break;
+              case 'utilities':
+                  url = 'utilities_dashboard.html';
+                  break;
+              case 'add-utility':
+                  // This will be a form to add utility details
+                  dynamicContentArea.innerHTML = `
+                    <div class="mb-4">
+                        <h1 class="h2 fw-bold">Add New Utility Service</h1>
+                        <p class="text-muted">Fill in the details to add a new utility service (e.g., Water, Electricity, Waste Management).</p>
+                    </div>
+                    <div class="card card-body">
+                        <form id="addUtilityForm">
+                            <div class="mb-3">
+                                <label for="utilityType" class="form-label">Utility Type</label>
+                                <select class="form-select" id="utilityType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="water">Water</option>
+                                    <option value="electricity">Electricity</option>
+                                    <option value="waste">Waste Management</option>
+                                    <option value="fuel">Fuel</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="serviceName" class="form-label">Service Name</label>
+                                <input type="text" class="form-control" id="serviceName" required placeholder="e.g., City Water Supply, Green Energy">
+                            </div>
+                            <div class="mb-3">
+                                <label for="cost" class="form-label">Cost</label>
+                                <input type="number" step="0.01" class="form-control" id="cost" value="0" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="availabilityStatus" class="form-label">Availability Status</label>
+                                <input type="text" class="form-control" id="availabilityStatus" value="Active" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="operatingHours" class="form-label">Operating Hours</label>
+                                <input type="text" class="form-control" id="operatingHours" value="24/7" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Utility</button>
+                        </form>
+                    </div>
+                  `;
+                  scriptToExecute = async () => {
+                      document.getElementById('addUtilityForm').addEventListener('submit', async (e) => {
+                          e.preventDefault();
+                          const utilityType = document.getElementById('utilityType').value;
+                          const serviceName = document.getElementById('serviceName').value;
+                          const cost = document.getElementById('cost').value;
+                          const availabilityStatus = document.getElementById('availabilityStatus').value;
+                          const operatingHours = document.getElementById('operatingHours').value;
+
+                          try {
+                              // First, create the Service entry for the utility
+                              const serviceResponse = await fetch(`${API_BASE_URL}/services`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  body: JSON.stringify({
+                                      service_name: serviceName,
+                                      cost: cost,
+                                      availability_status: availabilityStatus,
+                                      operating_hours: operatingHours
+                                  })
+                              });
+                              if (!serviceResponse.ok) throw new Error('Failed to create service');
+                              const serviceData = await serviceResponse.json();
+                              const serviceId = serviceData.service_id;
+
+                              // Then, create the Utility entry
+                              const utilityResponse = await fetch(`${API_BASE_URL}/utilities`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  body: JSON.stringify({
+                                      utility_id: serviceId, // Link to service
+                                      type: utilityType, // Pass type for backend to handle
+                                      unit: 'N/A', // Default
+                                      issue_date: new Date().toISOString().split('T')[0] // Current date
+                                  })
+                              });
+                              if (!utilityResponse.ok) throw new Error('Failed to create utility');
+
+                              alert('Utility service added successfully!');
+                              document.getElementById('addUtilityForm').reset();
+                              loadDynamicContent('utilities'); // Reload utilities list
+                          } catch (error) {
+                              console.error('Error adding utility:', error);
+                              alert(`Failed to add utility: ${error.message}`);
+                          }
+                      });
+                  };
+                  break;
+              case 'healthcare':
+                  url = 'healthcare-dashboard.html';
+                  break;
+              case 'add-healthcare':
+                  // This will be a form to add healthcare details
+                  dynamicContentArea.innerHTML = `
+                    <div class="mb-4">
+                        <h1 class="h2 fw-bold">Add New Healthcare Facility</h1>
+                        <p class="text-muted">Fill in the details to add a new hospital or clinic.</p>
+                    </div>
+                    <div class="card card-body">
+                        <form id="addHealthcareForm">
+                            <div class="mb-3">
+                                <label for="hospitalName" class="form-label">Facility Name</label>
+                                <input type="text" class="form-control" id="hospitalName" required placeholder="e.g., City General Hospital">
+                            </div>
+                            <div class="mb-3">
+                                <label for="capacity" class="form-label">Capacity (Beds)</label>
+                                <input type="number" class="form-control" id="capacity" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="hospitalType" class="form-label">Type</label>
+                                <input type="text" class="form-control" id="hospitalType" placeholder="e.g., General, Specialty, Clinic">
+                            </div>
+                            <div class="mb-3">
+                                <label for="contactPhone" class="form-label">Contact Phone</label>
+                                <input type="text" class="form-control" id="contactPhone" placeholder="e.g., +1234567890">
+                            </div>
+                            <div class="mb-3">
+                                <label for="contactEmail" class="form-label">Contact Email</label>
+                                <input type="email" class="form-control" id="contactEmail" placeholder="e.g., info@hospital.com">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Facility</button>
+                        </form>
+                    </div>
+                  `;
+                  scriptToExecute = async () => {
+                      document.getElementById('addHealthcareForm').addEventListener('submit', async (e) => {
+                          e.preventDefault();
+                          const hospitalName = document.getElementById('hospitalName').value;
+                          const capacity = document.getElementById('capacity').value;
+                          const hospitalType = document.getElementById('hospitalType').value;
+                          const contactPhone = document.getElementById('contactPhone').value;
+                          const contactEmail = document.getElementById('contactEmail').value;
+
+                          try {
+                              const response = await fetch(`${API_BASE_URL}/healthcare`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  body: JSON.stringify({
+                                      name: hospitalName,
+                                      capacity: capacity,
+                                      type: hospitalType,
+                                      service_name: hospitalName, // Use hospital name as service name
+                                      cost: 0, // Default cost
+                                      availability_status: 'Active',
+                                      operating_hours: '24/7',
+                                      phones: contactPhone ? [contactPhone] : [],
+                                      emails: contactEmail ? [contactEmail] : []
+                                  })
+                              });
+                              if (!response.ok) throw new Error('Failed to add healthcare facility');
+                              alert('Healthcare facility added successfully!');
+                              document.getElementById('addHealthcareForm').reset();
+                              loadDynamicContent('healthcare'); // Reload healthcare list
+                          } catch (error) {
+                              console.error('Error adding healthcare facility:', error);
+                              alert(`Failed to add healthcare facility: ${error.message}`);
+                          }
+                      });
+                  };
+                  break;
+              case 'complaints':
+                  url = 'complaints.html';
+                  break;
+              case 'maintenance':
+                  url = 'maintenance.html';
+                  break;
+              case 'bookings':
+                  url = 'bookings.html';
+                  break;
+              case 'announcements':
+                  url = 'announcements-admin.html';
+                  break;
+              case 'add-citizen':
+                  url = 'add-citizen.html';
+                  break;
+              case 'departments':
+                  url = 'departments.html';
+                  break;
+              default:
+                  dynamicContentArea.innerHTML = '<p>Content not found.</p>';
+                  return;
+          }
+
+          if (url) {
+              try {
+                  const response = await fetch(url);
+                  if (!response.ok) throw new Error(`Failed to load ${url}`);
+                  const html = await response.text();
+                  
+                  // Extract body content
+                  const parser = new DOMParser();
+                  const doc = parser.parseFromString(html, 'text/html');
+                  const bodyContent = doc.body.innerHTML;
+
+                  dynamicContentArea.innerHTML = bodyContent;
+
+                  // Execute scripts within the loaded content
+                  const scripts = dynamicContentArea.querySelectorAll('script');
+                  scripts.forEach(oldScript => {
+                      const newScript = document.createElement('script');
+                      Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                      newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                      oldScript.parentNode.replaceChild(newScript, oldScript);
+                  });
+
+              } catch (error) {
+                  console.error(`Error loading content from ${url}:`, error);
+                  dynamicContentArea.innerHTML = `<p>Error loading content: ${error.message}</p>`;
+              }
+          }
+
+          if (scriptToExecute) {
+              scriptToExecute();
+          }
+      }
+
+      // Event listeners for sidebar navigation
+      sidebarLinks.forEach(link => {
+          link.addEventListener('click', (e) => {
+              e.preventDefault();
+              const target = link.dataset.target;
+              if (target) {
+                  loadDynamicContent(target);
+              }
+          });
+      });
+
+      // Initial load of dashboard content
+      loadDynamicContent('dashboard');
     </script>
 </body>
 </html>

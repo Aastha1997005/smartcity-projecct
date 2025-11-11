@@ -8,6 +8,21 @@ router.get("/test", (req, res) => {
   res.send("Utilities test route is working!");
 });
 
+// Create a new Utility entry (admin only)
+router.post("/", authenticateToken, authorizeRoles('admin'), async (req, res) => {
+  const { utility_id, type, unit, issue_date } = req.body;
+  try {
+    await db.query(
+      "INSERT INTO Utility (utility_id, type, unit, issue_date) VALUES (?, ?, ?, ?)",
+      [utility_id, type, unit, issue_date]
+    );
+    res.json({ message: "Utility created successfully", utility_id });
+  } catch (err) {
+    console.error('Error creating utility:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 /**
  * UTILITIES PAGE ROUTES
  * Covers all essential civic services:
