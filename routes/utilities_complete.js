@@ -338,7 +338,7 @@ router.get("/waste", async (req, res) => {
 });
 
 // Get all smart bins with fill levels
-router.get("/waste/smart-bins", async (req, res) => {
+router.get("/smart-bins", async (req, res) => {
   try {
     const { zone_id, fill_level_above } = req.query;
     
@@ -372,15 +372,38 @@ router.get("/waste/smart-bins", async (req, res) => {
       averageFillLevel: bins.reduce((sum, b) => sum + (parseFloat(b.fill_level) || 0), 0) / bins.length
     };
     
-    res.json({ bins, statistics: stats });
+    res.json(bins); // Return just the bins for the frontend table
   } catch (err) {
     console.error('Smart bins error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
+// Get smart bin details by ID
+router.get("/smart-bins/:bin_id", async (req, res) => {
+  try {
+    const [[bin]] = await db.query(`
+      SELECT sb.*, i.zone_id, z.zone_name, z.type as zone_type, wm.collection_schedule, wm.last_emptied_at
+      FROM Smart_Bin sb
+      JOIN Infrastructure i ON sb.bin_id = i.asset_id
+      LEFT JOIN Zone z ON i.zone_id = z.zone_id
+      LEFT JOIN Waste_Management wm ON sb.managing_waste_id = wm.waste_id
+      WHERE sb.bin_id = ?
+    `, [req.params.bin_id]);
+    
+    if (!bin) {
+      return res.status(404).json({ error: 'Smart bin not found' });
+    }
+    
+    res.json(bin);
+  } catch (err) {
+    console.error('Smart bin detail error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Update smart bin fill level (sensor data)
-router.put("/waste/smart-bins/:bin_id/fill-level", authenticateToken, async (req, res) => {
+router.put("/smart-bins/:bin_id/fill-level", authenticateToken, async (req, res) => {
   try {
     const { fill_level } = req.body;
     
@@ -395,11 +418,17 @@ router.put("/waste/smart-bins/:bin_id/fill-level", authenticateToken, async (req
     
     // Create alert if fill level is high
     if (fill_level >= 85) {
-      await db.query(
-        `INSERT INTO Alerts (asset_id, alert_type, severity, details)
-         VALUES (?, 'high_fill_level', 'warning', ?)`,
-        [req.params.bin_id, JSON.stringify({ fill_level, message: 'Smart bin needs collection' })]
-      );
+      // Check if Alerts table exists before inserting
+      const [tables] = await db.query("SHOW TABLES LIKE 'Alerts'");
+      if (tables.length > 0) {
+        await db.query(
+          `INSERT INTO Alerts (asset_id, alert_type, severity, details)
+           VALUES (?, 'high_fill_level', 'warning', ?)`, 
+          [req.params.bin_id, JSON.stringify({ fill_level, message: 'Smart bin needs collection' })]
+        );
+      } else {
+        console.warn('Alerts table not found. Skipping alert insertion.');
+      }
     }
     
     res.json({ message: 'Fill level updated' });
@@ -407,7 +436,6 @@ router.put("/waste/smart-bins/:bin_id/fill-level", authenticateToken, async (req
     res.status(500).json({ error: err.message });
   }
 });
-
 // ==================== INTERNET/CONNECTIVITY ====================
 
 // Get all internet services
@@ -421,7 +449,11 @@ router.get("/internet", async (req, res) => {
         i.bandwidth AS speed_mbps,
         '99.9' AS uptime_percentage,
         s.availability_status,
-        z.zone_name as zone
+        z.zone_name as zone_name,
+        s.service_name,
+        s.operating_hours,
+        u.unit,
+        u.issue_date
       FROM Internet i
       JOIN Utility u ON i.internet_id = u.utility_id
       LEFT JOIN Service s ON u.utility_id = s.service_id
@@ -465,14 +497,37 @@ router.get("/internet/:internet_id", async (req, res) => {
 router.get("/fuel", async (req, res) => {
   try {
     const [fuelServices] = await db.query(`
-      SELECT f.*, u.unit, u.issue_date
+      SELECT f.*, u.unit, u.issue_date, p.provider_name
       FROM Fuel f
       JOIN Utility u ON f.fuel_id = u.utility_id
+      LEFT JOIN Provider p ON f.provider_id = p.provider_id
       ORDER BY f.fuel_id
     `);
     
     res.json(fuelServices);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get fuel utility details by ID
+router.get("/fuel/:fuel_id", async (req, res) => {
+  try {
+    const [[fuel]] = await db.query(`
+      SELECT f.*, u.unit, u.issue_date, p.provider_name
+      FROM Fuel f
+      JOIN Utility u ON f.fuel_id = u.utility_id
+      LEFT JOIN Provider p ON f.provider_id = p.provider_id
+      WHERE f.fuel_id = ?
+    `, [req.params.fuel_id]);
+    
+    if (!fuel) {
+      return res.status(404).json({ error: 'Fuel service not found' });
+    }
+    
+    res.json(fuel);
+  } catch (err) {
+    console.error('Fuel detail error:', err);
     res.status(500).json({ error: err.message });
   }
 });

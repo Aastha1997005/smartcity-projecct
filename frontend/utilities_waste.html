@@ -151,7 +151,7 @@
   <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <img src="../assets/07.png" alt="Smart City Logo" class="logo-img" />
+        <img src="assets/07.png" alt="Smart City Logo" class="logo-img" />
         <h4>SmartCity</h4>
         <small id="userRole">Utilities</small>
       </div>
@@ -267,16 +267,34 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    const fakeBins = [
-      { id: 1, bin_id: "B-001", zone_name: "Zone A", fill_level: 45, collection_schedule: "Daily", status: "Normal" },
-      { id: 2, bin_id: "B-002", zone_name: "Zone B", fill_level: 82, collection_schedule: "Alternate Days", status: "Needs Collection" },
-      { id: 3, bin_id: "B-003", zone_name: "Zone C", fill_level: 90, collection_schedule: "Weekly", status: "Critical" },
-      { id: 4, bin_id: "B-004", zone_name: "Zone A", fill_level: 63, collection_schedule: "Daily", status: "Normal" }
-    ];
+    const API_BASE = window.API_BASE || 'http://127.0.0.1:5000/api';
+    let binsData = [];
+
+    async function safeFetch(path, opts = {}) {
+      const token = localStorage.getItem('token');
+      const headers = opts.headers || {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      opts.headers = headers;
+      
+      const res = await fetch(API_BASE + path, opts);
+      
+      if (!res.ok) {
+        let body = '';
+        try { body = await res.text(); } catch (e) {}
+        const err = new Error(`${res.status} ${res.statusText}` + (body ? ` - ${body}` : ''));
+        err.status = res.status;
+        throw err;
+      }
+      return res.json();
+    }
 
     function renderBins(data) {
       const body = document.getElementById("wasteTableBody");
       body.innerHTML = "";
+      if (data.length === 0) {
+        body.innerHTML = '<tr><td colspan="7" class="text-center">No smart bins found.</td></tr>';
+        return;
+      }
       data.forEach((item, index) => {
         const color = item.fill_level >= 80 ? "bg-danger" : item.fill_level >= 60 ? "bg-warning" : "bg-success";
         const progress = `
@@ -292,38 +310,57 @@
             <td>${progress} <small>${item.fill_level}%</small></td>
             <td>${item.collection_schedule}</td>
             <td><span class="badge ${color}">${item.status}</span></td>
-            <td><button class="btn btn-sm btn-success" onclick="showDetails(${item.id})"><i class="fas fa-eye"></i> View</button></td>
+            <td><button class="btn btn-sm btn-success" onclick="showDetails(${item.bin_id})"><i class="fas fa-eye"></i> View</button></td>
           </tr>
         `;
       });
     }
 
-    function showDetails(id) {
+    async function showDetails(id) {
       const modal = new bootstrap.Modal(document.getElementById('binDetailModal'));
-      const bin = fakeBins.find(b => b.id === id);
       const modalBody = document.getElementById('modalBodyContent');
-      modalBody.innerHTML = `
-        <h5>${bin.bin_id} - ${bin.zone_name}</h5>
-        <p><strong>Fill Level:</strong> ${bin.fill_level}%</p>
-        <p><strong>Status:</strong> ${bin.status}</p>
-        <p><strong>Collection Schedule:</strong> ${bin.collection_schedule}</p>
-      `;
+      modalBody.innerHTML = '<p>Loading details...</p>';
       modal.show();
+
+      try {
+        const bin = await safeFetch(`/utilities/smart-bins/${id}`);
+        modalBody.innerHTML = `
+          <h5>${bin.bin_id} - ${bin.zone_name}</h5>
+          <p><strong>Fill Level:</strong> ${bin.fill_level}%</p>
+          <p><strong>Status:</strong> ${bin.status}</p>
+          <p><strong>Collection Schedule:</strong> ${bin.collection_schedule}</p>
+          <p><strong>Last Emptied:</strong> ${new Date(bin.last_emptied_at).toLocaleString()}</p>
+        `;
+      } catch (err) {
+        console.error(`Error loading details for bin ID ${id}:`, err);
+        modalBody.innerHTML = `<p class="text-danger">Error loading details. Please try again later.</p>`;
+      }
     }
 
     function updateStats() {
-      const total = fakeBins.length;
-      const needingCollection = fakeBins.filter(b => b.fill_level >= 80).length;
-      const avg = (fakeBins.reduce((a, b) => a + b.fill_level, 0) / total).toFixed(1);
+      const total = binsData.length;
+      const needingCollection = binsData.filter(b => b.fill_level >= 80).length;
+      const avg = total > 0 ? (binsData.reduce((a, b) => a + b.fill_level, 0) / total).toFixed(1) : 0;
 
       document.getElementById("totalBins").textContent = total;
       document.getElementById("needingCollection").textContent = needingCollection;
       document.getElementById("avgFillLevel").textContent = avg + "%";
     }
 
+    async function loadSmartBins() {
+      try {
+        const data = await safeFetch('/utilities/smart-bins');
+        binsData = data;
+        renderBins(binsData);
+        updateStats();
+      } catch (err) {
+        console.error('Error loading smart bins data:', err);
+        document.getElementById("wasteTableBody").innerHTML = `<tr><td colspan="7" class="text-center text-danger">Failed to load data. ${err.message}</td></tr>`;
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
-      renderBins(fakeBins);
-      updateStats();
+      loadSmartBins();
     });
   </script>
 </body>

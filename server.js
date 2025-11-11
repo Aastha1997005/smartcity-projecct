@@ -81,8 +81,6 @@ const publicLightsRoutes = require("./routes/publicLights");
 console.log("Loaded publicLightsRoutes");
 const sensorsRoutes = require("./routes/sensors");
 console.log("Loaded sensorsRoutes");
-const smartBinsRoutes = require("./routes/smartBins");
-console.log("Loaded smartBinsRoutes");
 const transportRoutes = require("./routes/transport");
 console.log("Loaded transportRoutes");
 const transportSchedulesRoutes = require("./routes/transportSchedules");
@@ -119,7 +117,6 @@ app.use("/api/pipelines", pipelinesRoutes); console.log("Registered /api/pipelin
 app.use("/api/powernodes", powernodesRoutes); console.log("Registered /api/powernodes");
 app.use("/api/public-lights", publicLightsRoutes); console.log("Registered /api/public-lights");
 app.use("/api/sensors", sensorsRoutes); console.log("Registered /api/sensors");
-app.use("/api/smart-bins", smartBinsRoutes); console.log("Registered /api/smart-bins");
 app.use("/api/transport", transportRoutes); console.log("Registered /api/transport");
 app.use("/api/transport-schedules", transportSchedulesRoutes); console.log("Registered /api/transport-schedules");
 app.use("/api/infrastructure", infrastructureRoutes); console.log("Registered /api/infrastructure");

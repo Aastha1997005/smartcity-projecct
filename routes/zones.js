@@ -96,9 +96,6 @@ router.get("/", async (req, res) => {
     }
     
     res.json(zones);
-
-    const [rows] = await db.query("SELECT * FROM Zone");
-    res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -8,14 +8,6 @@ const db = mysql.createPool({
   password: process.env.DB_PASS || 'PHD#$234asd',
   database: process.env.DB_NAME || 'smartcity_management_system'
 });
-// const db = mysql.createPool({
-//   host: '127.0.0.1',
-//   port: 3306,
-//   user: 'root',
-//   password: 'devanshi19',
-//   database: 'smartcity_management_system'
-// });
-
 
 // Helper to log audit actions
 async function logAuditAction(userId, action, resource, details = null) {
@@ -30,5 +22,7 @@ async function logAuditAction(userId, action, resource, details = null) {
   }
 }
 
-module.exports = db;
-module.exports.logAuditAction = logAuditAction;
+module.exports = { 
+  db, 
+  logAuditAction 
+};

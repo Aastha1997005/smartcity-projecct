@@ -151,7 +151,7 @@
   <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <img src="../assets/07.png" alt="Smart City Logo" class="logo-img" />
+        <img src="assets/07.png" alt="Smart City Logo" class="logo-img" />
         <h4>SmartCity</h4>
         <small id="userRole">Utilities</small>
       </div>
@@ -267,30 +267,31 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    const fakeWaterData = [
-      { id: 1, service_name: "Central Water Supply", source: "Narmada", quality_level: "High", pipeline_count: 5, availability_status: "Available", unit: "KL" },
-      { id: 2, service_name: "East Zone Water", source: "Tank A", quality_level: "Moderate", pipeline_count: 3, availability_status: "Intermittent", unit: "KL" },
-      { id: 3, service_name: "West Water Plant", source: "Underground", quality_level: "Good", pipeline_count: 4, availability_status: "Available", unit: "KL" }
-    ];
+    const API_BASE = window.API_BASE || 'http://127.0.0.1:5000/api';
+    let waterData = [];
 
-    const fakePipelineData = {
-      1: [
-        { id: "P-101", length: "2.4 km", zone: "A", condition: "Good" },
-        { id: "P-102", length: "3.1 km", zone: "B", condition: "Excellent" }
-      ],
-      2: [
-        { id: "P-202", length: "1.8 km", zone: "E", condition: "Moderate" },
-        { id: "P-203", length: "2.5 km", zone: "D", condition: "Good" }
-      ],
-      3: [
-        { id: "P-303", length: "2.2 km", zone: "W", condition: "Good" }
-      ]
-    };
+    async function safeFetch(path, opts = {}) {
+      const token = localStorage.getItem('token');
+      const headers = opts.headers || {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      opts.headers = headers;
+      
+      const res = await fetch(API_BASE + path, opts);
+      
+      if (!res.ok) {
+        let body = '';
+        try { body = await res.text(); } catch (e) {}
+        const err = new Error(`${res.status} ${res.statusText}` + (body ? ` - ${body}` : ''));
+        err.status = res.status;
+        throw err;
+      }
+      return res.json();
+    }
 
     function renderTable() {
       const body = document.getElementById("waterTableBody");
       body.innerHTML = "";
-      fakeWaterData.forEach((item, index) => {
+      waterData.forEach((item, index) => {
         body.innerHTML += `
           <tr>
             <td>${index + 1}</td>
@@ -305,37 +306,62 @@
       });
     }
 
-    function showDetails(id) {
+    async function showDetails(id) {
       const modal = new bootstrap.Modal(document.getElementById('waterDetailModal'));
-      const data = fakeWaterData.find(d => d.id === id);
-      const pipelines = fakePipelineData[id] || [];
+      const data = waterData.find(d => d.id === id);
       const modalBody = document.getElementById('modalBodyContent');
-
-      let html = `
-        <h5>${data.service_name}</h5>
-        <p><strong>Source:</strong> ${data.source}</p>
-        <p><strong>Quality Level:</strong> ${data.quality_level}</p>
-        <p><strong>Availability:</strong> ${data.availability_status}</p>
-        <h6 class="mt-4">Pipelines:</h6>
-        <ul class="list-group">
-          ${pipelines.map(p => `<li class="list-group-item">ID: ${p.id} | Length: ${p.length} | Zone: ${p.zone} | Condition: ${p.condition}</li>`).join('')}
-        </ul>
-      `;
-      modalBody.innerHTML = html;
+      modalBody.innerHTML = '<p>Loading details...</p>';
       modal.show();
+
+      try {
+        const pipelines = await safeFetch(`/utilities/pipelines?water_service_id=${id}`);
+        let html = `
+          <h5>${data.service_name}</h5>
+          <p><strong>Source:</strong> ${data.source}</p>
+          <p><strong>Quality Level:</strong> ${data.quality_level}</p>
+          <p><strong>Availability:</strong> ${data.availability_status}</p>
+          <h6 class="mt-4">Pipelines:</h6>
+        `;
+        if (pipelines.length > 0) {
+          html += `<ul class="list-group">
+            ${pipelines.map(p => `<li class="list-group-item">ID: ${p.id} | Length: ${p.length_km} km | Zone: ${p.zone} | Condition: ${p.condition_status}</li>`).join('')}
+          </ul>`;
+        } else {
+          html += '<p>No pipelines found for this service.</p>';
+        }
+        modalBody.innerHTML = html;
+      } catch (err) {
+        console.error(`Error loading pipeline details for service ${id}:`, err);
+        modalBody.innerHTML = '<p>Could not load pipeline details. Please try again later.</p>';
+      }
     }
 
     function updateStats() {
-      document.getElementById("totalWater").textContent = fakeWaterData.length;
-      document.getElementById("totalPipes").textContent = fakeWaterData.reduce((a, b) => a + b.pipeline_count, 0);
+      document.getElementById("totalWater").textContent = waterData.length;
+      document.getElementById("totalPipes").textContent = waterData.reduce((a, b) => a + (b.pipeline_count || 0), 0);
       const levels = { High: 3, Good: 2, Moderate: 1 };
-      const avg = (fakeWaterData.reduce((a, b) => a + (levels[b.quality_level] || 0), 0) / fakeWaterData.length).toFixed(1);
-      document.getElementById("avgQuality").textContent = avg + " / 3";
+      const qualitySum = waterData.reduce((a, b) => a + (levels[b.quality_level] || 0), 0);
+      const avg = waterData.length > 0 ? (qualitySum / waterData.length).toFixed(1) : 0;
+      document.getElementById("avgQuality").textContent = `${avg} / 3`;
+    }
+
+    async function loadWaterData() {
+      try {
+        const data = await safeFetch('/utilities/water');
+        waterData = data;
+        renderTable();
+        updateStats();
+      } catch (err) {
+        console.error('Error loading water data:', err);
+        document.getElementById("waterTableBody").innerHTML = `<tr><td colspan="7" class="text-center">Error loading data. Please try again later.</td></tr>`;
+        if (err.status === 401 || err.status === 403) {
+          alert('Unauthorized. Please login to view water data.');
+        }
+      }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      renderTable();
-      updateStats();
+      loadWaterData();
     });
   </script>
 </body>

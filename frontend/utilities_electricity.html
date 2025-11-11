@@ -143,12 +143,12 @@
 
 <body>
   <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="p-4 text-center border-bottom">
-      <img src="assets/07.png" class="img-fluid mb-3 rounded shadow-sm" width="150" />
-      <h4>SmartCity</h4>
-      <small>ELECTRICITY UTILITIES</small>
-    </div>
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <img src="assets/07.png" alt="Smart City Logo" class="logo-img" />
+        <h4>SmartCity</h4>
+        <small id="userRole">Utilities</small>
+      </div>
 
       <ul class="nav flex-column mt-3">
         <li class="nav-item">
@@ -317,7 +317,7 @@
 
         let html = `
           <h5>${electric.service_name || 'Electricity Service'}</h5>
-          <p><strong>Voltage Level:</strong> ${electric.voltage_level || 'N/A'}</p>
+          <p><strong>Voltage Level:</strong> ${electric.voltage_level || 'N/A'} kV</p>
           <p><strong>Source Type:</strong> ${electric.source_type || 'N/A'}</p>
           <p><strong>Distribution Area:</strong> ${electric.distribution_area || 'N/A'}</p>
           <p><strong>Availability:</strong> <span class="badge bg-${electric.availability_status === 'Active' ? 'success' : 'danger'}">${electric.availability_status || 'N/A'}</span></p>
@@ -330,7 +330,7 @@
             html += `<li class="list-group-item">
               <strong>ID:</strong> ${n.node_id} | 
               <strong>Zone:</strong> ${n.zone_name || 'N/A'} | 
-              <strong>Capacity:</strong> ${n.capacity || 'N/A'} | 
+              <strong>Capacity:</strong> ${n.capacity_mw || 'N/A'} MW | 
               <strong>Status:</strong> ${n.status || 'N/A'}
             </li>`;
           });
@@ -354,7 +354,7 @@
       const servicesWithVoltage = electricityServices.filter(s => parseFloat(s.voltage_level) > 0);
       if (servicesWithVoltage.length > 0) {
         const avgVoltage = servicesWithVoltage.reduce((acc, service) => acc + parseFloat(service.voltage_level), 0) / servicesWithVoltage.length;
-        document.getElementById("avgVoltage").textContent = avgVoltage.toFixed(1) + " V";
+        document.getElementById("avgVoltage").textContent = avgVoltage.toFixed(1) + " kV";
       } else {
         document.getElementById("avgVoltage").textContent = "N/A";
       }

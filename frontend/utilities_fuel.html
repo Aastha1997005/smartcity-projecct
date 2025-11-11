@@ -144,12 +144,12 @@
 
 <body>
   <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="p-4 text-center border-bottom">
-      <img src="assets/07.png" class="img-fluid mb-3 rounded shadow-sm" width="150" />
-      <h4>SmartCity</h4>
-      <small>FUEL UTILITIES</small>
-    </div>
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <img src="assets/07.png" alt="Smart City Logo" class="logo-img" />
+        <h4>SmartCity</h4>
+        <small id="userRole">Utilities</small>
+      </div>
 
       <ul class="nav flex-column mt-3">
         <li class="nav-item">
@@ -294,30 +294,38 @@
         body.innerHTML += `
           <tr>
             <td>${item.fuel_id}</td>
-            <td>${item.provider_id || 'N/A'}</td>
+            <td>${item.provider_name || 'N/A'}</td>
             <td>${item.type || 'N/A'}</td>
             <td>$${parseFloat(item.price_per_unit || 0).toFixed(2)}</td>
             <td>$${parseFloat(item.cost_per_month || 0).toFixed(2)}</td>
             <td>${new Date(item.issue_date).toLocaleDateString()}</td>
-            <td><button class="btn btn-sm btn-danger" onclick='showDetails(${JSON.stringify(item)})'><i class="fas fa-eye"></i> View</button></td>
+            <td><button class="btn btn-sm btn-danger" onclick="showDetails(${item.fuel_id})"><i class="fas fa-eye"></i> View</button></td>
           </tr>
         `;
       });
     }
 
-    function showDetails(fuel) {
+    async function showDetails(id) {
       const modal = new bootstrap.Modal(document.getElementById('fuelDetailModal'));
       const modalBody = document.getElementById('modalBodyContent');
-      modalBody.innerHTML = `
-        <h5>Provider: ${fuel.provider_id || 'N/A'}</h5>
-        <p><strong>Fuel ID:</strong> ${fuel.fuel_id}</p>
-        <p><strong>Fuel Type:</strong> ${fuel.type || 'N/A'}</p>
-        <p><strong>Price per Unit:</strong> $${parseFloat(fuel.price_per_unit || 0).toFixed(2)}</p>
-        <p><strong>Monthly Cost:</strong> $${parseFloat(fuel.cost_per_month || 0).toFixed(2)}</p>
-        <p><strong>Unit:</strong> ${fuel.unit || 'N/A'}</p>
-        <p><strong>Issue Date:</strong> ${new Date(fuel.issue_date).toLocaleDateString()}</p>
-      `;
+      modalBody.innerHTML = '<p>Loading details...</p>';
       modal.show();
+
+      try {
+        const fuel = await safeFetch(`/utilities/fuel/${id}`);
+        modalBody.innerHTML = `
+          <h5>Provider: ${fuel.provider_name || 'N/A'}</h5>
+          <p><strong>Fuel ID:</strong> ${fuel.fuel_id}</p>
+          <p><strong>Fuel Type:</strong> ${fuel.type || 'N/A'}</p>
+          <p><strong>Price per Unit:</strong> $${parseFloat(fuel.price_per_unit || 0).toFixed(2)}</p>
+          <p><strong>Monthly Cost:</strong> $${parseFloat(fuel.cost_per_month || 0).toFixed(2)}</p>
+          <p><strong>Unit:</strong> ${fuel.unit || 'N/A'}</p>
+          <p><strong>Issue Date:</strong> ${new Date(fuel.issue_date).toLocaleDateString()}</p>
+        `;
+      } catch (err) {
+        console.error(`Error loading details for fuel ID ${id}:`, err);
+        modalBody.innerHTML = `<p class="text-danger">Error loading details. Please try again later.</p>`;
+      }
     }
 
     function updateStats() {
