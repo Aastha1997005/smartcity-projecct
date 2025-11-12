@@ -372,6 +372,9 @@ CREATE TABLE Electricity (
     distribution_area VARCHAR(255),
     source_type VARCHAR(100),
     traffic_rate DECIMAL(10,4),
+    units DECIMAL(10,2),
+    fixed_charges DECIMAL(10,2),
+    tax_rate DECIMAL(10,4),
     FOREIGN KEY (electricity_id) REFERENCES Utility(utility_id) ON DELETE CASCADE
 );
 
@@ -612,13 +615,16 @@ INSERT INTO Service (service_id, service_name, cost, availability_status, operat
 (2, 'Water Supply', 200.00, 'Active', '24/7', 1),
 (3, 'City Bus Route 5', 20.00, 'Active', '07:00 - 22:00', 2),
 (4, 'Emergency Care', 500.00, 'Active', '24/7', 3),
-(5, 'Fiber Internet', 799.00, 'Active', '24/7', 4);
+(5, 'Fiber Internet', 799.00, 'Active', '24/7', 4),
+(6, 'Doctor Appointment', 0, 'Active', '09:00 - 17:00', 3),
+(7, 'Electricity Bill', 0, 'Active', '24/7', 1);
 
 -- FIXED: This insert now only includes service_ids that are actually utilities.
 INSERT INTO Utility (utility_id, unit, issue_date) VALUES 
 (1,'monthly', '2025-11-01'), -- Waste Management
 (2, 'KL', '2025-11-05'),      -- Water Supply
-(5,  'monthly', '2025-11-15'); -- Fiber Internet
+(5,  'monthly', '2025-11-15'), -- Fiber Internet
+(7, 'monthly', '2025-11-01'); -- Electricity Bill
 
 -- Data for Utility Subtypes
 -- WARNING: The following inserts are logically conflicted.
@@ -655,6 +661,9 @@ INSERT INTO Water (water_id, source, cost_per_litre, distribution_area, quality_
 
 INSERT INTO Internet (internet_id, provider_name, bandwidth, coverage_area, cost_per_month, service_type) VALUES
 (5, 'Airtel', '100 Mbps', 'Vijay Nagar', 799.00, 'Fiber'); -- Assuming ID 5 is the Internet service
+
+INSERT INTO Electricity (electricity_id, provider_id, voltage_level, distribution_area, source_type, traffic_rate, units, fixed_charges, tax_rate) VALUES
+(7, 1, '230V', 'City-wide', 'Mixed', 8.50, 286, 120, 0.05);
 
 
 INSERT INTO Vehicle (vehicle_no, type, model, owner_citizen_id, consumes_fuel_id) VALUES
@@ -714,4 +723,5 @@ INSERT IGNORE INTO Service_Category_Map (service_id, category_id) VALUES
   (2,1), -- Service 2 (Water) -> Category 1 (water)
   (3,4), -- Service 3 (Bus) -> Category 4 (transport)
   (4,6), -- Service 4 (Health) -> Category 6 (healthcare)
-  (5,3); -- Service 5 (Internet) -> Category 3 (internet)
+  (5,3), -- Service 5 (Internet) -> Category 3 (internet)
+  (7,2); -- Service 7 (Electricity) -> Category 2 (electricity)

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - Smart City</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+      /* Custom styles from dashboard.html */
+      :root {
+        --primary-color: rgba(255, 255, 255, 0.6); /* Deep clean blue */
+        --secondary-color: rgba(255, 255, 255, 0.6); /* Accent blue */
+        --sidebar-width: 260px;
+        --bg-light: #f5f8ff;
+        --text-dark: #03045E;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        background:
+          linear-gradient(
+            rgba(255, 255, 255, 0.6),
+            rgba(255, 255, 255, 0.6)
+          ),
+            url("https://i.ibb.co/S4yxVvP2/img-smartcity.jpg ") center center /
+            cover no-repeat fixed;
+        background-color: rgba(255, 255, 255, 0.94);
+        color: var(--text-dark);
+        margin: 0;
+        padding: 0;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+
+        background: linear-gradient(
+          180deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+
+        color: rgba(0, 3, 154, 0.866);
+        overflow-y: auto;
+        transition: all 0.3s;
+        z-index: 1000;
+        transition: margin-left 0.4s ease-in-out;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .nav-link {
+        color: #03045e;
+        padding: 12px 20px;
+        border-radius: 10px;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+      }
+
+      .nav-link:hover {
+        background-color: #0076b680;
+        transform: translateX(5px);
+
+        color: rgb(0, 5, 137);
+      }
+
+      .nav-link.active {
+        background-color: #03045e;
+        color: #caf0f8;
+        font-weight: 600;
+      }
+
+      .nav-link i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+      }
+
+      .main-content {
+        margin-left: var(--sidebar-width);
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      .welcome-banner {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-radius: 15px;
+        padding: 30px;
+        color: #03045e;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px #03055e76;
+      }
+      
+      .card {
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 18px;
+        padding: 25px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px #03055e78;
+        transition: all 0.3s ease;
+        border: none;
+        color: #03045E;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          margin-left: calc(-1 * var(--sidebar-width));
+        }
+        .sidebar.show {
+          margin-left: 0;
+        }
+        .main-content {
+          margin-left: 0;
+        }
+      }
+
+      .logo-img {
+        width: 200px;
+        max-width: 60%;
+        height: auto;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        object-fit: contain;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 8px 22px #03055e7a;
+        background-color: #ffffffd0;
+      }
+
+      .logo-img:hover {
+        transform: scale(1.06);
+        box-shadow: 0 10px 28px rgba(19, 63, 110, 0.568);
+      }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><img src="assets/07.png" alt="Smart City Logo" class="logo-img" />SmartCity</h3>
+            <small id="userRole">CITIZEN</small>
+        </div>
+        
+        <ul class="nav flex-column mt-3">
+            <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="my_complaints.html"><i class="fas fa-file-alt"></i> My Complaints</a></li>
+            <li class="nav-item"><a class="nav-link" href="submit_complaint.html"><i class="fas fa-plus-circle"></i> Submit Complaint</a></li>
+            <li class="nav-item"><a class="nav-link" href="my_vehicles.html"><i class="fas fa-car"></i> My Vehicles</a></li>
+            <li class="nav-item"><a class="nav-link" href="my_properties.html"><i class="fas fa-home"></i> My Properties</a></li>
+            <li class="nav-item"><a class="nav-link" href="services.html"><i class="fas fa-concierge-bell"></i> Services</a></li>
+            <li class="nav-item"><a class="nav-link active" href="announcements.html"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+            <li class="nav-item"><a class="nav-link" href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="welcome-banner">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h1 class="mb-2">City Announcements</h1>
+                    <p class="mb-0 opacity-75">Stay updated with the latest news and announcements from the city administration.</p>
+                </div>
+                <button class="btn btn-light mt-3 mt-md-0" onclick="toggleSidebar()">
+                    <i class="fas fa-bars me-2"></i> Menu
+                </button>
+            </div>
+        </div>
+
+        <div class="card p-4">
+            <div class="card-body">
+                <h5 class="card-title mb-4"><i class="fas fa-bullhorn me-2"></i> All Announcements</h5>
+                <div id="announcementsList">
+                    <div class="text-center py-4" id="announcements-loading">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }
+        }
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+
+        async function loadAnnouncements() {
+            const container = document.getElementById('announcementsList');
+            try {
+                const res = await fetch(`${API_BASE_URL}/announcements`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error('Failed to load announcements');
+                const items = await res.json();
+                document.getElementById('announcements-loading')?.remove();
+                if (!items || items.length === 0) {
+                    container.innerHTML = '<p class="text-center text-muted">No announcements at this time.</p>';
+                    return;
+                }
+                let html = '';
+                items.forEach(a => {
+                    const date = a.created_at ? new Date(a.created_at).toLocaleString() : '';
+                    html += `
+                        <div class="announcement-card">
+                            <p class="small text-muted mb-1">${(a.message||'')}</p>
+                            <small class="text-muted"><i class="fas fa-clock me-1"></i>${date}</small>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (err) {
+                console.error('Announcements load error', err);
+                container.innerHTML = '<p class="text-center text-danger">Failed to load announcements.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadAnnouncements);
+    </script>
+</body>
+</html>

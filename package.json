@@ -5,13 +5,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "run-migration": "node scripts/run-migration.js"
+    "run-migration": "node scripts/run-migration.js",
+    "fetch-weather": "node tools/fetch-weather-data.js",
+    "fetch-traffic": "node tools/fetch-traffic-data.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",

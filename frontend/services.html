@@ -238,79 +238,19 @@ background:
 
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="servicesGrid">
             
-            <div class="col">
-                <div class="card service-card p-4 text-center">
-                    <i class="fas fa-notes-medical service-icon text-danger"></i>
-                    <h5 class="card-title">Healthcare & Wellness</h5>
-                    <p class="card-text small text-muted">Book appointments with city doctors and access health records.</p>
-<a href="citizen_book_appointment.html" class="btn btn-outline-danger mt-2">Book Appointment</a>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card service-card p-4 text-center">
-                    <i class="fas fa-bus service-icon text-success"></i>
-                    <h5 class="card-title">Public Transport</h5>
-                    <p class="card-text small text-muted">View live bus routes, schedules, and estimated arrival times.</p>
-<a href="citizen_transport_schedules.html" class="btn btn-outline-success mt-2">View Schedules</a>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card service-card p-4 text-center">
-                    <i class="fas fa-wifi service-icon text-primary"></i>
-                    <h5 class="card-title">Internet Services</h5>
-                    <p class="card-text small text-muted">Manage city-wide public Wi-Fi access and report connectivity issues.</p>
-<a href="citizen_internet_coverage.html" class="btn btn-outline-primary mt-2">Check Coverage</a>
-              </div>
-            </div>
-
-            <div class="col">
-                <div class="card service-card p-4 text-center">
-                    <i class="fas fa-bolt service-icon text-warning"></i>
-                    <h5 class="card-title">Electricity Services</h5>
-                    <p class="card-text small text-muted">Report power outages, monitor consumption, and manage billing.</p>
-<a href="citizen_electricity_bill.html" class="btn btn-outline-warning mt-2">Pay Bill</a>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card service-card p-4 text-center">
-                    <i class="fas fa-faucet service-icon text-info"></i>
-                    <h5 class="card-title">Water Services</h5>
-                    <p class="card-text small text-muted">Report water leaks or burst pipes, and view your consumption data.</p>
-<a href="submit_complaint.html" class="btn btn-outline-info mt-2">Report Leak</a>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card service-card p-4 text-center">
-                    <i class="fas fa-trash-alt service-icon text-info"></i>
-                    <h5 class="card-title">Waste Collection</h5>
-                    <p class="card-text small text-muted">Request special waste pickups and check smart bin statuses nearby.</p>
-<a href="submit_complaint.html" class="btn btn-outline-info mt-2">Request Pickup</a>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card service-card p-4 text-center">
-                    <i class="fas fa-map-marker-alt service-icon text-primary"></i>
-                    <h5 class="card-title">Infrastructure Reporting</h5>
-                    <p class="card-text small text-muted">Report damage to public lights, roads, or city property.</p>
-                    <a href="submit_complaint.html" class="btn btn-outline-primary mt-2">Report Damage</a>
-                </div>
-            </div>
-
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        const token = localStorage.getItem('token');
+
         // --- Shared JS functions ---
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.clear();
-                window.location.href = 'index.html'; // Adjust to your login page
+                window.location.href = 'login.html'; // Adjust to your login page
             }
         }
         
@@ -319,47 +259,49 @@ background:
         }
         // --- End Shared JS functions ---
 
-        // The following JS would load dynamic services data from your SERVICES entity
-        /*
         async function loadServices() {
             try {
-                const token = localStorage.getItem('token');
-                const res = await fetch(`${API_BASE_URL}/services/catalog`, {
+                const res = await fetch(`${API_BASE_URL}/services/grouped`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                const services = await res.json();
+                const servicesByCategory = await res.json();
                 
                 const grid = document.getElementById('servicesGrid');
                 grid.innerHTML = ''; 
 
-                services.forEach(s => {
-                    // Logic to map s.category to an icon and color
+                for (const category in servicesByCategory) {
+                    const services = servicesByCategory[category];
+                    const service = services[0]; // Use the first service in the category to represent the card
+
                     const iconMap = {
-                        'Healthcare': { icon: 'fa-notes-medical', color: 'danger' },
-                        'Transport': { icon: 'fa-bus', color: 'success' },
-                        // ... more categories
+                        'healthcare': { icon: 'fa-notes-medical', color: 'danger', link: 'citizen_book_appointment.html' },
+                        'transport': { icon: 'fa-bus', color: 'success', link: 'citizen_transport_schedules.html' },
+                        'internet': { icon: 'fa-wifi', color: 'primary', link: 'citizen_internet_coverage.html' },
+                        'electricity': { icon: 'fa-bolt', color: 'warning', link: 'citizen_electricity_bill.html' },
+                        'water': { icon: 'fa-faucet', color: 'info', link: 'submit_complaint.html' },
+                        'waste': { icon: 'fa-trash-alt', color: 'info', link: 'submit_complaint.html' },
+                        'uncategorized': { icon: 'fa-concierge-bell', color: 'secondary', link: 'submit_complaint.html' }
                     };
-                    const map = iconMap[s.category] || { icon: 'fa-concierge-bell', color: 'secondary' };
+                    const map = iconMap[category] || { icon: 'fa-concierge-bell', color: 'secondary', link: 'submit_complaint.html' };
 
                     const card = `
                         <div class="col">
                             <div class="card service-card p-4 text-center">
                                 <i class="fas ${map.icon} service-icon text-${map.color}"></i>
-                                <h5 class="card-title">${s.service_name}</h5>
-                                <p class="card-text small text-muted">${s.description}</p>
-                                <a href="book-service.html?id=${s.id}" class="btn btn-outline-${map.color} mt-2">Book Now</a>
+                                <h5 class="card-title">${category.charAt(0).toUpperCase() + category.slice(1)}</h5>
+                                <p class="card-text small text-muted">${service.service_name}</p>
+                                <a href="${map.link}" class="btn btn-outline-${map.color} mt-2">Explore</a>
                             </div>
                         </div>
                     `;
                     grid.innerHTML += card;
-                });
+                }
             } catch (error) {
                 console.error('Failed to load services:', error);
             }
         }
 
-        // document.addEventListener('DOMContentLoaded', loadServices);
-        */
+        document.addEventListener('DOMContentLoaded', loadServices);
     </script>
 </body>
 </html>

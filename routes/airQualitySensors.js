@@ -3,6 +3,20 @@ const router = express.Router();
 const {db} = require("../db");
 const Joi = require('joi');
 
+// Get the latest air quality reading from any sensor
+router.get("/latest", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM AQ_Reading ORDER BY timestamp DESC LIMIT 1"
+    );
+    if (rows.length === 0)
+      return res.status(404).json({ error: "No air quality readings found" });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const createAirQualitySensorReadingSchema = Joi.object({
   timestamp: Joi.date().required(),
   PM2_5: Joi.number().required(),

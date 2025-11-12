@@ -674,137 +674,368 @@ background:
                 document.getElementById("alertCount").textContent =
                   expiringDocs;
               }
+
+              // Populate recent activity with complaints
+              const recentActivityContainer = document.getElementById("recentActivity");
+              let recentActivityHtml = '';
+              if (data.complaints && data.complaints.length > 0) {
+                data.complaints.slice(0, 5).forEach(c => {
+                  const statusClass = (c.status || '').toLowerCase().includes('completed') ? 'completed' : (c.status || '').toLowerCase().includes('in progress') ? 'confirmed' : 'pending';
+                  const short = (c.complaint_text || '').substring(0, 80) + ((c.complaint_text || '').length > 80 ? '...' : '');
+                  recentActivityHtml += `
+                    <div class="activity-item ${statusClass}">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-grow-1 ms-3">
+                                <p class="mb-1 small">${short}</p>
+                                <small class="text-muted">${new Date(c.complaint_date).toLocaleString()}</small>
+                            </div>
+                        </div>
+                    </div>
+                  `;
+                });
+                recentActivityContainer.innerHTML = recentActivityHtml;
+              } else {
+                recentActivityContainer.innerHTML = '<p class="text-center text-muted">No recent activity</p>';
+              }
             }
           }
-          // Load recent activity (optional: update to use real data)
-          loadRecentActivity();
         } catch (error) {
           console.error("Error loading dashboard:", error);
         }
       }
 
-      function loadRecentActivity() {
-        const container = document.getElementById("recentActivity");
-        const activities = [
-          {
-            type: "completed",
-            text: "Water supply complaint resolved",
-            date: "2 hours ago",
-          },
-          {
-            type: "confirmed",
-            text: "Community hall booking confirmed",
-            date: "1 day ago",
-          },
-          {
-            type: "pending",
-            text: "Street light complaint submitted",
-            date: "3 days ago",
-          },
-        ];
-
-        let html = "";
-        activities.forEach((activity) => {
-          const color =
-            {
-              completed: "success",
-              confirmed: "primary",
-              pending: "warning",
-            }[activity.type] || "secondary";
-
-          html += `
-                    <div class="activity-item ${activity.type}">
-                        <div class="d-flex align-items-start">
-                            <div class="flex-shrink-0">
-                                <span class="badge bg-${color} rounded-circle" style="width: 10px; height: 10px;"></span>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <p class="mb-1 small">${activity.text}</p>
-                                <small class="text-muted">${activity.date}</small>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html || '<p class="text-center text-muted">No recent activity</p>';
-        }
         
-        // Load announcements from backend
-        async function loadAnnouncements() {
-            const container = document.getElementById('announcements');
-            try {
-                const res = await fetch(`${API_BASE_URL}/announcements`, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (!res.ok) throw new Error('Failed to load announcements');
-                const items = await res.json();
-                document.getElementById('announcements-loading')?.remove();
-                if (!items || items.length === 0) {
-                    container.innerHTML = '<p class="text-center text-muted">No announcements at this time.</p>';
-                    return;
-                }
-                let html = '';
-                items.slice(0,5).forEach(a => {
-                    const date = a.created_at ? new Date(a.created_at).toLocaleString() : '';
-                    html += `
-                        <div class="announcement-card">
-                            <h6 class="mb-2">${(a.title||'Announcement')}</h6>
-                            <p class="small text-muted mb-1">${(a.content||'')}</p>
-                            <small class="text-muted"><i class="fas fa-clock me-1"></i>${date}</small>
-                        </div>
-                    `;
-                });
-                container.innerHTML = html;
-            } catch (err) {
-                console.error('Announcements load error', err);
-                container.innerHTML = '<p class="text-center text-danger">Failed to load announcements.</p>';
-            }
-        }
+        
 
-        // Load user's complaints (recent)
-        async function loadMyComplaints() {
-            const container = document.getElementById('recentActivity');
-            try {
-                // Decode user id from token
-                let userId = null;
-                if (token) {
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    userId = payload.id;
-                }
-                if (!userId) return;
-                const res = await fetch(`${API_BASE_URL}/complaints/my`, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (!res.ok) throw new Error('Failed to load complaints');
-                const complaints = await res.json();
-                if (!complaints || complaints.length === 0) {
-                    container.innerHTML = '<p class="text-center text-muted">No recent complaints</p>';
-                    return;
-                }
-                let html = '';
-                complaints.slice(0,5).forEach(c => {
-                    const statusClass = (c.status || '').toLowerCase().includes('completed') ? 'completed' : (c.status || '').toLowerCase().includes('in progress') ? 'confirmed' : 'pending';
-                    const short = (c.subject || c.complaint_text || '').substring(0,80) + ((c.subject || c.complaint_text || '').length>80 ? '...' : '');
-                    html += `
-                        <div class="activity-item ${statusClass}">
-                            <div class="d-flex align-items-start">
-                                <div class="flex-grow-1 ms-3">
-                                    <p class="mb-1 small">${short}</p>
-                                    <small class="text-muted">${new Date(c.created_at || c.complaint_date).toLocaleString()}</small>
+        
+                // Load announcements from backend
+
+        
+                async function loadAnnouncements() {
+
+        
+                    const container = document.getElementById('announcements');
+
+        
+                    try {
+
+        
+                        const res = await fetch(`${API_BASE_URL}/announcements`, { headers: { 'Authorization': `Bearer ${token}` } });
+
+        
+                        if (!res.ok) throw new Error('Failed to load announcements');
+
+        
+                        const items = await res.json();
+
+        
+                        document.getElementById('announcements-loading')?.remove();
+
+        
+                        if (!items || items.length === 0) {
+
+        
+                            container.innerHTML = '<p class="text-center text-muted">No announcements at this time.</p>';
+
+        
+                            return;
+
+        
+                        }
+
+        
+                        let html = '';
+
+        
+                        items.slice(0,5).forEach(a => {
+
+        
+                            const date = a.created_at ? new Date(a.created_at).toLocaleString() : '';
+
+        
+                            html += `
+
+        
+                                <div class="announcement-card">
+
+        
+                                    <p class="small text-muted mb-1">${(a.message||'')}</p>
+
+        
+                                    <small class="text-muted"><i class="fas fa-clock me-1"></i>${date}</small>
+
+        
                                 </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                container.innerHTML = html;
-            } catch (err) {
-                console.error('Load my complaints error', err);
-                container.innerHTML = '<p class="text-center text-danger">Failed to load recent complaints.</p>';
-            }
-        }
+
         
-        // Load data on page load
-        loadDashboardData();
-        // Also load announcements and recent complaints
-        loadAnnouncements();
-        loadMyComplaints();
+                            `;
+
+        
+                        });
+
+        
+                        container.innerHTML = html;
+
+        
+                    } catch (err) {
+
+        
+                        console.error('Announcements load error', err);
+
+        
+                        container.innerHTML = '<p class="text-center text-danger">Failed to load announcements.</p>';
+
+        
+                    }
+
+        
+                }
+
+        
+        
+
+        
+                        async function loadCityOverviewData() {
+
+        
+        
+
+        
+                          try {
+
+        
+        
+
+        
+                            // Fetch weather data
+
+        
+        
+
+        
+                            const weatherRes = await fetch(`${API_BASE_URL}/weather-sensors/latest`, { headers: { 'Authorization': `Bearer ${token}` } });
+
+        
+        
+
+        
+                            if (weatherRes.ok) {
+
+        
+        
+
+        
+                              const weatherData = await weatherRes.json();
+
+        
+        
+
+        
+                              document.getElementById("temperature").textContent = `${weatherData.temperature}°C`;
+
+        
+        
+
+        
+                            } else {
+
+        
+        
+
+        
+                              document.getElementById("temperature").textContent = `N/A`;
+
+        
+        
+
+        
+                              console.warn('No weather data found, displaying placeholder.');
+
+        
+        
+
+        
+                            }
+
+        
+        
+
+        
+                
+
+        
+        
+
+        
+                            // Fetch air quality data
+
+        
+        
+
+        
+                            const airQualityRes = await fetch(`${API_BASE_URL}/air-quality-sensors/latest`, { headers: { 'Authorization': `Bearer ${token}` } });
+
+        
+        
+
+        
+                            if (airQualityRes.ok) {
+
+        
+        
+
+        
+                              const airQualityData = await airQualityRes.json();
+
+        
+        
+
+        
+                              document.getElementById("airQuality").textContent = `Good (${airQualityData.aqindex} AQI)`;
+
+        
+        
+
+        
+                            } else {
+
+        
+        
+
+        
+                              document.getElementById("airQuality").textContent = `N/A`;
+
+        
+        
+
+        
+                              console.warn('No air quality data found, displaying placeholder.');
+
+        
+        
+
+        
+                            }
+
+        
+        
+
+        
+                
+
+        
+        
+
+        
+                            // Fetch traffic data
+
+        
+        
+
+        
+                            const trafficRes = await fetch(`${API_BASE_URL}/traffic-sensors/latest`, { headers: { 'Authorization': `Bearer ${token}` } });
+
+        
+        
+
+        
+                            if (trafficRes.ok) {
+
+        
+        
+
+        
+                              const trafficData = await trafficRes.json();
+
+        
+        
+
+        
+                              document.getElementById("trafficSpeed").textContent = `${trafficData.avg_speed} km/h`;
+
+        
+        
+
+        
+                            } else {
+
+        
+        
+
+        
+                              document.getElementById("trafficSpeed").textContent = `N/A`;
+
+        
+        
+
+        
+                              console.warn('No traffic data found, displaying placeholder.');
+
+        
+        
+
+        
+                            }
+
+        
+        
+
+        
+                          } catch (error) {
+
+        
+        
+
+        
+                            console.error("Error loading city overview data:", error);
+
+        
+        
+
+        
+                            document.getElementById("temperature").textContent = `N/A`;
+
+        
+        
+
+        
+                            document.getElementById("airQuality").textContent = `N/A`;
+
+        
+        
+
+        
+                            document.getElementById("trafficSpeed").textContent = `N/A`;
+
+        
+        
+
+        
+                          }
+
+        
+        
+
+        
+                        }
+
+        
+        
+
+        
+                // Load data on page load
+
+        
+                loadDashboardData();
+
+        
+                // Also load announcements
+
+        
+                loadAnnouncements();
+
+        
+                loadCityOverviewData();
     </script>
   </body>
 </html>

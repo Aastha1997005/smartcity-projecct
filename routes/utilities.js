@@ -65,6 +65,23 @@ router.get('/internet/all', async (req, res) => {
   }
 });
 
+// Get internet coverage by location
+router.get('/internet/coverage', async (req, res) => {
+  const { location } = req.query;
+  if (!location) {
+    return res.status(400).json({ error: 'Location parameter is required' });
+  }
+  try {
+    const [rows] = await db.query(
+      'SELECT * FROM Internet WHERE coverage_area LIKE ?',
+      [`%${location}%`]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get all water utilities
 router.get('/water/all', async (req, res) => {
   try {

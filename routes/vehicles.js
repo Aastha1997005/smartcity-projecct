@@ -1,6 +1,35 @@
 const express = require("express");
 const router = express.Router();
 const {db} = require("../db");
+const { authenticateToken } = require("../middleware/auth");
+
+// Get all vehicles for the currently logged-in citizen
+router.get("/my", authenticateToken, async (req, res) => {
+  const userId = req.user && req.user.id;
+  if (!userId) return res.status(401).json({ message: "Authentication error: User ID not found." });
+
+  try {
+    // Resolve user's linked profile id (citizen_id)
+    const [users] = await db.query('SELECT linked_id FROM Users WHERE user_id = ?', [userId]);
+    if (users.length === 0) return res.status(404).json({ message: 'User not found' });
+    const citizenId = users[0].linked_id;
+    if (!citizenId) return res.status(400).json({ message: 'Profile incomplete. Please complete your profile before viewing your vehicles.' });
+
+    const [rows] = await db.query(
+      `SELECT v.*, f.type AS fuel_type
+       FROM Vehicle v
+       LEFT JOIN Fuel f ON v.consumes_fuel_id = f.fuel_id
+       WHERE v.owner_citizen_id = ?`,
+      [citizenId]
+    );
+    // Add is_expiring mock property for demo (replace with real logic if needed)
+    rows.forEach(v => v.is_expiring = false);
+    res.json(rows);
+  } catch (err) {
+    console.error("Database error fetching user's vehicles:", err);
+    res.status(500).json({ message: "Failed to retrieve vehicles due to a server error." });
+  }
+});
 
 
 // Get all vehicles for a specific citizen (user)

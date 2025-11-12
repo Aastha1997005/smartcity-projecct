@@ -93,6 +93,12 @@ const adminRoutes = require("./routes/admin_routes");
 console.log("Loaded adminRoutes");
 const alertsRoutes = require("./routes/alerts");
 console.log("Loaded alertsRoutes");
+const weatherSensorRoutes = require("./routes/weatherSensors");
+console.log("Loaded weatherSensorRoutes");
+const airQualitySensorRoutes = require("./routes/airQualitySensors");
+console.log("Loaded airQualitySensorRoutes");
+const trafficSensorRoutes = require("./routes/trafficSensors");
+console.log("Loaded trafficSensorRoutes");
 
 // Register routes
 
@@ -118,6 +124,9 @@ app.use("/api/maintenance", maintenanceRoutes); console.log("Registered /api/mai
 app.use("/api/announcements", notificationsRoutes); console.log("Registered /api/announcements");
 app.use("/api/admin", adminRoutes); console.log("Registered /api/admin");
 app.use("/api/alerts", alertsRoutes); console.log("Registered /api/alerts");
+app.use("/api/weather-sensors", weatherSensorRoutes); console.log("Registered /api/weather-sensors");
+app.use("/api/air-quality-sensors", airQualitySensorRoutes); console.log("Registered /api/air-quality-sensors");
+app.use("/api/traffic-sensors", trafficSensorRoutes); console.log("Registered /api/traffic-sensors");
 // Bookings endpoints are now provided via /api/services/bookings
 
 

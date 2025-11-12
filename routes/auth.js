@@ -7,20 +7,13 @@ const bcrypt = require("bcrypt"); // Added bcrypt import
 
 // Register user
 router.post("/register", async (req, res) => {
-  const { email, password, role, adminName, adminPost, adminDepartment } = req.body;
+  const { email, password, role } = req.body;
   
   const isEmail = v => typeof v === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  const allowedRoles = ['citizen', 'admin']; // Only citizen and admin roles allowed for registration
+  const allowedRoles = ['citizen']; // Only citizen role allowed for registration
   if (!isEmail(email)) return res.status(400).json({ error: 'Invalid email' });
   if (!password || password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
   if (!role || !allowedRoles.includes(role)) return res.status(400).json({ error: 'Invalid role' });
-
-  // Admin-specific validation
-  if (role === 'admin') {
-    if (!adminName || !adminPost || !adminDepartment) {
-      return res.status(400).json({ error: 'Admin name, post, and department are required.' });
-    }
-  }
 
   try {
     // Check if user already exists
@@ -37,18 +30,8 @@ router.post("/register", async (req, res) => {
     );
     const userId = userResult.insertId;
 
-    // Handle admin-specific details
-    if (role === 'admin') {
-      const [adminDetailsResult] = await db.query(
-        "INSERT INTO Admin_Details (user_id, name, post, department) VALUES (?, ?, ?, ?)",
-        [userId, adminName, adminPost, adminDepartment]
-      );
-      const adminId = adminDetailsResult.insertId;
-      // Link the user to the new admin_details record
-      await db.query('UPDATE Users SET linked_id = ? WHERE user_id = ?', [adminId, userId]);
-    }
     // Handle other roles (citizen, healthcare, transport, utility) as before, but simplified
-    else if (role === 'citizen') {
+    if (role === 'citizen') {
         // Citizen registration is typically handled via complete-profile, but if direct citizen registration
         // is desired here, it would need to be implemented. For now, assume complete-profile handles it.
         // Or, if citizen details are part of initial signup, add them here.

@@ -2,6 +2,20 @@ const express = require("express");
 const router = express.Router();
 const {db} = require("../db");
 
+// Get the latest traffic reading from any sensor
+router.get("/latest", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM Traffic_Sensor_Reading ORDER BY time_stamp DESC LIMIT 1"
+    );
+    if (rows.length === 0)
+      return res.status(404).json({ error: "No traffic readings found" });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get all traffic sensors
 router.get("/", async (req, res) => {
   try {

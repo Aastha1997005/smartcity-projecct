@@ -371,6 +371,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+      const API_BASE_URL = 'http://localhost:5000/api';
+      const token = localStorage.getItem('token');
+
       function logout() {
         if (confirm("Logout?")) {
           localStorage.clear();
@@ -381,28 +384,7 @@
         document.getElementById("sidebar").classList.toggle("show");
       }
 
-      const DOCTORS = [
-        {
-          id: 1,
-          name: "Dr. A. Mehta",
-          spec: "Cardiologist",
-          hospital: "CityCare",
-        },
-        { id: 2, name: "Dr. B. Shah", spec: "Dentist", hospital: "SmilePlus" },
-        {
-          id: 3,
-          name: "Dr. C. Rao",
-          spec: "Dermatologist",
-          hospital: "SkinLab",
-        },
-        {
-          id: 4,
-          name: "Dr. D. Patel",
-          spec: "Pediatrician",
-          hospital: "KidsFirst",
-        },
-      ];
-
+      let DOCTORS = [];
       const slots = [
         "09:00",
         "09:30",
@@ -419,16 +401,38 @@
       let selectedDoctor = null,
         selectedSlot = null;
 
+      async function loadDoctors() {
+        try {
+          const res = await fetch(`${API_BASE_URL}/doctors`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          DOCTORS = await res.json();
+          
+          const specialtySelect = document.getElementById("specialty");
+          const specialties = [...new Set(DOCTORS.map(d => d.specialization))];
+          specialties.forEach(spec => {
+            const option = document.createElement("option");
+            option.value = spec;
+            option.textContent = spec;
+            specialtySelect.appendChild(option);
+          });
+
+          renderDoctors();
+        } catch (error) {
+          console.error('Failed to load doctors:', error);
+        }
+      }
+
       function renderDoctors() {
         const spec = document.getElementById("specialty").value;
         const ul = document.getElementById("doctorList");
         ul.innerHTML = "";
-        DOCTORS.filter((d) => spec === "All" || d.spec === spec).forEach(
+        DOCTORS.filter((d) => spec === "All" || d.specialization === spec).forEach(
           (d) => {
             const li = document.createElement("li");
             li.className =
               "list-group-item d-flex justify-content-between align-items-center";
-            li.innerHTML = `<div><strong>${d.name}</strong><div class="small text-muted">${d.spec} • ${d.hospital}</div></div>
+            li.innerHTML = `<div><strong>${d.name}</strong><div class="small text-muted">${d.specialization}</div></div>
                   <button class="btn btn-outline-danger btn-sm">Select</button>`;
             li.querySelector("button").onclick = () => {
               selectedDoctor = d;
@@ -465,7 +469,7 @@
         const date = document.getElementById("apptDate").value;
         const s = document.getElementById("summary");
         if (selectedDoctor && date && selectedSlot) {
-          s.textContent = `${selectedDoctor.name} (${selectedDoctor.spec}) on ${date} at ${selectedSlot}.`;
+          s.textContent = `${selectedDoctor.name} (${selectedDoctor.specialization}) on ${date} at ${selectedSlot}.`;
           document.getElementById("confirmBtn").disabled = false;
         } else {
           s.textContent = "Select a doctor, date and time.";
@@ -509,28 +513,80 @@
       }
 
       document
-        .getElementById("specialty")
-        .addEventListener("change", renderDoctors);
-      document
         .getElementById("apptDate")
         .addEventListener("change", updateSummary);
-      document.getElementById("confirmBtn").addEventListener("click", () => {
-        const booking = {
-          doctor: selectedDoctor,
-          date: apptDate.value,
-          time: selectedSlot,
-          createdAt: new Date().toISOString(),
+      document.getElementById("confirmBtn").addEventListener("click", async () => {
+        const date = document.getElementById("apptDate").value;
+        const booking_start = new Date(`${date}T${selectedSlot}`);
+        
+        const citizen_id = JSON.parse(atob(token.split('.')[1])).id;
+
+        const bookingData = {
+          citizen_id: citizen_id,
+          service_id: 6, // Assuming service_id 6 is for "Doctor Appointment"
+          booking_start: booking_start,
+          details: {
+            doctor_id: selectedDoctor.doctor_id,
+            doctor_name: selectedDoctor.name,
+            specialization: selectedDoctor.specialization
+          }
         };
-        const arr = JSON.parse(localStorage.getItem("citizen_bookings") || "[]");
-        arr.push(booking);
-        localStorage.setItem("citizen_bookings", JSON.stringify(arr));
-        document.getElementById(
-          "okText"
-        ).textContent = `Your appointment is confirmed with ${booking.doctor.name} on ${booking.date} at ${booking.time}.`;
-        new bootstrap.Modal("#okModal").show();
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/services/bookings`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(bookingData)
+          });
+
+          if (res.ok) {
+            document.getElementById(
+              "okText"
+            ).textContent = `Your appointment is confirmed with ${selectedDoctor.name} on ${date} at ${selectedSlot}.`;
+            new bootstrap.Modal("#okModal").show();
+            loadBookings();
+          } else {
+            const error = await res.json();
+            alert(`Failed to book appointment: ${error.message}`);
+          }
+        } catch (error) {
+          console.error('Failed to book appointment:', error);
+          alert('Failed to book appointment. Please try again later.');
+        }
       });
 
-      renderDoctors();
+      async function loadBookings() {
+        const list = document.getElementById("myBookingsList");
+        list.innerHTML = "";
+
+        try {
+          const citizen_id = JSON.parse(atob(token.split('.')[1])).id;
+          const res = await fetch(`${API_BASE_URL}/services/bookings/user/${citizen_id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const bookings = await res.json();
+
+          bookings.filter(b => b.service_id === 6).forEach(b => {
+            const li = document.createElement("li");
+            li.className = "list-group-item d-flex justify-content-between";
+            li.innerHTML = `
+              <div>
+                <strong>${b.details.doctor_name}</strong>
+                <div class="text-muted small">${new Date(b.booking_start).toLocaleString()}</div>
+              </div>
+  <span class="spec-tag">${b.details.specialization}</span>
+            `;
+            list.appendChild(li);
+          });
+        } catch (error) {
+          console.error('Failed to load bookings:', error);
+        }
+      }
+
+      loadDoctors();
       renderSlots();
       loadBookings();   // <-- only on page load
     </script>

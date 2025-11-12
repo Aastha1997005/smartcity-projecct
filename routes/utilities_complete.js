@@ -158,6 +158,24 @@ router.get("/electricity", async (req, res) => {
   }
 });
 
+router.get("/electricity/my-bill", authenticateToken, async (req, res) => {
+  const userId = req.user && req.user.id;
+  if (!userId) return res.status(401).json({ message: "Authentication error: User ID not found." });
+
+  try {
+    const [[citizen]] = await db.query('SELECT c.* FROM Citizen c JOIN Users u ON c.citizen_id = u.linked_id WHERE u.user_id = ?', [userId]);
+    if (!citizen) return res.status(404).json({ message: 'Citizen not found' });
+
+    const [[bill]] = await db.query('SELECT * FROM Electricity LIMIT 1');
+    if (!bill) return res.status(404).json({ message: 'No electricity bill found' });
+
+    res.json({ citizen, bill });
+  } catch (err) {
+    console.error('My bill error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get electricity details by ID
 router.get("/electricity/:electricity_id", async (req, res) => {
   try {

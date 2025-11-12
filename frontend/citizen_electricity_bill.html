@@ -288,35 +288,42 @@
 
     <!-- JS -->
     <script>
+      const API_BASE_URL = 'http://localhost:5000/api';
+      const token = localStorage.getItem('token');
+
       function toggleSidebar() {
         document.getElementById("sidebar").classList.toggle("show");
       }
 
-      const bill = {
-        consumerNo: "SC-EL-1245789",
-        name: "Suhani Vataliya",
-        addr: "Ward 7, River View",
-        period: "Oct 2025",
-        units: 286,
-        rate: 7.5,
-        fixed: 120,
-        tax: 0.05,
-      };
+      async function loadBill() {
+        try {
+          const res = await fetch(`${API_BASE_URL}/utilities/electricity/my-bill`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await res.json();
+          const { citizen, bill } = data;
 
-      bill.amount = bill.units * bill.rate + bill.fixed;
-      bill.total = Math.round(bill.amount * (1 + bill.tax));
+          const rate = bill.traffic_rate || 7.5;
+          const units = bill.units || 0;
+          const fixed = bill.fixed_charges || 0;
+          const tax = bill.tax_rate || 0;
+          const amount = units * rate + fixed;
+          const total = Math.round(amount * (1 + tax));
 
-      function render() {
-        bc1.textContent = bill.consumerNo;
-        bc2.textContent = bill.name;
-        bc3.textContent = bill.addr;
-        bc4.textContent = bill.period;
-        bc5.textContent = bill.units + " kWh";
-        bc6.textContent = "₹" + bill.amount;
-        bc7.textContent = "5%";
-        bc8.textContent = "₹" + bill.total;
+          bc1.textContent = `SC-EL-${bill.electricity_id}`;
+          bc2.textContent = `${citizen.first_name} ${citizen.last_name}`;
+          bc3.textContent = `${citizen.street}, ${citizen.area}`;
+          bc4.textContent = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+          bc5.textContent = `${units} kWh`;
+          bc6.textContent = `₹${amount.toFixed(2)}`;
+          bc7.textContent = `${tax * 100}%`;
+          bc8.textContent = `₹${total}`;
+        } catch (error) {
+          console.error('Failed to load bill:', error);
+        }
       }
-      render();
+
+      document.addEventListener('DOMContentLoaded', loadBill);
 
       payBtn.onclick = () => {
         const payments = JSON.parse(

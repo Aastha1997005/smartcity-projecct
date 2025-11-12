@@ -295,6 +295,9 @@
     </div>
 
     <script>
+      const API_BASE_URL = 'http://localhost:5000/api';
+      const token = localStorage.getItem('token');
+
       function toggleSidebar() {
         document.getElementById("sidebar").classList.toggle("show");
       }
@@ -306,76 +309,21 @@
         }
       }
 
-      const schedules = [
-        {
-          id: 1,
-          mode: "Bus",
-          start_point: "Rajwada",
-          end_point: "Vijay Nagar",
-          start_time: "06:00",
-          end_time: "22:00",
-          frequency: "15 mins",
-          days: "Mon–Sun",
-          status: "On-time",
-        },
-        {
-          id: 2,
-          mode: "Metro",
-          start_point: "Palasia",
-          end_point: "MR 10",
-          start_time: "05:30",
-          end_time: "23:00",
-          frequency: "10 mins",
-          days: "Mon–Sun",
-          status: "On-time",
-        },
-        {
-          id: 3,
-          mode: "Bus",
-          start_point: "Airport",
-          end_point: "Railway Station",
-          start_time: "06:30",
-          end_time: "21:30",
-          frequency: "20 mins",
-          days: "Mon–Sat",
-          status: "Delayed",
-        },
-        {
-          id: 4,
-          mode: "Tram",
-          start_point: "New Market",
-          end_point: "Tech Park",
-          start_time: "07:00",
-          end_time: "19:30",
-          frequency: "25 mins",
-          days: "Mon–Fri",
-          status: "Maintenance",
-        },
-        {
-          id: 5,
-          mode: "Electric Bus",
-          start_point: "AIIMS Indore",
-          end_point: "IIT Indore",
-          start_time: "07:30",
-          end_time: "21:00",
-          frequency: "30 mins",
-          days: "Mon–Sun",
-          status: "On-time",
-        },
-        {
-          id: 6,
-          mode: "Mini Bus",
-          start_point: "LIG Square",
-          end_point: "Bhawarkuan",
-          start_time: "08:00",
-          end_time: "20:30",
-          frequency: "12 mins",
-          days: "Mon–Sat",
-          status: "Crowded",
-        },
-      ];
+      let allSchedules = [];
+      let currentData = [];
 
-      let currentData = [...schedules];
+      async function loadSchedules() {
+        try {
+          const res = await fetch(`${API_BASE_URL}/transportSchedules`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          allSchedules = await res.json();
+          currentData = [...allSchedules];
+          renderTable(currentData);
+        } catch (error) {
+          console.error('Failed to load schedules:', error);
+        }
+      }
 
       function renderTable(data) {
         const tbody = document.getElementById("scheduleBody");
@@ -392,13 +340,13 @@
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td>${s.id}</td>
+            <td>${s.schedule_id}</td>
             <td>${s.mode}</td>
             <td>${s.start_point} → ${s.end_point}</td>
             <td>${s.start_time}</td>
             <td>${s.end_time}</td>
             <td>${s.frequency}</td>
-            <td>${s.days}</td>
+            <td>${s.days_of_operation}</td>
             <td><span class="badge-status ${badgeClass}">${s.status}</span></td>
           `;
           tbody.appendChild(tr);
@@ -411,7 +359,7 @@
           .value.toLowerCase();
         const modeFilter = document.getElementById("modeFilter").value;
 
-        const filtered = schedules.filter((s) => {
+        const filtered = allSchedules.filter((s) => {
           const matchesSearch =
             s.start_point.toLowerCase().includes(searchText) ||
             s.end_point.toLowerCase().includes(searchText);
@@ -445,7 +393,7 @@
         .getElementById("modeFilter")
         .addEventListener("change", applyFilters);
 
-      renderTable(schedules);
+      document.addEventListener('DOMContentLoaded', loadSchedules);
     </script>
   </body>
 </html>

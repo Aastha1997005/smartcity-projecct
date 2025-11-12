@@ -3,6 +3,20 @@ const router = express.Router();
 const {db} = require("../db");
 const Joi = require('joi');
 
+// Get the latest weather reading from any sensor
+router.get("/latest", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM Weather_Reading ORDER BY time_stamp DESC LIMIT 1"
+    );
+    if (rows.length === 0)
+      return res.status(404).json({ error: "No weather readings found" });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const createWeatherSensorReadingSchema = Joi.object({
   time_stamp: Joi.date().required(),
   wind_speed: Joi.number().required(),

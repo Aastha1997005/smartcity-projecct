@@ -1,21 +1,32 @@
-const {db} = require('./db');
+const readline = require('readline');
 const bcrypt = require('bcrypt');
+const { db } = require('./db');
 
-async function addAdmin() {
-  const email = 'admin@example.com'; // Change as needed
-  const password = '1234admin'; // Change as needed
-  const hashedPassword = await bcrypt.hash(password, 10);
-  try {
-    await db.query(
-      'INSERT INTO Users (email, password_hash, role) VALUES (?, ?, ?)',
-      [email, hashedPassword, 'admin']
-    );
-    console.log('Admin user created successfully!');
-  } catch (err) {
-    console.error('Error creating admin user:', err.message);
-  } finally {
-    process.exit();
-  }
-}
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
-addAdmin();
+rl.question('Enter admin email: ', (email) => {
+  rl.question('Enter admin password: ', async (password) => {
+    if (!email || !password) {
+      console.error('Email and password are required.');
+      rl.close();
+      return;
+    }
+
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await db.query(
+        "INSERT INTO Users (email, password_hash, role) VALUES (?, ?, 'admin')",
+        [email, hashedPassword]
+      );
+      console.log('Admin user created successfully.');
+    } catch (error) {
+      console.error('Error creating admin user:', error);
+    } finally {
+      db.end();
+      rl.close();
+    }
+  });
+});
