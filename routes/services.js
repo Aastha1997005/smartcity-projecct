@@ -5,6 +5,7 @@ const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 // Helper: fetch providers (with phones/emails) mapped to a service
 async function fetchProvidersForService(serviceId) {
+  if (!serviceId) return [];
   try {
     // Use GROUP_CONCAT to aggregate phones/emails per provider
     const [provRows] = await db.query(

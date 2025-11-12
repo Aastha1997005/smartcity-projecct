@@ -65,13 +65,26 @@ router.post('/', authenticateToken, authorizeRoles('admin'), async (req, res) =>
 });
 
 // Update transport
-router.put('/:transport_id', async (req, res) => {
-    res.send(`Update transport ${req.params.transport_id}`);
+router.put('/:transport_id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+    const { mode } = req.body;
+    try {
+        await db.query('UPDATE Transport SET mode = ? WHERE transport_id = ?', [mode, req.params.transport_id]);
+        res.json({ message: 'Transport updated successfully' });
+    } catch (err) {
+        console.error('Error updating transport:', err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Delete transport
-router.delete('/:transport_id', async (req, res) => {
-    res.send(`Delete transport ${req.params.transport_id}`);
+router.delete('/:transport_id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+    try {
+        await db.query('DELETE FROM Transport WHERE transport_id = ?', [req.params.transport_id]);
+        res.json({ message: 'Transport deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting transport:', err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 module.exports = router;

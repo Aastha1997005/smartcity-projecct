@@ -1,6 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const {db} = require("../db");
+const Joi = require('joi');
+
+const createAirQualitySensorReadingSchema = Joi.object({
+  timestamp: Joi.date().required(),
+  PM2_5: Joi.number().required(),
+  PM10: Joi.number().required(),
+  CO2_level: Joi.number().required(),
+  aqindex: Joi.number().integer().required(),
+  NO2_level: Joi.number().required()
+});
 
 // Get all air quality sensors
 router.get("/", async (req, res) => {

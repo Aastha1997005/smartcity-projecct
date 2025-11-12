@@ -532,9 +532,6 @@ background:
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      const API_BASE_URL = "http://localhost:5000/api"; // Define API base URL globally
-      const token = localStorage.getItem('token'); // Define token globally
-
       function logout() {
         if (confirm("Are you sure you want to logout?")) {
           localStorage.clear();
@@ -542,14 +539,16 @@ background:
         }
       }
 
-      // Define baseHeaders globally
-      const baseHeaders = { 'Accept': 'application/json' };
-      if (token) baseHeaders['Authorization'] = 'Bearer ' + token;
-
+      const API_BASE_URL = "http://localhost:5000/api"; // Define API base URL globally
+      window.API_BASE = API_BASE_URL; // Expose to global scope for dynamically loaded content
       // Define safeFetch globally
       async function safeFetch(path, opts={}){
         try{
-          const headers = Object.assign({}, baseHeaders, opts.headers || {});
+          const currentToken = localStorage.getItem('token'); // Get token dynamically
+          const headers = Object.assign({}, { 'Accept': 'application/json' }, opts.headers || {});
+          if (currentToken) {
+            headers['Authorization'] = 'Bearer ' + currentToken;
+          }
           const res = await fetch(API_BASE_URL + path, Object.assign({}, opts, { headers }));
           if (!res.ok) {
             console.error('fetch', path, 'failed', res.status);
@@ -569,7 +568,7 @@ background:
       // show debug header
       async function showDebug(){
         const dbg = document.getElementById('admin-debug');
-        if (dbg) dbg.innerText = `API_BASE=${API_BASE_URL} token=${token ? 'present' : 'missing'}`;
+        if (dbg) dbg.innerText = `API_BASE=${API_BASE_URL} token=${localStorage.getItem('token') ? 'present' : 'missing'}`;
         const raw = document.getElementById('admin-stats-raw');
         if (raw) raw.style.maxHeight = '180px';
         if (raw) raw.style.overflow = 'auto';
@@ -763,14 +762,15 @@ background:
         } catch(e) { console.error('load recent activity failed', e); }
 
         try {
-          if (token) {
+          const profileCheck = await safeFetch('/profile');
+          if (profileCheck.ok) { // If profile fetch is successful, user is authenticated
             const btn = document.getElementById('btn-add-activity');
             btn.style.display = 'inline-block';
             btn.addEventListener('click', async () => {
               const msg = prompt('Enter announcement message');
               if (!msg) return;
               const userIds = [1];
-              const res = await safeFetch('/announcements/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, user_ids: userIds }) });
+              const res = await safeFetch('/announcements/send', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` }, body: JSON.stringify({ message: msg, user_ids: userIds }) });
               if (res.ok) alert('Announcement created'); else alert('Failed to create announcement');
             });
           }
@@ -1013,7 +1013,7 @@ background:
                               // First, create the Service entry for the transport
                               const serviceResponse = await fetch(`${API_BASE_URL}/services`, {
                                   method: 'POST',
-                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                                   body: JSON.stringify({
                                       service_name: `${transportMode} - ${routeName}`,
                                       cost: 0, // Default cost
@@ -1028,7 +1028,7 @@ background:
                               // Then, create the Transport entry
                               const transportResponse = await fetch(`${API_BASE_URL}/transport`, {
                                   method: 'POST',
-                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                                   body: JSON.stringify({
                                       transport_id: serviceId, // Link to service
                                       mode: transportMode
@@ -1039,7 +1039,7 @@ background:
                               // Then, create the Route entry
                               const routeResponse = await fetch(`${API_BASE_URL}/routes`, {
                                   method: 'POST',
-                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                                   body: JSON.stringify({
                                       start_point: startPoint,
                                       end_point: endPoint,
@@ -1053,7 +1053,7 @@ background:
                               // Finally, create the Transport Schedule
                               const scheduleResponse = await fetch(`${API_BASE_URL}/transportSchedules`, {
                                   method: 'POST',
-                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                                   body: JSON.stringify({
                                       transport_id: serviceId,
                                       route_id: routeId,
@@ -1131,7 +1131,7 @@ background:
                               // First, create the Service entry for the utility
                               const serviceResponse = await fetch(`${API_BASE_URL}/services`, {
                                   method: 'POST',
-                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                                   body: JSON.stringify({
                                       service_name: serviceName,
                                       cost: cost,
@@ -1146,7 +1146,7 @@ background:
                               // Then, create the Utility entry
                               const utilityResponse = await fetch(`${API_BASE_URL}/utilities`, {
                                   method: 'POST',
-                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                                   body: JSON.stringify({
                                       utility_id: serviceId, // Link to service
                                       type: utilityType, // Pass type for backend to handle
@@ -1214,7 +1214,7 @@ background:
                           try {
                               const response = await fetch(`${API_BASE_URL}/healthcare`, {
                                   method: 'POST',
-                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                                   body: JSON.stringify({
                                       name: hospitalName,
                                       capacity: capacity,

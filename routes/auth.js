@@ -216,8 +216,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ error: "User not found" });
 
     const user = rows[0];
-    const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
-    const valid = hashedPassword === user.password_hash;
+    const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) return res.status(401).json({ error: "Invalid password" });
 
     const jwtSecret = process.env.JWT_SECRET || 'your_jwt_secret';

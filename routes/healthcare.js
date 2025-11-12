@@ -1,8 +1,13 @@
 const express = require("express");
-const router = express = require("express");
 const router = express.Router();
 const {db} = require("../db");
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
+const Joi = require('joi');
+
+const addDoctorSchema = Joi.object({
+  doctor_id: Joi.number().integer().required()
+});
+
 // Get all healthcare facilities
 router.get("/", async (req, res) => {
   try {

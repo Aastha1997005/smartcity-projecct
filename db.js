@@ -25,5 +25,7 @@ async function logAuditAction(userId, action, resource, details = null) {
 
 module.exports = { 
   db, 
-  logAuditAction 
+  logAuditAction,
+  query: db.query.bind(db), // Add direct query method
+  getConnection: db.getConnection.bind(db) // Add getConnection method
 };

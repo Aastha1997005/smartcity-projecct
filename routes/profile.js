@@ -8,7 +8,7 @@ const fs = require('fs');
 // Development-only request logger for profile routes
 router.use((req, res, next) => {
     try {
-        console.log('[profile] incoming', req.method, req.path, 'headers:', Object.assign({}, req.headers, { authorization: req.headers.authorization ? '[REDACTED]' : undefined }));
+        console.log('[profile] incoming', req.method, req.path, 'originalUrl:', req.originalUrl, 'headers:', Object.assign({}, req.headers, { authorization: req.headers.authorization ? '[REDACTED]' : undefined }));
         // Note: body may be empty for GET; JSON body will be shown when available
         if (req.body && Object.keys(req.body).length) console.log('[profile] body:', req.body);
     } catch (e) { /* ignore logging failures */ }
@@ -22,6 +22,7 @@ router.post('/debug-echo', (req, res) => {
 
 // GET current user's profile (citizen/healthcare/transport) using JWT
 router.get('/', authenticateToken, async (req, res) => {
+    console.log('[profileRoutes] GET / received');
     const userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'Authentication required' });
 
@@ -99,6 +100,11 @@ router.get('/', authenticateToken, async (req, res) => {
 
             const profile = { hospital: hRow, service, doctors, contacts };
             return res.json(profile);
+        }
+        // For admin role, return basic user info
+        if (role === 'admin') {
+            const [[userRow]] = await db.query('SELECT email, role, linked_id, created_at FROM Users WHERE user_id = ?', [userId]);
+            return res.json(userRow);
         }
     // For department roles (transport, waste_management, public_lights, water, electricity, internet, healthcare)
     // return minimal user info; department users may have separate profile tables in future.

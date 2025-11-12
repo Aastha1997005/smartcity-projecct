@@ -1,0 +1,193 @@
+2025-11-11T22:20:51.564Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:20:51.887Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:20:51.980Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:20:52.010Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:20:52.209Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:20:52.418Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:20:52.577Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:20:52.618Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:20:52.929Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:20:53.165Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:20:53.320Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:20:53.364Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:20:53.579Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:20:53.750Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:20:53.868Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:20:53.909Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:06.952Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:07.166Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:07.326Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:07.419Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:27:07.441Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:20.639Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:20.697Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:20.773Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:27:20.792Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:20.979Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:21.146Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:21.222Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:27:21.235Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:27.860Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:27.938Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:28.021Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:27:28.057Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:28.248Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:28.419Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:28.521Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:27:28.564Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:30.027Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:30.180Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:30.258Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:27:30.275Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:48.996Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:49.073Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:49.123Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:27:49.138Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:49.368Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:49.501Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:49.606Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:27:49.623Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:51.409Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:51.543Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:27:51.596Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:27:51.620Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:28:06.976Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:28:07.044Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:28:07.092Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:28:07.111Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:28:07.403Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:28:07.541Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:28:07.612Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:28:07.634Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:28:22.148Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:28:22.201Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:28:22.254Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:28:22.279Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:28:22.471Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:28:22.610Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:28:22.668Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:28:22.685Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:29:38.037Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:29:38.126Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:29:38.205Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:29:38.230Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:29:38.577Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:29:38.749Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:29:38.846Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:29:38.872Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:29:41.856Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:29:41.995Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:29:42.138Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:29:42.179Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:30:50.290Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:30:50.386Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:30:50.476Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:30:50.493Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:31:09.081Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:31:09.165Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:31:09.269Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:31:09.300Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:31:09.630Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:31:09.797Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:31:09.877Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:31:09.906Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:33:42.600Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:33:43.075Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:33:43.185Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T22:33:43.335Z - notifications insert failed: TypeError: db.query is not a function
+2025-11-11T22:33:43.377Z - notifications.get error: TypeError: db.query is not a function
+2025-11-11T23:29:39.972Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:29:40.157Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:29:40.303Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:29:40.502Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:31:29.816Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:31:29.991Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:31:30.098Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:31:30.252Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:33:02.698Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:33:02.874Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:38:10.053Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:38:10.146Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:38:10.501Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:38:10.833Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:38:11.166Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:38:11.435Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:45:36.066Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:45:36.254Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:45:36.656Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:45:36.807Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:49:16.313Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:49:16.453Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:49:18.596Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:49:18.956Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:49:19.253Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:49:19.514Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:50:37.821Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:50:38.155Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:50:38.334Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:58:58.394Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:58:58.665Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-11T23:58:58.805Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:00:11.260Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:00:11.370Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:00:11.564Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:00:11.674Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:00:27.609Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:00:27.685Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:02:22.199Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:02:22.303Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:02:22.668Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:02:22.883Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:02:38.521Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:02:38.617Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:03:01.814Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:03:02.159Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:03:02.279Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:03:13.904Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:03:14.065Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:03:14.245Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:03:14.363Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:07:29.551Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:07:29.787Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:07:30.083Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:07:30.191Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:07:34.181Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:07:34.304Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:07:41.966Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:07:42.078Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:07:42.649Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:07:42.759Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:07:50.060Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:07:50.158Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:04.736Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:04.866Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:05.443Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:05.566Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:13.787Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:13.905Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:14.474Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:14.605Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:23.180Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:23.313Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:23.902Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:24.046Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:57.108Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:57.198Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:57.770Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:08:57.854Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:09:48.659Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:09:48.774Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:09:49.135Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:09:49.317Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:10:19.802Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:10:19.927Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:10:20.086Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:10:20.227Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:10:29.375Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:10:29.488Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:10:29.746Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:10:29.924Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:11:45.515Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:11:45.604Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:11:45.911Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'
+2025-11-12T00:11:46.069Z - notifications.get error: Error: Unknown column 'sender_id' in 'field list'

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // Get all phone numbers for a citizen
-const db = require('../db');
+const {db} = require('../db');
 router.get('/:citizen_id/phones', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT phone_number FROM Citizen_Phone_Number WHERE citizen_id = ?', [req.params.citizen_id]);

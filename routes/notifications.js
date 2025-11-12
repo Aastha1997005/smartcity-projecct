@@ -3,7 +3,7 @@ const router = express.Router();
 const { authenticateToken, authorizeRoles } = require("../middleware/auth");
 
 
-const db = require("../db");
+const {db} = require("../db");
 const fs = require('fs');
 
 // Create/send notifications. Authorized roles may create notifications; admin may broadcast.

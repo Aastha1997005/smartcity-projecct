@@ -1,6 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const {db} = require("../db");
+const Joi = require('joi');
+
+const createWeatherSensorReadingSchema = Joi.object({
+  time_stamp: Joi.date().required(),
+  wind_speed: Joi.number().required(),
+  pressure: Joi.number().required(),
+  temperature: Joi.number().required(),
+  rainfall: Joi.number().required(),
+  humidity: Joi.number().required()
+});
 
 // Get all weather sensors
 router.get("/", async (req, res) => {
