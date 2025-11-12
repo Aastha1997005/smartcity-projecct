@@ -767,7 +767,7 @@ background:
               const servicesCount = Object.keys(grouped).reduce((s, k) => s + (grouped[k] ? grouped[k].length : 0), 0);
               document.getElementById('stat-bookings').innerText = servicesCount;
               document.getElementById('quick-transport').innerText = (grouped.transport ? grouped.transport.length : 0) + ' Active';
-              document.getElementById('quick-internet').innerText = (grouped.internet ? grouped.internet.length : 0) + ' Active';
+
               document.getElementById('quick-utilities').innerText = ((grouped.water?grouped.water.length:0) + (grouped.electricity?grouped.electricity.length:0)) + ' Active';
               document.getElementById('quick-healthcare').innerText = (grouped.healthcare ? grouped.healthcare.length : (hcR.ok ? hcR.data.length : 0)) + ' Active';
             } else {
@@ -968,10 +968,7 @@ background:
                                         <span class="text-muted">Transport Services</span>
                                         <span class="fw-semibold" id="quick-transport">-</span>
                                     </div>
-                                    <div class="d-flex justify-content-between mb-3">
-                                        <span class="text-muted">Internet Providers</span>
-                                        <span class="fw-semibold" id="quick-internet">-</span>
-                                    </div>
+
                                     <div class="d-flex justify-content-between mb-3">
                                         <span class="text-muted">Utility Services</span>
                                         <span class="fw-semibold" id="quick-utilities">-</span>
