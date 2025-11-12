@@ -1,0 +1,124 @@
+<div class="mb-4">
+    <h1 class="h2 fw-bold">Add New Transport</h1>
+    <p class="text-muted">Fill in the details to add a new transport service or route.</p>
+</div>
+<div class="card card-body">
+    <form id="addTransportForm">
+        <div class="mb-3">
+            <label for="transportMode" class="form-label">Mode of Transport</label>
+            <input type="text" class="form-control" id="transportMode" required placeholder="e.g., Bus, Train, Metro">
+        </div>
+        <div class="mb-3">
+            <label for="routeName" class="form-label">Route Name/Number</label>
+            <input type="text" class="form-control" id="routeName" required placeholder="e.g., Route 5, Downtown Express">
+        </div>
+        <div class="mb-3">
+            <label for="startPoint" class="form-label">Start Point</label>
+            <input type="text" class="form-control" id="startPoint" required>
+        </div>
+        <div class="mb-3">
+            <label for="endPoint" class="form-label">End Point</label>
+            <input type="text" class="form-control" id="endPoint" required>
+        </div>
+        <div class="mb-3">
+            <label for="distance" class="form-label">Distance (km)</label>
+            <input type="number" step="0.1" class="form-control" id="distance" required>
+        </div>
+        <div class="mb-3">
+            <label for="frequency" class="form-label">Frequency</label>
+            <input type="text" class="form-control" id="frequency" placeholder="e.g., Every 15 mins">
+        </div>
+        <div class="mb-3">
+            <label for="daysOfOperation" class="form-label">Days of Operation</label>
+            <input type="text" class="form-control" id="daysOfOperation" placeholder="e.g., Mon-Fri, Daily">
+        </div>
+        <div class="mb-3">
+            <label for="startTime" class="form-label">Start Time</label>
+            <input type="time" class="form-control" id="startTime">
+        </div>
+        <div class="mb-3">
+            <label for="endTime" class="form-label">End Time</label>
+            <input type="time" class="form-control" id="endTime">
+        </div>
+        <button type="submit" class="btn btn-primary">Add Transport</button>
+    </form>
+</div>
+<script>
+    document.getElementById('addTransportForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const transportMode = document.getElementById('transportMode').value;
+        const routeName = document.getElementById('routeName').value;
+        const startPoint = document.getElementById('startPoint').value;
+        const endPoint = document.getElementById('endPoint').value;
+        const distance = document.getElementById('distance').value;
+        const frequency = document.getElementById('frequency').value;
+        const daysOfOperation = document.getElementById('daysOfOperation').value;
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
+
+        try {
+            // First, create the Service entry for the transport
+            const serviceResponse = await fetch(`${API_BASE_URL}/services`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                body: JSON.stringify({
+                    service_name: `${transportMode} - ${routeName}`,
+                    cost: 0, // Default cost
+                    availability_status: 'Active',
+                    operating_hours: `${startTime}-${endTime}`
+                })
+            });
+            if (!serviceResponse.ok) throw new Error('Failed to create service');
+            const serviceData = await serviceResponse.json();
+            const serviceId = serviceData.service_id;
+
+            // Then, create the Transport entry
+            const transportResponse = await fetch(`${API_BASE_URL}/transport`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                body: JSON.stringify({
+                    transport_id: serviceId, // Link to service
+                    mode: transportMode
+                })
+            });
+            if (!transportResponse.ok) throw new Error('Failed to create transport');
+
+            // Then, create the Route entry
+            const routeResponse = await fetch(`${API_BASE_URL}/routes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                body: JSON.stringify({
+                    start_point: startPoint,
+                    end_point: endPoint,
+                    distance_km: distance
+                })
+            });
+            if (!routeResponse.ok) throw new Error('Failed to create route');
+            const routeData = await routeResponse.json();
+            const routeId = routeData.route_id;
+
+            // Finally, create the Transport Schedule
+            const scheduleResponse = await fetch(`${API_BASE_URL}/transportSchedules`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                body: JSON.stringify({
+                    transport_id: serviceId,
+                    route_id: routeId,
+                    start_time: startTime,
+                    end_time: endTime,
+                    frequency: frequency,
+                    days_of_operation: daysOfOperation,
+                    status: 'On-time'
+                })
+            });
+            if (!scheduleResponse.ok) throw new Error('Failed to create schedule');
+
+            alert('Transport service, route, and schedule added successfully!');
+            document.getElementById('addTransportForm').reset();
+            // Removed loadDynamicContent('transport') as per user request to stay on the page.
+        } catch (error) {
+            console.error('Error adding transport:', error);
+            alert(`Failed to add transport: ${error.message}`);
+        }
+    });
+</script>

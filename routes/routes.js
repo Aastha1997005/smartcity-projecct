@@ -28,8 +28,8 @@ router.get('/:route_id', async (req, res) => {
 router.post('/', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const { start_point, end_point, distance_km } = req.body;
   try {
-    await db.query('INSERT INTO Route (start_point, end_point, distance_km) VALUES (?, ?, ?)', [start_point, end_point, distance_km]);
-    res.json({ message: 'Route created' });
+    const [result] = await db.query('INSERT INTO Route (start_point, end_point, distance_km) VALUES (?, ?, ?)', [start_point, end_point, distance_km]);
+    res.json({ message: 'Route created', route_id: result.insertId });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

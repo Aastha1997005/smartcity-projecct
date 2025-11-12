@@ -1,222 +1,92 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transport Dashboard - Smart City</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        :root {
-            --primary-color: rgba(255, 255, 255, 0.6);
-            --secondary-color: rgba(255, 255, 255, 0.6);
-            --sidebar-width: 260px;
-            --bg-light: #f5f8ff;
-            --text-dark: #03045E;
-        }
-        body {
-            font-family: "Montserrat", sans-serif;
-            background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)),
-                        url('https://i.ibb.co/S4yxVvP2/img-smartcity.jpg') center center / cover no-repeat fixed;
-            background-color: rgba(237, 236, 236, 0.94);
-            color: var(--text-dark);
-            margin: 0;
-            padding: 0;
-        }
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: var(--sidebar-width);
-            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
-            box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
-            border-top-right-radius: 20px;
-            border-bottom-right-radius: 20px;
-            color: rgba(0, 3, 154, 0.866);
-            overflow-y: auto;
-            transition: all 0.3s;
-            z-index: 1000;
-        }
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-        }
-        .logo-img {
-            width: 150px;
-            margin-bottom: 15px;
-        }
-        .nav-link {
-            color: #03045E !important;
-            padding: 12px 20px;
-            border-radius: 10px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-        }
-        .nav-link:hover {
-            background-color: #03045e !important;
-            transform: translateX(5px);
-            color: #CAF0F8 !important;
-        }
-        .nav-link.active {
-            background-color: #03045e;
-            color: #CAF0F8 !important;
-            font-weight: 600;
-        }
-        .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 20px;
-        }
-        .welcome-banner {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            border-radius: 15px;
-            padding: 30px;
-            color: #03045E;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 25px #03055e76;
-        }
-        .stats-card {
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 18px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px #03055e78;
-            transition: all 0.3s ease;
-            border-left: 4px solid;
-            color: #03045E;
-        }
-        .stats-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px #03055e70;
-        }
-        .stats-card.blue { border-left-color: #0d6efd; }
-        .stats-card.green { border-left-color: #198754; }
-        .stats-card.purple { border-left-color: #6f42c1; }
-        .stats-card.orange { border-left-color: #fd7e14; }
-    </style>
-</head>
-<body>
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <img src="assets/07.png" alt="Smart City Logo" class="logo-img">
-            <h3>Transport</h3>
-            <small>TRANSPORT DASHBOARD</small>
-        </div>
-        <ul class="nav flex-column mt-3">
-            <li class="nav-item">
-                <a class="nav-link active" href="transport-main-dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="transport-dashboard.html"><i class="fas fa-bus"></i> Schedules</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="transport-routes.html"><i class="fas fa-route"></i> Routes</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            </li>
-        </ul>
+    <div class="welcome-banner">
+        <h1>Welcome back, Transport Manager!</h1>
+        <p>Here's an overview of the city's transport network.</p>
+        <button class="btn btn-primary" onclick="window.parent.loadDynamicContent('add-transport')">Add New Transport</button>
     </div>
 
-    <div class="main-content">
-        <div class="welcome-banner">
-            <h1>Welcome back, Transport Manager!</h1>
-            <p>Here's an overview of the city's transport network.</p>
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="stats-card blue">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-muted mb-0">Total Schedules</h6>
+                    <i class="fas fa-calendar-alt fa-2x"></i>
+                </div>
+                <h2 class="mb-1" id="totalSchedules">0</h2>
+                <small class="text-muted">All registered schedules</small>
+            </div>
         </div>
-
-        <div class="row g-4 mb-4">
-            <div class="col-md-6 col-lg-3">
-                <div class="stats-card blue">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted mb-0">Total Schedules</h6>
-                        <i class="fas fa-calendar-alt fa-2x"></i>
-                    </div>
-                    <h2 class="mb-1" id="totalSchedules">0</h2>
-                    <small class="text-muted">All registered schedules</small>
+        <div class="col-md-6 col-lg-3">
+            <div class="stats-card green">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-muted mb-0">Total Routes</h6>
+                    <i class="fas fa-route fa-2x"></i>
                 </div>
+                <h2 class="mb-1" id="totalRoutes">0</h2>
+                <small class="text-muted">All registered routes</small>
             </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="stats-card green">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted mb-0">Total Routes</h6>
-                        <i class="fas fa-route fa-2x"></i>
-                    </div>
-                    <h2 class="mb-1" id="totalRoutes">0</h2>
-                    <small class="text-muted">All registered routes</small>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="stats-card purple">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-muted mb-0">Active Schedules</h6>
+                    <i class="fas fa-check-circle fa-2x"></i>
                 </div>
+                <h2 class="mb-1" id="activeSchedules">0</h2>
+                <small class="text-muted">Currently operational</small>
             </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="stats-card purple">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted mb-0">Active Schedules</h6>
-                        <i class="fas fa-check-circle fa-2x"></i>
-                    </div>
-                    <h2 class="mb-1" id="activeSchedules">0</h2>
-                    <small class="text-muted">Currently operational</small>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="stats-card orange">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-muted mb-0">Buses Running</h6>
+                    <i class="fas fa-bus-alt fa-2x"></i>
                 </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="stats-card orange">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted mb-0">Buses Running</h6>
-                        <i class="fas fa-bus-alt fa-2x"></i>
-                    </div>
-                    <h2 class="mb-1" id="busCount">0</h2>
-                    <small class="text-muted">Schedules with 'Bus' mode</small>
-                </div>
+                <h2 class="mb-1" id="busCount">0</h2>
+                <small class="text-muted">Schedules with 'Bus' mode</small>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">All Transport Services</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Mode</th>
+                            <th>Service Name</th>
+                            <th>Operating Hours</th>
+                            <th>Availability Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transport-list-area">
+                        <tr>
+                            <td colspan="4">Loading transport services...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const API_BASE_URL = 'http://localhost:5000/api';
-        const token = localStorage.getItem('token');
-
-        function logout() {
-            if (confirm("Are you sure you want to logout?")) {
-                localStorage.clear();
-                window.location.href = "login.html";
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            if (!token) {
-                window.location.href = 'login.html';
-                return;
-            }
-            loadDashboardData();
-        });
+        // API_BASE_URL and safeFetch are expected to be available from the parent admin.html
+        // window.API_BASE and window.safeFetch are exposed globally by admin.html
 
         async function loadDashboardData() {
             try {
                 const [schedulesRes, routesRes, transportRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/transportSchedules`, { headers: { 'Authorization': `Bearer ${token}` } }).then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status} for schedules data`);
-                        }
-                        return response.json();
-                    }),
-                    fetch(`${API_BASE_URL}/routes`, { headers: { 'Authorization': `Bearer ${token}` } }).then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status} for routes data`);
-                        }
-                        return response.json();
-                    }),
-                    fetch(`${API_BASE_URL}/transport`, { headers: { 'Authorization': `Bearer ${token}` } }).then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status} for transport data`);
-                        }
-                        return response.json();
-                    })
+                    window.safeFetch('/transportSchedules'),
+                    window.safeFetch('/routes'),
+                    window.safeFetch('/transport')
                 ]);
 
-                const schedules = schedulesRes;
-                const routes = routesRes;
-                const transports = transportRes;
+                const schedules = schedulesRes.data;
+                const routes = routesRes.data;
+                const transports = transportRes.data;
                 
                 const busTransports = transports.filter(t => t.mode && t.mode.toLowerCase() === 'bus').map(t => t.transport_id);
                 const busSchedules = schedules.filter(s => busTransports.includes(s.transport_id));
@@ -226,17 +96,33 @@
                 document.getElementById('activeSchedules').textContent = schedules.filter(s => s.status === 'active').length;
                 document.getElementById('busCount').textContent = busSchedules.length;
 
+                // Populate transport list
+                const transportListArea = document.getElementById('transport-list-area');
+                transportListArea.innerHTML = ''; // Clear loading message
+
+                if (transports.length === 0) {
+                    transportListArea.innerHTML = '<tr><td colspan="4">No transport services found.</td></tr>';
+                } else {
+                    transports.forEach(t => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${t.mode || 'N/A'}</td>
+                            <td>${t.service_name || 'N/A'}</td>
+                            <td>${t.operating_hours || 'N/A'}</td>
+                            <td>${t.availability_status || 'N/A'}</td>
+                        `;
+                        transportListArea.appendChild(row);
+                    });
+                }
+
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
-                if (error.message.includes('HTTP error!')) {
-                    alert(`An error occurred while loading dashboard data: ${error.message}. Please check the server.`);
-                } else if (error instanceof TypeError) { // e.g., network error or CORS
-                    alert('A network error occurred while loading dashboard data. Please check your internet connection and try again.');
-                } else {
-                    alert('An unexpected error occurred while loading dashboard data. Please try again later.');
-                }
+                // Error handling should be more robust, potentially displaying in UI
+                // For now, just log and alert
+                alert('Error loading transport dashboard data. See console for details.');
             }
         }
+
+        // Execute on load
+        loadDashboardData();
     </script>
-</body>
-</html>

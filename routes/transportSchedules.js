@@ -33,11 +33,12 @@ router.get('/:schedule_id', async (req, res) => {
 
 // Create a new schedule
 router.post('/', authenticateToken, authorizeRoles('admin'), async (req, res) => {
-  const { schedule_id, transport_id, route_id, start_time, end_time, frequency, days_of_operation, status } = req.body;
+  const { transport_id, route_id, start_time, end_time, frequency, days_of_operation, status } = req.body;
   try {
-    await db.query('INSERT INTO Transport_Schedule (schedule_id, transport_id, route_id, start_time, end_time, frequency, days_of_operation, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [schedule_id, transport_id, route_id, start_time, end_time, frequency, days_of_operation, status]);
-    res.json({ message: 'Schedule created' });
+    const [result] = await db.query('INSERT INTO Transport_Schedule (transport_id, route_id, start_time, end_time, frequency, days_of_operation, status) VALUES (?, ?, ?, ?, ?, ?, ?)', [transport_id, route_id, start_time, end_time, frequency, days_of_operation, status]);
+    res.json({ message: 'Schedule created', schedule_id: result.insertId });
   } catch (err) {
+    console.error('Error creating schedule:', err);
     res.status(500).json({ error: err.message });
   }
 });

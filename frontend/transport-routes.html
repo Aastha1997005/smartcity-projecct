@@ -1,0 +1,89 @@
+<div class="mb-4">
+    <h1 class="h2 fw-bold">Transport Routes</h1>
+    <p class="text-muted">Overview of all registered transport routes.</p>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Available Routes</h5>
+        <button class="btn btn-primary btn-sm" onclick="window.parent.loadDynamicContent('add-transport')">Add New Route</button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Start Point</th>
+                        <th>End Point</th>
+                        <th>Distance (km)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="routesTableBody">
+                    <!-- Routes will be loaded here -->
+                    <tr>
+                        <td colspan="5" class="text-center">Loading routes...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // API_BASE_URL and safeFetch are expected to be available from the parent admin.html
+    // window.API_BASE and window.safeFetch are exposed globally by admin.html
+
+    async function loadRoutes() {
+        const routesTableBody = document.getElementById('routesTableBody');
+        routesTableBody.innerHTML = '<tr><td colspan="5" class="text-center">Loading routes...</td></tr>';
+
+        try {
+            const response = await window.safeFetch('/routes');
+            if (!response.ok) {
+                throw new Error(response.body || 'Failed to fetch routes');
+            }
+
+            const routes = response.data;
+            if (routes.length === 0) {
+                routesTableBody.innerHTML = '<tr><td colspan="5" class="text-center">No routes found.</td></tr>';
+                return;
+            }
+
+            routesTableBody.innerHTML = ''; // Clear loading message
+            routes.forEach(route => {
+                const row = routesTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${route.route_id}</td>
+                    <td>${route.start_point}</td>
+                    <td>${route.end_point}</td>
+                    <td>${route.distance_km}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm me-2" onclick="editRoute(${route.route_id})">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteRoute(${route.route_id})">Delete</button>
+                    </td>
+                `;
+            });
+
+        } catch (error) {
+            console.error('Error loading routes:', error);
+            routesTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error loading routes: ${error.message}</td></tr>`;
+        }
+    }
+
+    function editRoute(routeId) {
+        alert('Edit route functionality for ID: ' + routeId + ' (Not implemented)');
+        // Implement actual edit logic, e.g., load a form
+    }
+
+    function deleteRoute(routeId) {
+        if (confirm('Are you sure you want to delete route ID: ' + routeId + '?')) {
+            alert('Delete route functionality for ID: ' + routeId + ' (Not implemented)');
+            // Implement actual delete logic, then reload routes
+        }
+    }
+
+    // Execute on load
+    loadRoutes();
+</script>

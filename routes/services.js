@@ -477,12 +477,12 @@ router.post("/", authenticateToken, authorizeRoles('admin'), async (req, res) =>
   } = req.body;
 
   try {
-    await db.query(
+    const [result] = await db.query(
       `INSERT INTO Service (service_name, cost, availability_status, operating_hours)
       VALUES (?, ?, ?, ?)`,
       [service_name, cost, availability_status, operating_hours]
     );
-    res.json({ message: "Service added" });
+    res.json({ message: "Service added", service_id: result.insertId });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

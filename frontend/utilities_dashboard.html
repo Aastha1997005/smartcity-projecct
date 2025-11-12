@@ -143,6 +143,7 @@
       <li class="nav-item"><a href="utilities_internet.html" class="nav-link"><i class="fas fa-wifi"></i> Internet</a></li>
       <li class="nav-item"><a href="utilities_fuel.html" class="nav-link"><i class="fas fa-gas-pump"></i> Fuel</a></li>
       <li class="nav-item"><a href="utilities_infrastructure.html" class="nav-link"><i class="fas fa-building"></i> Infrastructure</a></li>
+      <li class="nav-item"><a href="admin.html" class="nav-link"><i class="fas fa-arrow-left"></i> Back to Admin Dashboard</a></li>
     </ul>
     <div class="p-3 mt-auto">
         <button class="btn btn-danger w-100" id="logoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
@@ -154,6 +155,47 @@
     <div class="welcome-banner">
       <h2><i class="fas fa-city me-2 text-primary"></i> SmartCity Utilities Dashboard</h2>
       <p class="opacity-75 mb-0">Overview of all essential civic utilities and infrastructure.</p>
+      <button class="btn btn-primary mt-3" id="addUtilityBtn"><i class="fas fa-plus-circle me-2"></i> Add New Utility</button>
+    </div>
+
+    <!-- Add Utility Form Section -->
+    <div class="card card-body mt-4" id="addUtilityFormSection" style="display: none;">
+        <div class="mb-4">
+            <h1 class="h2 fw-bold">Add New Utility Service</h1>
+            <p class="text-muted">Fill in the details to add a new utility service (e.g., Water, Electricity, Waste Management).</p>
+        </div>
+        <form id="addUtilityForm">
+            <div class="mb-3">
+                <label for="utilityType" class="form-label">Utility Type</label>
+                <select class="form-select" id="utilityType" required>
+                    <option value="">Select Type</option>
+                    <option value="water">Water</option>
+                    <option value="electricity">Electricity</option>
+                    <option value="waste">Waste Management</option>
+                    <option value="fuel">Fuel</option>
+                    <option value="internet">Internet</option>
+                    <option value="public_light">Public Light</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="serviceName" class="form-label">Service Name</label>
+                <input type="text" class="form-control" id="serviceName" required placeholder="e.g., City Water Supply, Green Energy">
+            </div>
+            <div class="mb-3">
+                <label for="cost" class="form-label">Cost</label>
+                <input type="number" step="0.01" class="form-control" id="cost" value="0" required>
+            </div>
+            <div class="mb-3">
+                <label for="availabilityStatus" class="form-label">Availability Status</label>
+                <input type="text" class="form-control" id="availabilityStatus" value="Active" required>
+            </div>
+            <div class="mb-3">
+                <label for="operatingHours" class="form-label">Operating Hours</label>
+                <input type="text" class="form-control" id="operatingHours" value="24/7" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Utility</button>
+            <button type="button" class="btn btn-secondary" id="cancelAddUtilityBtn">Cancel</button>
+        </form>
     </div>
 
     <!-- Summary Cards -->
@@ -220,6 +262,11 @@
           <h4 id="infraCount">--</h4>
         </a>
       </div>
+    </div>
+
+    <!-- Utility Details Area (for dynamic content) -->
+    <div id="utility-details-area" class="mt-4" style="display: none;">
+        <!-- Content for specific utility details will be loaded here -->
     </div>
 
     <!-- Chart -->
@@ -354,6 +401,205 @@
         localStorage.removeItem('userRole');
         localStorage.removeItem('userEmail');
         window.location.href = 'login.html';
+      });
+
+      // Add Utility Form Logic
+      const addUtilityBtn = document.getElementById('addUtilityBtn');
+      const addUtilityFormSection = document.getElementById('addUtilityFormSection');
+      const addUtilityForm = document.getElementById('addUtilityForm');
+      const cancelAddUtilityBtn = document.getElementById('cancelAddUtilityBtn');
+      const mainDashboardContent = document.querySelector('.main-content > .welcome-banner').parentNode; // Get the parent of welcome-banner
+      const utilityDetailsArea = document.getElementById('utility-details-area');
+
+      addUtilityBtn.addEventListener('click', () => {
+          addUtilityFormSection.style.display = 'block';
+          addUtilityBtn.style.display = 'none'; // Hide the add button when form is visible
+          mainDashboardContent.style.display = 'none'; // Hide main dashboard content
+          utilityDetailsArea.style.display = 'none'; // Hide utility details if visible
+      });
+
+      cancelAddUtilityBtn.addEventListener('click', () => {
+          addUtilityFormSection.style.display = 'none';
+          addUtilityBtn.style.display = 'block'; // Show the add button when form is hidden
+          mainDashboardContent.style.display = 'block'; // Show main dashboard content
+          addUtilityForm.reset();
+      });
+
+      addUtilityForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const utilityType = document.getElementById('utilityType').value;
+          const serviceName = document.getElementById('serviceName').value;
+          const cost = document.getElementById('cost').value;
+          const availabilityStatus = document.getElementById('availabilityStatus').value;
+          const operatingHours = document.getElementById('operatingHours').value;
+
+          try {
+              // First, create the Service entry for the utility
+              const serviceResponse = await safeFetch('/services', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                      service_name: serviceName,
+                      cost: cost,
+                      availability_status: availabilityStatus,
+                      operating_hours: operatingHours
+                  })
+              });
+              if (!serviceResponse.ok) throw new Error('Failed to create service');
+              const serviceData = serviceResponse.data;
+              const serviceId = serviceData.service_id;
+
+              // Then, create the Utility entry
+              const utilityResponse = await safeFetch('/utilities', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                      utility_id: serviceId, // Link to service
+                      type: utilityType, // Pass type for backend to handle
+                      unit: 'N/A', // Default
+                      issue_date: new Date().toISOString().split('T')[0] // Current date
+                  })
+              });
+              if (!utilityResponse.ok) throw new Error('Failed to create utility');
+
+              alert('Utility service added successfully!');
+              addUtilityForm.reset();
+              addUtilityFormSection.style.display = 'none'; // Hide form after submission
+              addUtilityBtn.style.display = 'block'; // Show add button
+              mainDashboardContent.style.display = 'block'; // Show main dashboard content
+              loadUtilitiesData(); // Refresh dashboard data
+          } catch (error) {
+              console.error('Error adding utility:', error);
+              alert(`Failed to add utility: ${error.message}`);
+          }
+      });
+
+      // Function to load and display specific utility details
+      async function loadUtilityDetails(utilityType) {
+          mainDashboardContent.style.display = 'none'; // Hide main dashboard content
+          addUtilityFormSection.style.display = 'none'; // Hide add utility form
+          utilityDetailsArea.style.display = 'block'; // Show utility details area
+          utilityDetailsArea.innerHTML = `<div class="text-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Loading ${utilityType} details...</p></div>`;
+
+          let content = `<button class="btn btn-secondary mb-3" id="backToDashboardBtn"><i class="fas fa-arrow-left me-2"></i> Back to Utilities Dashboard</button>`;
+          const formattedUtilityType = utilityType.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+          content += `<h3>${formattedUtilityType} Services</h3>`;
+
+          try {
+              let data;
+              switch (utilityType) {
+                  case 'water':
+                      data = await safeFetch('/utilities/water');
+                      content += `<div class="table-responsive"><table class="table table-hover"><thead><tr><th>ID</th><th>Source</th><th>Quality</th><th>Pipelines</th><th>Service Name</th><th>Status</th></tr></thead><tbody>`;
+                      if (data.length === 0) content += `<tr><td colspan="6">No water services found.</td></tr>`;
+                      data.forEach(item => {
+                          content += `<tr><td>${item.water_id}</td><td>${item.source}</td><td>${item.quality_level}</td><td>${item.pipeline_count}</td><td>${item.service_name}</td><td>${item.availability_status}</td></tr>`;
+                      });
+                      content += `</tbody></table></div>`;
+                      break;
+                  case 'electricity':
+                      data = await safeFetch('/utilities/electricity');
+                      content += `<div class="table-responsive"><table class="table table-hover"><thead><tr><th>ID</th><th>Voltage</th><th>Source Type</th><th>Distribution Area</th><th>Power Nodes</th><th>Service Name</th><th>Status</th></tr></thead><tbody>`;
+                      if (data.length === 0) content += `<tr><td colspan="7">No electricity services found.</td></tr>`;
+                      data.forEach(item => {
+                          content += `<tr><td>${item.electricity_id}</td><td>${item.voltage_level}</td><td>${item.source_type}</td><td>${item.distribution_area}</td><td>${item.powerNodeCount}</td><td>${item.service_name}</td><td>${item.availability_status}</td></tr>`;
+                      });
+                      content += `</tbody></table></div>`;
+                      break;
+                  case 'public_light':
+                      data = await safeFetch('/utilities/public-lights');
+                      content += `<div class="table-responsive"><table class="table table-hover"><thead><tr><th>ID</th><th>Location</th><th>Status</th><th>Brightness</th><th>Zone</th></tr></thead><tbody>`;
+                      if (data.lights.length === 0) content += `<tr><td colspan="5">No public lights found.</td></tr>`;
+                      data.lights.forEach(item => {
+                          content += `<tr><td>${item.light_id}</td><td>${item.location}</td><td>${item.status}</td><td>${item.brightness_level}</td><td>${item.zone_name || 'N/A'}</td></tr>`;
+                      });
+                      content += `</tbody></table></div>`;
+                      break;
+                  case 'waste':
+                      data = await safeFetch('/utilities/waste');
+                      content += `<div class="table-responsive"><table class="table table-hover"><thead><tr><th>ID</th><th>Type</th><th>Collection Schedule</th><th>Zone</th><th>Smart Bins</th></tr></thead><tbody>`;
+                      if (data.length === 0) content += `<tr><td colspan="5">No waste management services found.</td></tr>`;
+                      data.forEach(item => {
+                          content += `<tr><td>${item.waste_id}</td><td>${item.type}</td><td>${item.collection_schedule}</td><td>${item.zone_name || 'N/A'}</td><td>${item.binCount}</td></tr>`;
+                      });
+                      content += `</tbody></table></div>`;
+                      break;
+                  case 'internet':
+                      data = await safeFetch('/utilities/internet');
+                      content += `<div class="table-responsive"><table class="table table-hover"><thead><tr><th>ID</th><th>Provider</th><th>Bandwidth (Mbps)</th><th>Uptime (%)</th><th>Service Name</th><th>Status</th><th>Zone</th></tr></thead><tbody>`;
+                      if (data.length === 0) content += `<tr><td colspan="7">No internet services found.</td></tr>`;
+                      data.forEach(item => {
+                          content += `<tr><td>${item.internet_id}</td><td>${item.provider_name}</td><td>${item.speed_mbps}</td><td>${item.uptime_percentage}</td><td>${item.service_name}</td><td>${item.availability_status}</td><td>${item.zone_name || 'N/A'}</td></tr>`;
+                      });
+                      content += `</tbody></table></div>`;
+                      break;
+                  case 'fuel':
+                      data = await safeFetch('/utilities/fuel');
+                      content += `<div class="table-responsive"><table class="table table-hover"><thead><tr><th>ID</th><th>Type</th><th>Provider</th><th>Capacity</th><th>Service Name</th></tr></thead><tbody>`;
+                      if (data.length === 0) content += `<tr><td colspan="5">No fuel services found.</td></tr>`;
+                      data.forEach(item => {
+                          content += `<tr><td>${item.fuel_id}</td><td>${item.type}</td><td>${item.provider_name}</td><td>${item.capacity_liters}</td><td>${item.service_name || 'N/A'}</td></tr>`;
+                      });
+                      content += `</tbody></table></div>`;
+                      break;
+                  case 'infrastructure':
+                      data = await safeFetch('/utilities/infrastructure/overview');
+                      content += `<div class="row g-3">`;
+                      for (const key in data.infrastructure) {
+                          content += `<div class="col-md-4"><div class="card card-body"><h5>${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</h5><p>${data.infrastructure[key]}</p></div></div>`;
+                      }
+                      content += `</div>`;
+                      break;
+                  default:
+                      content += `<p>Details for ${utilityType} are not available.</p>`;
+              }
+              utilityDetailsArea.innerHTML = content;
+              document.getElementById('backToDashboardBtn').addEventListener('click', () => {
+                  utilityDetailsArea.style.display = 'none';
+                  mainDashboardContent.style.display = 'block';
+                  addUtilityBtn.style.display = 'block'; // Ensure add button is visible
+              });
+
+          } catch (error) {
+              console.error(`Error loading ${utilityType} details:`, error);
+              utilityDetailsArea.innerHTML = `<p class="text-danger">Error loading ${utilityType} details: ${error.message}</p>`;
+          }
+      }
+
+      // Attach event listeners to utility cards
+      document.querySelectorAll('.utility-card').forEach(card => {
+          card.addEventListener('click', (e) => {
+              e.preventDefault();
+              const utilityType = card.href.split('_').pop().split('.')[0]; // Extract utility type from href
+              loadUtilityDetails(utilityType);
+          });
+      });
+
+      // Attach event listeners to sidebar links for utilities
+      document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+          const target = link.getAttribute('href');
+          if (target === 'admin.html') {
+              link.addEventListener('click', (e) => {
+                  e.preventDefault();
+                  window.location.href = 'admin.html';
+              });
+          } else if (target && target.startsWith('utilities_') && target.endsWith('.html')) {
+              link.addEventListener('click', (e) => {
+                  e.preventDefault();
+                  const utilityType = target.split('_').pop().split('.')[0];
+                  loadUtilityDetails(utilityType);
+              });
+          }
+      });
+
+      // Handle the main "Utilities Dashboard" link in the sidebar
+      document.querySelector('.sidebar .nav-link[href="utilities_dashboard.html"]').addEventListener('click', (e) => {
+          e.preventDefault();
+          utilityDetailsArea.style.display = 'none';
+          addUtilityFormSection.style.display = 'none';
+          mainDashboardContent.style.display = 'block';
+          addUtilityBtn.style.display = 'block';
+          loadUtilitiesData(); // Refresh main dashboard data
       });
     });
   </script>

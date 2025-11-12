@@ -346,6 +346,16 @@ background:
           >
         </li>
         <li class="nav-item">
+          <a class="nav-link tab-button" href="#" data-tab="add-healthcare"
+            ><i class="fas fa-plus-circle"></i> Add Facility</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="admin.html"
+            ><i class="fas fa-arrow-left"></i> Back to Admin Dashboard</a
+          >
+        </li>
+        <li class="nav-item">
           <a class="nav-link" href="#" onclick="logout()"
             ><i class="fas fa-sign-out-alt"></i> Logout</a
           >
@@ -445,6 +455,39 @@ background:
         </div>
       </div>
       <div class="card" id="appointmentsList"></div>
+    </div>
+
+    <!-- Add Healthcare Facility -->
+    <div id="add-healthcare" class="tab-content">
+      <div class="mb-4">
+          <h1 class="h2 fw-bold">Add New Healthcare Facility</h1>
+          <p class="text-muted">Fill in the details to add a new hospital or clinic.</p>
+      </div>
+      <div class="card card-body">
+          <form id="addHealthcareForm">
+              <div class="mb-3">
+                  <label for="hospitalName" class="form-label">Facility Name</label>
+                  <input type="text" class="form-control" id="hospitalName" required placeholder="e.g., City General Hospital">
+              </div>
+              <div class="mb-3">
+                  <label for="capacity" class="form-label">Capacity (Beds)</label>
+                  <input type="number" class="form-control" id="capacity" required>
+              </div>
+              <div class="mb-3">
+                  <label for="hospitalType" class="form-label">Type</label>
+                  <input type="text" class="form-control" id="hospitalType" placeholder="e.g., General, Specialty, Clinic">
+              </div>
+              <div class="mb-3">
+                  <label for="contactPhone" class="form-label">Contact Phone</label>
+                  <input type="text" class="form-control" id="contactPhone" placeholder="e.g., +1234567890">
+              </div>
+              <div class="mb-3">
+                  <label for="contactEmail" class="form-label">Contact Email</label>
+                  <input type="email" class="form-control" id="contactEmail" placeholder="e.g., info@hospital.com">
+              </div>
+              <button type="submit" class="btn btn-primary">Add Facility</button>
+          </form>
+      </div>
     </div>
   </div>
 
@@ -832,6 +875,57 @@ background:
             window.location.href = "login.html";
         }
     }
+
+    // Add Healthcare Form Submission
+    document.addEventListener('DOMContentLoaded', () => {
+        const addHealthcareForm = document.getElementById('addHealthcareForm');
+        if (addHealthcareForm) {
+            addHealthcareForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const hospitalName = document.getElementById('hospitalName').value;
+                const capacity = document.getElementById('capacity').value;
+                const hospitalType = document.getElementById('hospitalType').value;
+                const contactPhone = document.getElementById('contactPhone').value;
+                const contactEmail = document.getElementById('contactEmail').value;
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/healthcare`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({
+                            name: hospitalName,
+                            capacity: capacity,
+                            type: hospitalType,
+                            service_name: hospitalName, // Use hospital name as service name
+                            cost: 0, // Default cost
+                            availability_status: 'Active',
+                            operating_hours: '24/7',
+                            phones: contactPhone ? [contactPhone] : [],
+                            emails: contactEmail ? [contactEmail] : []
+                        })
+                    });
+                    if (!response.ok) throw new Error('Failed to add healthcare facility');
+                    alert('Healthcare facility added successfully!');
+                    addHealthcareForm.reset();
+                    loadDashboardData(); // Refresh dashboard data after adding
+                    // Optionally switch back to the dashboard tab
+                    document.querySelector('.tab-button[data-tab="dashboard"]').click();
+                } catch (error) {
+                    console.error('Error adding healthcare facility:', error);
+                    alert(`Failed to add healthcare facility: ${error.message}`);
+                }
+            });
+        }
+
+        // Handle "Back to Admin Dashboard" link
+        const backToAdminLink = document.querySelector('.sidebar .nav-link[href="admin.html"]');
+        if (backToAdminLink) {
+            backToAdminLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'admin.html';
+            });
+        }
+    });
   </script>
 </body>
 </html>

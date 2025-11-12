@@ -1,0 +1,97 @@
+<div class="mb-4">
+    <h1 class="h2 fw-bold">Transport Schedules</h1>
+    <p class="text-muted">Overview of all registered transport schedules.</p>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Available Schedules</h5>
+        <button class="btn btn-primary btn-sm" onclick="window.parent.loadDynamicContent('add-transport')">Add New Schedule</button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Transport ID</th>
+                        <th>Route ID</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Frequency</th>
+                        <th>Days of Operation</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="schedulesTableBody">
+                    <!-- Schedules will be loaded here -->
+                    <tr>
+                        <td colspan="9" class="text-center">Loading schedules...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // API_BASE_URL and safeFetch are expected to be available from the parent admin.html
+    // For this SPA context, window.API_BASE and window.safeFetch are expected.
+
+    async function loadSchedules() {
+        const schedulesTableBody = document.getElementById('schedulesTableBody');
+        schedulesTableBody.innerHTML = '<tr><td colspan="9" class="text-center">Loading schedules...</td></tr>';
+
+        try {
+            const response = await window.safeFetch('/transportSchedules');
+            if (!response.ok) {
+                throw new Error(response.body || 'Failed to fetch schedules');
+            }
+
+            const schedules = response.data;
+            if (schedules.length === 0) {
+                schedulesTableBody.innerHTML = '<tr><td colspan="9" class="text-center">No schedules found.</td></tr>';
+                return;
+            }
+
+            schedulesTableBody.innerHTML = ''; // Clear loading message
+            schedules.forEach(schedule => {
+                const row = schedulesTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${schedule.schedule_id}</td>
+                    <td>${schedule.transport_id}</td>
+                    <td>${schedule.route_id}</td>
+                    <td>${schedule.start_time}</td>
+                    <td>${schedule.end_time}</td>
+                    <td>${schedule.frequency}</td>
+                    <td>${schedule.days_of_operation}</td>
+                    <td>${schedule.status}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm me-2" onclick="editSchedule(${schedule.schedule_id})">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteSchedule(${schedule.schedule_id})">Delete</button>
+                    </td>
+                `;
+            });
+
+        } catch (error) {
+            console.error('Error loading schedules:', error);
+            schedulesTableBody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Error loading schedules: ${error.message}</td></tr>`;
+        }
+    }
+
+    function editSchedule(scheduleId) {
+        alert('Edit schedule functionality for ID: ' + scheduleId + ' (Not implemented)');
+        // Implement actual edit logic, e.g., load a form
+    }
+
+    function deleteSchedule(scheduleId) {
+        if (confirm('Are you sure you want to delete schedule ID: ' + scheduleId + '?')) {
+            alert('Delete schedule functionality for ID: ' + scheduleId + ' (Not implemented)');
+            // Implement actual delete logic, then reload schedules
+        }
+    }
+
+    // Execute on load
+    loadSchedules();
+</script>
